@@ -617,57 +617,7 @@ HD44780_init(Driver *drvthis)
 	/* set contrast */
 	HD44780_set_contrast(drvthis, p->contrast);
 
-	/* Display startup parameters on the LCD */
 	HD44780_clear(drvthis);
-	sprintf(buf, "HD44780 %dx%d", p->width, p->height);
-	HD44780_string(drvthis, 1, 1, buf);
- 	switch(if_type) {
- 	  case IF_TYPE_USB:
-  		sprintf(buf, "USB %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_SERIAL:
- 		sprintf(buf, "SERIAL %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_I2C:
- 		sprintf(buf, "I2C %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_SPI:
- 		sprintf(buf, "SPI %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_TCP:
- 		sprintf(buf, "TCP %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
-	  case IF_TYPE_PARPORT:
- 	  default:
- 		sprintf(buf, "LPT 0x%x%s%s%s", p->port,
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
-  			);
-  	}
-	HD44780_string(drvthis, 1, 2, buf);
-	HD44780_flush(drvthis);
-	sleep(2);
 
 	return 0;
 }

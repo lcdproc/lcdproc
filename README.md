@@ -27,7 +27,7 @@ in the United States.
 Visit our [website](http://lcdproc.org/) for more information. The project's
 repository, issue tracking and pull requests can be found at
 https://github.com/lcdproc/lcdproc. Our mailing list can be found at
-https://groups.google.com/d/forum/lcdproc-mailing-list.
+https://lists.lcdproc.org/wws/info/lcdproc
 
 LCDproc was originally written by [William Ferrell](mailto:willfe@gmail.com)
 and [Selene Scriven](mailto:lcdproc@toykeeper.net).
@@ -61,20 +61,9 @@ bunch!
 
 ## Mailing List
 
-We also maintain a [mailing list](https://groups.google.com/d/forum/lcdproc-mailing-list)
-for development and user discussions. There are several ways to join the mailing list:
-
-- If you have a Google account, and you're already logged in, browse to
-  https://groups.google.com/d/forum/lcdproc-mailing-list and click "Join this group".
-
-- If you'd like to subscribe with a non-Google email address, you can either:
-
-  - Browse to https://groups.google.com/forum/#!forum/lcdproc-mailing-list/join
-    and provide your email address, solve the displayed captcha (if any) and
-    click "Subscribe". You may need to click a confirmation link (that Google will
-    mail to the provided address) to actually be subscribed to the mailing list.
-
-  - Send an email to lcdproc-mailing-list+subscribe@googlegroups.com.
+We also maintain a [mailing list](https://lists.lcdproc.org/wws/info/lcdproc)
+for development and user discussions. To join, follow the above link. You
+will need to have JavaScript enabled in your browser.
 
 ## Code of Merit
 

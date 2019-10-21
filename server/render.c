@@ -62,13 +62,14 @@ char *server_msg_text;
 int server_msg_expire = 0;
 
 
-static int render_frame(LinkedList *list, int left, int top, int right, int bottom, int fwid, int fhgt, char fscroll, int fspeed, long timer);
-static int render_string(Widget *w, int left, int top, int right, int bottom, int fy);
-static int render_hbar(Widget *w, int left, int top, int right, int bottom, int fy);
-static int render_vbar(Widget *w, int left, int top, int right, int bottom);
-static int render_title(Widget *w, int left, int top, int right, int bottom, long timer);
-static int render_scroller(Widget *w, int left, int top, int right, int bottom, long timer);
-static int render_num(Widget *w, int left, int top, int right, int bottom);
+static void render_frame(LinkedList *list, int left, int top, int right, int bottom, int fwid, int fhgt, char fscroll, int fspeed, long timer);
+static void render_string(Widget *w, int left, int top, int right, int bottom, int fy);
+static void render_hbar(Widget *w, int left, int top, int right, int bottom, int fy);
+static void render_vbar(Widget *w, int left, int top, int right, int bottom);
+static void render_pbar(Widget *w, int left, int top, int right, int bottom);
+static void render_title(Widget *w, int left, int top, int right, int bottom, long timer);
+static void render_scroller(Widget *w, int left, int top, int right, int bottom, long timer);
+static void render_num(Widget *w, int left, int top, int right, int bottom);
 
 
 /**
@@ -197,7 +198,7 @@ render_screen(Screen *s, long timer)
 /* The following function is positively ghastly (as was mentioned above!) */
 /* Best thing to do is to remove support for frames... but anyway... */
 /* */
-static int
+static void
 render_frame(LinkedList *list,
 		int left,	/* left edge of frame */
 		int top,	/* top edge of frame */
@@ -219,7 +220,7 @@ render_frame(LinkedList *list,
 
 	/* return on no data or illegal height */
 	if ((list == NULL) || (fhgt <= 0))
-		return -1;
+		return;
 
 	if (fscroll == 'v') {		/* vertical scrolling */
 		// only set offset !=0 when fspeed is != 0 and there is something to scroll
@@ -247,7 +248,7 @@ render_frame(LinkedList *list,
 		Widget *w = (Widget *) LL_Get(list);
 
 		if (w == NULL)
-			return -1;
+			return;
 
 		/* TODO:  Make this cleaner and more flexible! */
 		switch (w->type) {
@@ -259,6 +260,9 @@ render_frame(LinkedList *list,
 			break;
 		case WID_VBAR:	  /* FIXME:  Vbars don't work in frames! */
 			render_vbar(w, left, top, right, bottom);
+			break;
+		case WID_PBAR:
+			render_pbar(w, left, top - fy, right, bottom);
 			break;
 		case WID_ICON:	  /* FIXME:  Icons don't work in frames! */
 			drivers_icon(w->x, w->y, w->length);
@@ -297,18 +301,16 @@ render_frame(LinkedList *list,
 			break;
 		}
 	} while (LL_Next(list) == 0);
-
-	return 0;
 }
 
 
-static int
+static void
 render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, fy=%d)",
 			  __FUNCTION__, w, left, top, right, bottom, fy);
 
-	if ((w != NULL) && (w->text != NULL) &&
+	if ((w->text != NULL) &&
 	    (w->x > 0) && (w->y > 0) && (w->y > fy) && (w->y <= bottom - top)) {
 		/*
 		 * FIXME: Could be a bug here? w->x is recalculated (On first
@@ -319,145 +321,159 @@ render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 		w->x = min(w->x, right - left);
 		drivers_string(w->x + left, w->y + top, w->text);
 	}
-	return 0;
 }
 
 
-static int
+static void
 render_hbar(Widget *w, int left, int top, int right, int bottom, int fy)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, fy=%d)",
 			  __FUNCTION__, w, left, top, right, bottom, fy);
 
-	if ((w != NULL) &&
-	    (w->x > 0) && (w->y > 0) && (w->y > fy) && (w->y <= bottom - top)) {
-		if (w->length > 0) {
-			int full_len = display_props->width - w->x - left + 1;
-			int promille = 1000;
+	if (!((w->x > 0) && (w->y > 0) && (w->y > fy) && (w->y <= bottom - top)))
+		return;
 
-			if ((w->length / display_props->cellwidth) < right - left - w->x + 1)
-				promille = (long) 1000 * w->length / (display_props->cellwidth * full_len);
+	if (w->length > 0) {
+		int len = display_props->width - w->x - left + 1;
+		int promille = 1000;
 
-			drivers_hbar(w->x + left, w->y + top, full_len, promille, BAR_PATTERN_FILLED);
+		if ((w->length / display_props->cellwidth) < right - left - w->x + 1) {
+			len = w->length / display_props->cellwidth +
+			      (w->length % display_props->cellwidth ? 1 : 0);
+			promille = (long) 1000 * w->length /
+				   (display_props->cellwidth * len);
 		}
-		else if (w->length < 0) {
-			/* TODO:  Rearrange stuff to get left-extending
-			 * hbars to draw correctly...
-			 * .. er, this'll require driver modifications,
-			 * so I'll leave it out for now.
-			 */
-		}
+
+		drivers_hbar(w->x + left, w->y + top, len, promille, BAR_PATTERN_FILLED);
 	}
-	return 0;
+	else if (w->length < 0) {
+		/* TODO:  Rearrange stuff to get left-extending
+		 * hbars to draw correctly...
+		 * .. er, this'll require driver modifications,
+		 * so I'll leave it out for now.
+		 */
+	}
 }
 
 
-static int
+static void
 render_vbar(Widget *w, int left, int top, int right, int bottom)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d)",
 			  __FUNCTION__, w, left, top, right, bottom);
 
-	if ((w != NULL) && (w->x > 0) && (w->y > 0)) {
-		if (w->length > 0) {
-			int full_len = display_props->height;
-			int promille = (long) 1000 * w->length / (display_props->cellheight * full_len);
+	if (!((w->x > 0) && (w->y > 0)))
+		return;
 
-			drivers_vbar(w->x + left, w->y + top, full_len, promille, BAR_PATTERN_FILLED);
-		}
-		else if (w->length < 0) {
-			/* TODO:  Rearrange stuff to get down-extending
-			 * vbars to draw correctly...
-			 * .. er, this'll require driver modifications,
-			 * so I'll leave it out for now.
-			 */
-		}
+	if (w->length > 0) {
+		int full_len = display_props->height;
+		int promille = (long) 1000 * w->length / (display_props->cellheight * full_len);
+
+		drivers_vbar(w->x + left, w->y + top, full_len, promille, BAR_PATTERN_FILLED);
 	}
-	return 0;
+	else if (w->length < 0) {
+		/* TODO:  Rearrange stuff to get down-extending
+		 * vbars to draw correctly...
+		 * .. er, this'll require driver modifications,
+		 * so I'll leave it out for now.
+		 */
+	}
 }
 
+static void
+render_pbar(Widget *w, int left, int top, int right, int bottom)
+{
+	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d)",
+			  __FUNCTION__, w, left, top, right, bottom);
 
-static int
+	if (!((w->x > 0) && (w->y > 0) && (w->width > 0)))
+		return;
+
+        drivers_pbar(w->x + left, w->y + top, w->width, w->promille,
+       		     w->begin_label, w->end_label);
+}
+
+static void
 render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 {
 	int vis_width = right - left;
+	char str[BUFSIZE];
+	int x, width = vis_width - 6, length, delay;
 
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, timer=%ld)",
 			  __FUNCTION__, w, left, top, right, bottom, timer);
 
-	if ((w != NULL) && (w->text != NULL) && (vis_width >= 8)) {
-		char str[BUFSIZE];
-		int length = strlen(w->text);
-		int width = vis_width - 6;
-		int x;
-		/* calculate delay from titlespeed: <=0 -> 0, [1 - infty] -> [10 - 1] */
-		int delay = (titlespeed <= TITLESPEED_NO)
-			    ? TITLESPEED_NO
-			    : max(TITLESPEED_MIN, TITLESPEED_MAX - titlespeed);
+	if ((w->text == NULL) || (vis_width < 8))
+		return;
 
-		/* display leading fillers */
-		drivers_icon(w->x + left, w->y + top, ICON_BLOCK_FILLED);
-		drivers_icon(w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
+	length = strlen(w->text);
 
-		length = min(length, sizeof(str)-1);
-		if ((length <= width) || (delay == 0)) {
+	/* calculate delay from titlespeed: <=0 -> 0, [1 - infty] -> [10 - 1] */
+	delay = (titlespeed <= TITLESPEED_NO)
+		? TITLESPEED_NO
+		: max(TITLESPEED_MIN, TITLESPEED_MAX - titlespeed);
 
-			/* copy test starting from the beginning */
-			length = min(length, width);
-			strncpy(str, w->text, length);
-			str[length] = '\0';
+	/* display leading fillers */
+	drivers_icon(w->x + left, w->y + top, ICON_BLOCK_FILLED);
+	drivers_icon(w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
-			/* set x value for trailing fillers */
-			x = length + 4;
-		}
-		else {			/* Scroll the title, if it doesn't fit... */
-			int offset = timer;
-			int reverse;
+	length = min(length, sizeof(str)-1);
+	if ((length <= width) || (delay == 0)) {
 
-			/* if the delay is "too large" increase cycle length */
-			if ((delay != 0) && (delay < length / (length - width)))
-				offset /= delay;
+		/* copy test starting from the beginning */
+		length = min(length, width);
+		strncpy(str, w->text, length);
+		str[length] = '\0';
 
-			/* reverse direction every length ticks */
-			reverse = (offset / length) & 1;
-
-			/* restrict offset to cycle length */
-			offset %= length;
-			offset = max(offset, 0);
-
-			/* if the delay is "low enough" slow down as requested */
-			if ((delay != 0) && (delay >= length / (length - width)))
-				offset /= delay;
-
-			/* restrict offset to the max. allowed offset: length - width */
-			offset = min(offset, length - width);
-
-			/* scroll backward by mirroring offset at max. offset */
-			if (reverse)
-				offset = (length - width) - offset;
-
-			/* copy test starting from offset */
-			length = min(width, sizeof(str)-1);
-			strncpy(str, w->text + offset, length);
-			str[length] = '\0';
-
-			/* set x value for trailing fillers */
-			x = vis_width - 2;
-		}
-
-		/* display text */
-		drivers_string(w->x + 3 + left, w->y + top, str);
-
-		/* display trailing fillers */
-		for ( ; x < vis_width; x++) {
-			drivers_icon(w->x + x + left, w->y + top, ICON_BLOCK_FILLED);
-		}
+		/* set x value for trailing fillers */
+		x = length + 4;
 	}
-	return 0;
+	else {			/* Scroll the title, if it doesn't fit... */
+		int offset = timer;
+		int reverse;
+
+		/* if the delay is "too large" increase cycle length */
+		if ((delay != 0) && (delay < length / (length - width)))
+			offset /= delay;
+
+		/* reverse direction every length ticks */
+		reverse = (offset / length) & 1;
+
+		/* restrict offset to cycle length */
+		offset %= length;
+		offset = max(offset, 0);
+
+		/* if the delay is "low enough" slow down as requested */
+		if ((delay != 0) && (delay >= length / (length - width)))
+			offset /= delay;
+
+		/* restrict offset to the max. allowed offset: length - width */
+		offset = min(offset, length - width);
+
+		/* scroll backward by mirroring offset at max. offset */
+		if (reverse)
+			offset = (length - width) - offset;
+
+		/* copy test starting from offset */
+		length = min(width, sizeof(str)-1);
+		strncpy(str, w->text + offset, length);
+		str[length] = '\0';
+
+		/* set x value for trailing fillers */
+		x = vis_width - 2;
+	}
+
+	/* display text */
+	drivers_string(w->x + 3 + left, w->y + top, str);
+
+	/* display trailing fillers */
+	for ( ; x < vis_width; x++) {
+		drivers_icon(w->x + x + left, w->y + top, ICON_BLOCK_FILLED);
+	}
 }
 
 
-static int
+static void
 render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 {
 	char str[BUFSIZE];
@@ -470,7 +486,7 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 			  __FUNCTION__, w, left, top, right, bottom, timer);
 
 	if ((w->text == NULL) || (w->right < w->left))
-		return 0;
+		return;
 
 	screen_width = abs(w->right - w->left + 1);
 	screen_width = min(screen_width, sizeof(str)-1);
@@ -636,20 +652,18 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 		}
 		break;
 	}
-	return 0;
 }
 
 
-static int render_num(Widget *w, int left, int top, int right, int bottom)
+static void render_num(Widget *w, int left, int top, int right, int bottom)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d)",
 			  __FUNCTION__, w, left, top, right, bottom);
 
 	/* NOTE: y=10 means COLON (:) */
-	if ((w != NULL) && (w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
+	if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 		drivers_num(w->x + left, w->y);
 	}
-	return 0;
 }
 
 

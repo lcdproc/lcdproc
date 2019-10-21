@@ -376,12 +376,20 @@ of display available.
 .PP
 
 .SS CLIENT COMMANDS
-There are many commands for the client to send to the LCDd server:
+There are many commands for the client to send to the LCDd server, here is
+the list of commands for versions \fI0.3\fP - \fI0.4\fP of the protocol:
 .TP
 .B hello
-This starts a client-server session with the LCDd server; the
-server will return a data string detailing the type of display
-and its size.
+This starts a client-server session with the LCDd server; the server will
+return a white-space separated data string detailing the type of display
+and its size. The format of this string is:
+"\fBconnect LCDproc\fP <\fILCDd-version\fP> \fBprotocol\fP <\fIprotocol-version\fP> \fBlcd\fP [\fIkeyword value\fP] [\fIkeyword value\fP] ...".
+\fIprotocol-version\fP is always in the form of "\fImajor\fP.\fIminor\fP".
+The first 4 keyword value pairs are always wid, hgt, cellwid and cellhght,
+for backwards compatibility with older clients which are hardcoded to take
+the 8th and 10th words of the connect string as width and height. The
+connect string will look like this for example:
+"\fBconnect LCDproc 0.5dev protocol 0.4 lcd wid 17 hgt 4 cellwid 6 cellhgt 10\fP"
 .TP
 .B client_set -name \fIname\fP
 Set the client's name.
@@ -500,6 +508,10 @@ A horizontal bar graph.
 .B vbar
 A vertical bar graph.
 .TP
+.B pbar
+A-percentage bar, filled from left to right. This widget-type is only
+available on servers which report a \fIprotocol-version\fP of 0.4 or newer.
+.TP
 .B title
 A title displayed across the top of the display, within a banner.
 .TP
@@ -534,6 +546,13 @@ Displays a horizontal bar starting at position (\fIx\fP,\fIy\fP) that is \fIleng
 .TP
 .B vbar \fIx y length\fP
 Displays a vertical bar starting at position (\fIx\fP,\fIy\fP) that is \fIlength\fP pixels high.
+.TP
+.B pbar \fIx y width promille\fP [\fIbegin-label end-label\fP]
+Displays a percentage-bar starting at position (\fIx\fP,\fIy\fP) covering
+\fIwidth\fP character cells including the optional begin and end-labels,
+filled from left to right to the specified \fIpromille\fP value.
+Optionally a \fIbegin-label\fP and \fIend-label\fP can be specified which
+will be drawn in front of and after the percentage-bar.
 .TP
 .B icon \fIx y name\fP
 Displays the icon \fIname\fP at position (\fIx\fP,\fIy\fP).

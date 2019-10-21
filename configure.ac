@@ -246,7 +246,7 @@ AC_ARG_WITH(lcdport,
 )
 AC_DEFINE_UNQUOTED(LCDPORT, $LCDPORT, [Set default port where LCDd should listen])
 
-AC_DEFINE_UNQUOTED(PROTOCOL_VERSION, "0.3", [Define version of lcdproc client-server protocol])
+AC_DEFINE_UNQUOTED(PROTOCOL_VERSION, "0.4", [Define version of lcdproc client-server protocol])
 
 AC_DEFINE_UNQUOTED(API_VERSION, "0.5", [Define version of lcdproc API])
 

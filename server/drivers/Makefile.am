@@ -27,7 +27,7 @@ EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne fu
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 futaba_CFLAGS =      @LIBUSB_CFLAGS@ @LIBUSB_1_0_CFLAGS@ $(AM_CFLAGS)
-g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
+g15_CFLAGS =         @LIBUSB_CFLAGS@ @FT2_CFLAGS@ $(AM_CFLAGS)
 glcd_CFLAGS =        @FT2_CFLAGS@ @LIBPNG_CFLAGS@ @LIBUSB_CFLAGS@ @LIBX11_CFLAGS@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 i2500vfd_CFLAGS =    @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
@@ -92,7 +92,7 @@ debug_SOURCES =      lcd.h debug.c debug.h
 ea65_SOURCES =       lcd.h ea65.h ea65.c
 EyeboxOne_SOURCES =  lcd.h lcd_lib.h EyeboxOne.c EyeboxOne.h
 futaba_SOURCES =     lcd.h futaba.c futaba.h
-g15_SOURCES =        lcd.h lcd_lib.h g15.h g15-num.c g15.c
+g15_SOURCES =        lcd.h lcd_lib.h g15.h g15-num.c g15.c hidraw_lib.c
 glcd_SOURCES =       lcd.h glcd_drv.c glcd_drv.h glcd-low.h glcd-drivers.h glcd-render.c glcd-render.h
 EXTRA_glcd_SOURCES = glcd-t6963.c t6963_low.c t6963_low.h glcd-png.c glcd-serdisp.c glcd-glcd2usb.c glcd-glcd2usb.h glcd-x11.c glcd-picolcdgfx.c
 glcdlib_SOURCES =    lcd.h lcd_lib.h glcdlib.h glcdlib.c

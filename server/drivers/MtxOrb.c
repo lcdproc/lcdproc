@@ -21,7 +21,7 @@
 		  2001, Joris Robijn
 		  2001, Rene Wagner
 		  2006, Peter Marschall
-		  2006, Ethan Dicks
+		  2006-2019, Ethan Dicks
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,6 +162,8 @@ static const MtxOrbModuleEntry modulelist[] = {
 	{ 0x21, "GLK128128-25", 0 },	/* ??? */
 	{ 0x22, "GLK12232-25-WBL", 0 },
 	{ 0x24, "GLK12232-25-SM", 0 },
+	{ 0x2B, "LK204-7T-1U", 0 },
+	{ 0x2C, "LK204-7T-USB", 0 },
 	{ 0x31, "LK404-AT", 0 },
 	{ 0x32, "VFD1621", 0 },	/* MOS-AV-162A ? */
 	{ 0x33, "LK402-12", 0 },
@@ -984,9 +986,9 @@ MtxOrb_get_info (Driver *drvthis)
 	memset(tmp, '\0', sizeof(tmp));
 	write(p->fd, "\x0FE" "7", 2);
 
-	/* Wait the specified amount of time. */
+	/* Wait the specified amount of time for the module to return display type */
 	tv.tv_sec = 0;		/* seconds */
-	tv.tv_usec = 500;	/* microseconds */
+	tv.tv_usec = 40000;	/* microseconds */
 
 	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
@@ -1014,35 +1016,32 @@ MtxOrb_get_info (Driver *drvthis)
 
 	/*
 	 * Read firmware revision number
-	 * TODO: check the format of a real display, because mine does not
-	 * return anything.
-	 * It is assumed that the display returns a two byte value giving
-	 * the major/minor version number.
-	 * NOTE: This is just a guess as the manual doesn't describe
-	 * the returned format.
+	 * Manual documents returning 'Byte'
+	 * NOTE: The manual doesn't describe the format of the returned byte
 	 */
 	memset(tmp, '\0', sizeof(tmp));
 	write(p->fd, "\x0FE" "6", 2);
 
-	/* Wait the specified amount of time. */
+	/* Wait the specified amount of time for the module return firmware revision number */
 	tv.tv_sec = 0;		/* seconds */
-	tv.tv_usec = 500;	/* microseconds */
+	tv.tv_usec = 10000;	/* microseconds */
 
 	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
-		if (read(p->fd, &tmp, 2) < 0)
+		if (read(p->fd, &tmp, 1) < 0)
 			report(RPT_WARNING, "%s: unable to read data", drvthis->name);
 
 	}
 	else
 		report(RPT_WARNING, "%s: unable to read device firmware revision", drvthis->name);
 
-	snprintf(buf, sizeof(buf), "Firmware Rev.: 0x%02x 0x%02x, ", tmp[0], tmp[1]);
+	snprintf(buf, sizeof(buf), "Firmware Rev.: 0x%02x, ", tmp[0]);
 	strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
 
 	/*
 	 * Read serial number of display
+	 * TODO: verify which Matrix Orbital modules return a serial number
 	 * It is assumed that the display returns a two byte value giving
 	 * the serial number.
 	 * NOTE: This is just a guess as the manual doesn't describe
@@ -1054,7 +1053,7 @@ MtxOrb_get_info (Driver *drvthis)
 
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
-	tv.tv_usec = 500;	/* microseconds */
+	tv.tv_usec = 10000;	/* microseconds */
 
 	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 

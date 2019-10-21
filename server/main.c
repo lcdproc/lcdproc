@@ -665,8 +665,6 @@ init_drivers(void)
 {
 	int i, res;
 
-	int output_loaded = 0;
-
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	for (i = 0; i < num_drivers; i++) {
@@ -675,29 +673,19 @@ init_drivers(void)
 		if (res >= 0) {
 			/* Load went OK */
 
-			switch(res) {
-			  case 0: /* Driver does input only */
-			  	break;
-			  case 1: /* Driver does output */
-			  	output_loaded = 1;
-			  	break;
-			  case 2: /* Driver does output in foreground (don't daemonize) */
-			  	foreground_mode = 1;
-			  	output_loaded = 1;
-			  	break;
-			}
+			if (res == 2)
+				foreground_mode = 1;
 		} else {
 			report(RPT_ERR, "Could not load driver %.40s", drivernames[i]);
 		}
 	}
 
 	/* Do we have a running output driver ?*/
-	if (output_loaded) {
+	if (output_driver)
 		return 0;
-	} else {
-		report(RPT_ERR, "There is no output driver");
-		return -1;
-	}
+
+	report(RPT_ERR, "There is no output driver");
+	return -1;
 }
 
 
