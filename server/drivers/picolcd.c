@@ -279,7 +279,11 @@ picoLCD_init(Driver *drvthis)
 		report(RPT_ERR, "%s: libusb_init error %d", drvthis->name, error);
 		return -1;
 	}
+#if LIBUSB_API_VERSION >= 0x01000106
+	libusb_set_option(p->lib_ctx, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_WARNING);	// or LIBUSB_LOG_LEVEL_NONE
+#else
 	libusb_set_debug(p->lib_ctx, 3);
+#endif
 #endif
 
 	p->key_read_index = 0;
