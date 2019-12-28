@@ -35,7 +35,7 @@
 
 #define PICOLCD_MAX_DATA_LEN	24
 
-#define DEFAULT_LIRCPORT	8765
+#define DEFAULT_LIRCPORT	"8765"
 #define DEFAULT_LIRC_TIME_us	0	/* false */
 #define DEFAULT_FLUSH_THRESHOLD 8000 /* microseconds */
 #define DEFAULT_CONTRAST	1000 /* Full */
