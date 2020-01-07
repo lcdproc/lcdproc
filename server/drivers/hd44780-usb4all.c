@@ -343,13 +343,13 @@ hd_init_usb4all(Driver *drvthis)
 		return -1;
 	}
 
+	/* initialize usb-4-all controller */
+	usb4all_init(p);
+
 	common_init(p, IF_4BIT);
 
 	/* replace uPause with empty one after initialization */
 	p->hd44780_functions->uPause = usb4all_HD44780_uPause;
-
-	/* initialize usb-4-all controller */
-	usb4all_init(p);
 
 	return 0;
 }
