@@ -215,7 +215,7 @@ static int iowled_on_off(PrivateData *p, unsigned int pattern)
   pattern ^= 0xFFFFFFFFU;	/* invert pattern */
 
   /* map pattern to bytes */
-  for (i = 0; i < (p->productID == iowProd40) ? 4 : 2; i++) {
+  for (i = 0; i < ((p->productID == iowProd40) ? 4 : 2); i++) {
     led_cmd[i] = (unsigned char) (0xFF & pattern);
     pattern >>= 8;
   }
