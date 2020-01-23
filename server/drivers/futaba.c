@@ -491,7 +491,7 @@ futaba_shutdown(Driver *drvthis)
  * \return         0 on success, -1 on error.
  */
 MODULE_EXPORT int
-futaba_init(Driver *drvthis)
+futaba_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 

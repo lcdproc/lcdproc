@@ -4,6 +4,8 @@
 #ifndef SUREELEC_H
 #define SUREELEC_H
 
+#include <elektra.h>
+
 #define DEFAULT_DEVICE		"/dev/ttyUSB0"
 #define DEFAULT_SPEED		9600
 #define DEFAULT_LINEWRAP	1
@@ -26,7 +28,7 @@
 #define NUM_CC			8
 
 
-MODULE_EXPORT int  SureElec_init (Driver *drvthis);
+MODULE_EXPORT int  SureElec_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void SureElec_close (Driver *drvthis);
 MODULE_EXPORT int  SureElec_width (Driver *drvthis);
 MODULE_EXPORT int  SureElec_height (Driver *drvthis);

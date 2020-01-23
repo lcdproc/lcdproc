@@ -86,7 +86,7 @@ void lcdtime_HD44780_output(PrivateData *p, int data);
  * \retval -1      Error.
  */
 int
-hd_init_ext8bit(Driver *drvthis)
+hd_init_ext8bit(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;

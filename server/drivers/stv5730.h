@@ -1,7 +1,9 @@
 #ifndef STV5730_H
 #define STV5730_H
 
-MODULE_EXPORT int stv5730_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int stv5730_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void stv5730_close (Driver *drvthis);
 MODULE_EXPORT int stv5730_width (Driver *drvthis);
 MODULE_EXPORT int stv5730_height (Driver *drvthis);

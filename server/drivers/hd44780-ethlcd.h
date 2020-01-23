@@ -1,8 +1,11 @@
 #ifndef HD_ETHLCD_H
 #define HD_ETHLCD_H
 
+#include "lcd.h"
+#include "../elektragen.h"
+
 /* initialise this particular driver */
-int hd_init_ethlcd(Driver *drvthis);
+int hd_init_ethlcd(Driver *drvthis, const Hd44780DriverConfig * config);
 
 #define ETHLCD_DRV_NAME      "ethlcd"
 #define DEFAULT_ETHLCD_PORT  2425

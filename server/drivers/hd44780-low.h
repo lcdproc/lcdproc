@@ -31,6 +31,8 @@
 
 #include "i2c.h"
 
+#include "../elektragen.h"
+
 /** \name Symbolic names for connection types
  *@{*/
 #define HD44780_CT_UNKNOWN		0
@@ -135,7 +137,7 @@
 
 /** \name Maximum sizes of the keypad
  *@{*/
-/* DO NOT CHANGE THESE VALUES, unless you change the functions too! */
+/* DO NOT CHANGE THESE VALUES, unless you change the functions and the config specification too! */
 #define KEYPAD_MAXX 5
 #define KEYPAD_MAXY 11
 /**@}*/
@@ -158,13 +160,13 @@ typedef struct cgram_cache {
  */
 typedef struct ConnectionMapping {
 	/** Name (string) of connection type as used in LCDd.conf */
-	char *name;
+	Hd44780ConnectionType elektraType;
 	/** Registered number of connection type, see above */
 	int connectiontype;
 	/** Numeric type (serial, parallel, etc), see above */
 	int if_type;
 	/** Pointer to connection type's initialization function */
-	int (*init_fn) (Driver *drvthis);
+	int (*init_fn) (Driver *drvthis, const Hd44780DriverConfig * config);
 } ConnectionMapping;
 
 

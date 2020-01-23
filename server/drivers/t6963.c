@@ -62,7 +62,7 @@ MODULE_EXPORT char *symbol_prefix = "t6963_";
  * API: Initialize the driver.
  */
 MODULE_EXPORT int
-t6963_init(Driver *drvthis)
+t6963_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	int w, h;

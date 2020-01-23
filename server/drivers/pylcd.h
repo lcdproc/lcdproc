@@ -25,6 +25,8 @@
 #ifndef PYLCD_H
 #define PYLCD_H
 
+#include <elektra.h>
+
 #define MAXCOUNT 10		/* Size of read buffer including NUL */
 
 /* Display properties */
@@ -39,7 +41,6 @@
 typedef struct pyramid_private_data {
     /* device io */
     int FD;
-    char device[255];
     fd_set rdfs;
     struct timeval timeout;
 
@@ -70,7 +71,7 @@ typedef struct pyramid_private_data {
 
 } PrivateData;
 
-MODULE_EXPORT int  pyramid_init(Driver *drvthis);
+MODULE_EXPORT int  pyramid_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void pyramid_close(Driver *drvthis);
 MODULE_EXPORT int  pyramid_width(Driver *drvthis);
 MODULE_EXPORT int  pyramid_height(Driver *drvthis);

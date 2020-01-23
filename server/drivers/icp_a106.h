@@ -31,7 +31,9 @@
 #ifndef ICP_A106_H
 #define ICP_A106_H
 
-MODULE_EXPORT int icp_a106_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int icp_a106_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void icp_a106_close(Driver *drvthis);
 MODULE_EXPORT int icp_a106_width(Driver *drvthis);
 MODULE_EXPORT int icp_a106_height(Driver *drvthis);

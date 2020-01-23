@@ -58,10 +58,11 @@ mode_close(void)
  *
  * \param m        The screen mode
  * \param display  Flag whether to update screen even if not visible.
+ * \param elektra  Elektra instace holding configuration
  * \return  Backlight state
  */
 int
-update_screen(ScreenMode *m, int display)
+update_screen(ScreenMode *m, int display, Elektra * elektra)
 {
 	static int status = -1;
 	int old_status = status;
@@ -71,7 +72,7 @@ update_screen(ScreenMode *m, int display)
 		/* Save the initialized flag (may be modified by m->func) */
 		int init_flag = (m->flags & INITIALIZED);
 #endif
-		status = m->func(m->timer, display, &(m->flags));
+		status = m->func(m->timer, display, &(m->flags), elektra);
 #ifdef LCDPROC_EYEBOXONE
 		/* Eyebox Init */
 		if (init_flag == 0)
@@ -103,7 +104,7 @@ update_screen(ScreenMode *m, int display)
  * \return  Always 0
  */
 int
-credit_screen(int rep, int display, int *flags_ptr)
+credit_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	/*
 	 * List of persons who contributed to LCDproc. Keep in sync with

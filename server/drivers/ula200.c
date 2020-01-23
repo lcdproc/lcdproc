@@ -544,7 +544,7 @@ ula200_load_custom_chars(Driver *drvthis)
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-ula200_init(Driver *drvthis)
+ula200_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	int err, i;

@@ -20,6 +20,8 @@
 #ifndef yard2LCD_H
 #define yard2LCD_H
 
+#include <elektra.h>
+
 #define MAX_YARDDATA_SIZE		40
 #define DEFAULT_SOCK_PATH        "/tmp/lcdserver"
 #define DEFAULT_OFF_BRIGHTNESS	 100
@@ -37,7 +39,7 @@
 #define NUM_CUSTOMCHARS          8
 
 
-MODULE_EXPORT int  yard_init (Driver *drvthis);
+MODULE_EXPORT int  yard_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void yard_close (Driver *drvthis);
 MODULE_EXPORT int  yard_width (Driver *drvthis);
 MODULE_EXPORT int  yard_height (Driver *drvthis);

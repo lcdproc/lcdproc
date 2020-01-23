@@ -73,7 +73,7 @@ MODULE_EXPORT char *symbol_prefix = "lcterm_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-lcterm_init (Driver *drvthis)
+lcterm_init (Driver *drvthis, Elektra * elektra)
 {
   char device[200];
   int speed=B9600;

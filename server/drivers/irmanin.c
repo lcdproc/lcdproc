@@ -72,7 +72,7 @@ MODULE_EXPORT char *symbol_prefix = "irmanin_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-irmanin_init (Driver *drvthis)
+irmanin_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	char *ptrdevice = NULL;

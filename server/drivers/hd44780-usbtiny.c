@@ -48,7 +48,7 @@ usbtiny_HD44780_uPause(PrivateData *p, int usecs)
  * \retval -1      Error.
  */
 int
-hd_init_usbtiny(Driver *drvthis)
+hd_init_usbtiny(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 

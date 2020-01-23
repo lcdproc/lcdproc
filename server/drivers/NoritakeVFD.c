@@ -107,7 +107,7 @@ static void NoritakeVFD_cursor_goto (Driver *drvthis, int x, int y);
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-NoritakeVFD_init (Driver *drvthis)
+NoritakeVFD_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
 	int tmp, w, h;

@@ -12,22 +12,24 @@
 # include "config.h"
 #endif
 
+#include <elektra.h>
+
 /* Include prototypes for initialization functions below */
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
-int glcd_t6963_init(Driver *drvthis);
+int glcd_t6963_init(Driver *drvthis, Elektra * elektra);
 #endif
 #ifdef HAVE_LIBPNG
-int glcd_png_init(Driver *drvthis);
+int glcd_png_init(Driver *drvthis, Elektra * elektra);
 #endif
 #ifdef HAVE_SERDISPLIB
-int glcd_serdisp_init(Driver *drvthis);
+int glcd_serdisp_init(Driver *drvthis, Elektra * elektra);
 #endif
 #ifdef HAVE_LIBUSB
-int glcd2usb_init(Driver *drvthis);
-int glcd_picolcdgfx_init(Driver *drvthis);
+int glcd2usb_init(Driver *drvthis, Elektra * elektra);
+int glcd_picolcdgfx_init(Driver *drvthis, Elektra * elektra);
 #endif
 #ifdef HAVE_LIBX11
-int glcd_x11_init(Driver *drvthis);
+int glcd_x11_init(Driver *drvthis, Elektra * elektra);
 #endif
 
 /* symbolic names for connection types */

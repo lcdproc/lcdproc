@@ -2,9 +2,10 @@
 #define HD_LCDRPI_H
 
 #include "lcd.h"		/* for Driver */
+#include "../elektragen.h"
 
 /* initialize this particular driver */
-int hd_init_rpi(Driver *drvthis);
+int hd_init_rpi(Driver *drvthis, const Hd44780DriverConfig * config);
 
 /**
  * rpi_gpio_map is addressed through the hd44780_private_data struct. Data

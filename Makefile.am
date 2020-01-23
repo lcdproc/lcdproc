@@ -9,7 +9,6 @@ sysconf_DATA = LCDd.conf
 
 EXTRA_DIST = $(sysconf_DATA) CREDITS.md contrib
 
-
 dist-hook:
 	rm -rf `find $(distdir)/contrib -name CVS`
 

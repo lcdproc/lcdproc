@@ -131,7 +131,7 @@ static char * imon_charmaps[] = {
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-imon_init(Driver *drvthis)
+imon_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = NULL;
 	char buf[256];

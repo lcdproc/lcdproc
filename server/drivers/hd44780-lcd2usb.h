@@ -2,6 +2,7 @@
 #define HD_LCD2USB_H
 
 #include "lcd.h"		/* for Driver */
+#include "../elektragen.h"
 
 /* vendor and product id */
 #define LCD2USB_VENDORID	0x0403
@@ -34,6 +35,6 @@
 #define LCD2USB_GET_RESERVED1	(LCD2USB_GET | (3<<3))
 
 // initialise this particular driver
-int hd_init_lcd2usb(Driver *drvthis);
+int hd_init_lcd2usb(Driver *drvthis, const Hd44780DriverConfig * config);
 
 #endif

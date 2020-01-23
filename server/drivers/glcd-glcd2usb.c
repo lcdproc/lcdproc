@@ -337,7 +337,7 @@ glcd2usb_poll_keys(PrivateData *p)
  * API: Initialize glcd2usb connection type.
  */
 int
-glcd2usb_init(Driver *drvthis)
+glcd2usb_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = (PrivateData *)drvthis->private_data;
 	CT_glcd2usb_data *ctd;

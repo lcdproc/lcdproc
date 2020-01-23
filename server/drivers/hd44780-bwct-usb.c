@@ -38,24 +38,20 @@ void bwct_usb_HD44780_close(PrivateData *p);
  * \retval -1      Error.
  */
 int
-hd_init_bwct_usb(Driver *drvthis)
+hd_init_bwct_usb(Driver *drvthis, const Hd44780DriverConfig * config)
 {
   PrivateData *p = (PrivateData*) drvthis->private_data;
 
   struct usb_bus *bus;
   //char device_manufacturer[LCD_MAX_WIDTH+1] = "";
   char device_serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
-  char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
 
   p->hd44780_functions->senddata = bwct_usb_HD44780_senddata;
   p->hd44780_functions->close = bwct_usb_HD44780_close;
   p->hd44780_functions->set_contrast = bwct_usb_HD44780_set_contrast;
 
-  /* Read config file's contents: serial number and contrast */
-
-  strncpy(serial, drvthis->config_get_string(drvthis->name, "SerialNumber",
-                                             0, DEFAULT_SERIALNO), sizeof(serial));
-  serial[sizeof(serial)-1] = '\0';
+  /* Read config */
+  const char * serial = config->usbSerialnumber;
   if (*serial != '\0') {
     report(RPT_INFO, "hd_init_bwct_usb: Using serial number: %s", serial);
   }

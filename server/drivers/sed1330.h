@@ -5,7 +5,9 @@
 #ifndef SED1330_H
 #define SED1330_H
 
-MODULE_EXPORT int sed1330_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int sed1330_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void sed1330_close(Driver *drvthis);
 MODULE_EXPORT int sed1330_width(Driver *drvthis);
 MODULE_EXPORT int sed1330_height(Driver *drvthis);

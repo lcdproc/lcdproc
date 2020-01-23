@@ -19,13 +19,13 @@
 # include "config.h"
 #endif
 
-#include "shared/configfile.h"
 #include "shared/sockets.h"
 #include "main.h"
 #include "mode.h"
 #include "machine.h"
 #include "load.h"
 
+#include "elektragen.h"
 
 /**
  * Shows a display very similar to "xload"'s histogram.
@@ -44,10 +44,11 @@
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  The backlight state
  */
 int
-xload_screen(int rep, int display, int *flags_ptr)
+xload_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	static int gauge_hgt = 0;
 	static double loads[LCD_MAX_WIDTH];
@@ -61,8 +62,8 @@ xload_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		lowLoad = config_get_float("Load", "LowLoad", 0, LOAD_MIN);
-		highLoad = config_get_float("Load", "HighLoad", 0, LOAD_MAX);
+		lowLoad = elektraGet(elektra, CONF_LOAD_LOWLOAD);
+		highLoad = elektraGet(elektra, CONF_LOAD_HIGHLOAD);
 
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 		memset(loads, '\0', sizeof(double) * LCD_MAX_WIDTH);

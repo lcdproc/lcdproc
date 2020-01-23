@@ -41,6 +41,7 @@
 #include "machine.h"
 #include "cpu_smp.h"
 
+#include "elektragen.h"
 
 /**
  * CPU screen shows info about percentage of the CPU being used
@@ -48,10 +49,11 @@
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-cpu_smp_screen (int rep, int display, int *flags_ptr)
+cpu_smp_screen (int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4

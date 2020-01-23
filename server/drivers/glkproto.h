@@ -42,7 +42,7 @@ typedef struct {
 #define GLK_TIMEOUT  (254)
 
 /* Functions */
-GLKDisplay * glkopen( char * name, tcflag_t speed );
+GLKDisplay * glkopen( const char * name, tcflag_t speed );
 int glktimeout( GLKDisplay * fd, int timeout );
 int glkclose( GLKDisplay * );
 int glkput_confirm( GLKDisplay * fd, int c );

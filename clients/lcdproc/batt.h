@@ -1,6 +1,8 @@
 #ifndef BATT_H
 #define BATT_H
 
-int battery_screen(int rep, int display, int *flags_ptr);
+#include <elektra.h>
+
+int battery_screen(int rep, int display, int *flags_ptr, Elektra * elektra);
 
 #endif

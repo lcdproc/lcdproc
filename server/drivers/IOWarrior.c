@@ -236,7 +236,7 @@ static int iowled_on_off(PrivateData *p, unsigned int pattern)
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-IOWarrior_init(Driver *drvthis)
+IOWarrior_init(Driver *drvthis, Elektra * elektra)
 {
   char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
   char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;

@@ -18,6 +18,7 @@
 #define HD_USB4ALL_H
 
 #include "lcd.h"		/* for Driver */
+#include "../elektragen.h"
 
 /* vendor and product id */
 #define USB4ALL_VENDORID   0x004D8
@@ -41,6 +42,6 @@
 #define USB4ALL_RESET   0xFF
 
 /* initialise this particular driver */
-int hd_init_usb4all(Driver *drvthis);
+int hd_init_usb4all(Driver *drvthis, const Hd44780DriverConfig * config);
 
 #endif

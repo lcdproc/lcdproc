@@ -1,7 +1,9 @@
 #ifndef GLCD_DRV_H
 #define GLCD_DRV_H
 
-MODULE_EXPORT int  glcd_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  glcd_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void glcd_close(Driver *drvthis);
 MODULE_EXPORT int  glcd_width(Driver *drvthis);
 MODULE_EXPORT int  glcd_height(Driver *drvthis);

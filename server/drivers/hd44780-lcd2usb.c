@@ -50,7 +50,7 @@ lcd2usb_HD44780_uPause(PrivateData *p, int usecs)
  * \retval -1      Error.
  */
 int
-hd_init_lcd2usb(Driver *drvthis)
+hd_init_lcd2usb(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 

@@ -154,7 +154,7 @@ ms6931_draw_frame (Driver *drvthis, unsigned char *dat)
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-ms6931_init (Driver *drvthis)
+ms6931_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	struct termios portset;

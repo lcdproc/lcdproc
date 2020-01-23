@@ -52,7 +52,7 @@ MODULE_EXPORT char *symbol_prefix = "sli_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-sli_init (Driver *drvthis)
+sli_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	struct termios portset;

@@ -53,7 +53,7 @@ static int icon2unicode(int icon);
  * \note This function must be implemented, even if not compiled with Freetype!
  */
 int
-glcd_render_init(Driver *drvthis)
+glcd_render_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = drvthis->private_data;
 	p->cellwidth = GLCD_DEFAULT_CELLWIDTH;

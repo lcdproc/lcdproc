@@ -17,7 +17,6 @@
 
 #include "shared/sockets.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
 #include "shared/LL.h"
 
 #include "drivers.h"
@@ -31,6 +30,7 @@
 #include "input.h"
 #include "render.h" /* For server_msg* */
 
+#include "elektragen.h"
 
 LinkedList *keylist;
 char *toggle_rotate_key;
@@ -44,18 +44,18 @@ int server_input(int key);
 void input_internal_key(const char *key);
 
 
-int input_init(void)
+int input_init(Elektra * elektra)
 {
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	keylist = LL_new();
 
 	/* Get rotate/scroll keys from config file */
-	toggle_rotate_key = strdup(config_get_string("server", "ToggleRotateKey", 0, "Enter"));
-	prev_screen_key = strdup(config_get_string("server", "PrevScreenKey", 0, "Left"));
-	next_screen_key = strdup(config_get_string("server", "NextScreenKey", 0, "Right"));
-	scroll_up_key = strdup(config_get_string("server", "ScrollUpKey", 0, "Up"));
-	scroll_down_key = strdup(config_get_string("server", "ScrollDownKey", 0, "Down"));
+	toggle_rotate_key = strdup(elektraGet(elektra, CONF_SERVER_TOGGLEROTATEKEY));
+	prev_screen_key = strdup(elektraGet(elektra, CONF_SERVER_PREVSCREENKEY));
+	next_screen_key = strdup(elektraGet(elektra, CONF_SERVER_NEXTSCREENKEY));
+	scroll_up_key = strdup(elektraGet(elektra, CONF_SERVER_SCROLLUPKEY));
+	scroll_down_key = strdup(elektraGet(elektra, CONF_SERVER_SCROLLDOWNKEY));
 
 	return 0;
 }

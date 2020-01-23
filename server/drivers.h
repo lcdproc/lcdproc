@@ -23,7 +23,7 @@ typedef struct DisplayProps {
 extern DisplayProps *display_props;
 
 int
-drivers_load_driver(const char *name);
+drivers_load_driver(Elektra * elektra, kdb_long_long_t index);
 
 void
 drivers_unload_all(void);

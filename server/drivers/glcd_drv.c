@@ -69,7 +69,7 @@ static char *defaultKeyMap[GLCD_KEYPAD_MAX] = {"Up", "Down", "Left", "Right", "E
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-glcd_init(Driver *drvthis)
+glcd_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	int i;

@@ -13,7 +13,9 @@
 #ifndef VLSYS_M428_H
 #define VLSYS_M428_H
 
-MODULE_EXPORT int  vlsys_m428_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  vlsys_m428_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void vlsys_m428_close(Driver *drvthis);
 
 MODULE_EXPORT int  vlsys_m428_width(Driver *drvthis);

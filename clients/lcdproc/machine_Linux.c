@@ -419,10 +419,14 @@ machine_get_procs(LinkedList * procs)
 		char buf[128];
 
 		/* ignore everything in proc except process ids */
-		if (!strchr("1234567890", procdir->d_name[0]))
+		/* (pids are never longer than 7 characters) */
+		if (!strchr("1234567890", procdir->d_name[0]) || strlen(procdir->d_name) > 7)
 			continue;
+		
+		strcpy(buf, "/proc/");
+		strcpy(&buf[6], procdir->d_name);
+		strcat(buf, "/status");
 
-		sprintf(buf, "/proc/%s/status", procdir->d_name);
 		if ((StatusFile = fopen(buf, "r")) == NULL) {
 			/*
 			 * Not a serious error; process has finished before

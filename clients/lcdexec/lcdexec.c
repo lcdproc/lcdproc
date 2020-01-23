@@ -26,11 +26,11 @@
 
 #include "shared/str.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
 #include "shared/sockets.h"
 
 #include "menu.h"
 
+#include "elektragen.h"
 
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR	"/etc"
@@ -46,7 +46,7 @@
 /** information about a process started by lcdexec */
 typedef struct ProcInfo {
 	struct ProcInfo *next;	/**< pointer to the next ProcInfo entry */
-	const MenuEntry *cmd;	/**< pointer to the corresponding menu entry */
+	const Command *cmd;	/**< pointer to the corresponding menu entry */
 	pid_t pid;		/**< PID the process was started with */
 	time_t starttime;	/**< start time of the process */
 	time_t endtime;		/**< finishing time of the process */
@@ -56,21 +56,12 @@ typedef struct ProcInfo {
 } ProcInfo;
 
 
-char * help_text =
+char * help_prefix =
 "lcdexec - LCDproc client to execute commands from the LCDd menu\n"
 "\n"
 "Copyright (c) 2002, Joris Robijn, 2006-2008 Peter Marschall.\n"
 "This program is released under the terms of the GNU General Public License.\n"
-"\n"
-"Usage: lcdexec [<options>]\n"
-"  where <options> are:\n"
-"    -c <file>           Specify configuration file ["DEFAULT_CONFIGFILE"]\n"
-"    -a <address>        DNS name or IP address of the LCDd server [localhost]\n"
-"    -p <port>           port of the LCDd server [13666]\n"
-"    -f                  Run in foreground\n"
-"    -r <level>          Set reporting level (0-5) [2: errors and warnings]\n"
-"    -s <0|1>            Report to syslog (1) or stderr (0, default)\n"
-"    -h                  Show this help\n";
+"\n";
 
 char *progname = "lcdexec";
 
@@ -89,7 +80,7 @@ char *displayname = NULL;
 char *default_shell = NULL;
 
 /* Other global variables */
-MenuEntry *main_menu = NULL;	/**< pointer to the main menu */
+Menu *main_menu = NULL;	/**< pointer to the main menu */
 ProcInfo *proc_queue = NULL;	/**< pointer to the list of executed processes */
 
 int lcd_wid = 0;		/**< LCD display width reported by the server */
@@ -103,11 +94,10 @@ int Quit = 0;			/**< indicate end of main loop */
 /* Function prototypes */
 static void exit_program(int val);
 static void sigchld_handler(int signal);
-static int process_command_line(int argc, char **argv);
-static int process_configfile(char * configfile);
+static int process_config();
 static int connect_and_setup(void);
 static int process_response(char *str);
-static int exec_command(MenuEntry *cmd);
+static int exec_command(Command *cmd);
 static int show_procinfo_msg(ProcInfo *p);
 static int main_loop(void);
 
@@ -116,15 +106,12 @@ static int main_loop(void);
 #define CHAIN_END(e) { if (e<0) { report(RPT_CRIT,"Critical error, abort"); exit(e); }}
 
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	int error = 0;
 	struct sigaction sa;
 
-	CHAIN(error, process_command_line(argc, argv));
-	if (configfile == NULL)
-		configfile = DEFAULT_CONFIGFILE;
-	CHAIN(error, process_configfile(configfile));
+	CHAIN(error, process_config());
 
 	if (report_dest == UNSET_INT || report_level == UNSET_INT) {
 		report_dest = RPT_DEST_STDERR;
@@ -214,136 +201,60 @@ static void sigchld_handler(int signal)
 	}
 }
 
-
-static int process_command_line(int argc, char **argv)
+static void on_fatal_error(ElektraError * error) // TODO: finalize method
 {
-	int c;
-	int error = 0;
-
-	/* No error output from getopt */
-	opterr = 0;
-
-	while ((c = getopt(argc, argv, "c:a:p:fr:s:h")) > 0) {
-		char *end;
-		int temp_int;
-
-		switch(c) {
-		  case 'c':
-			configfile = strdup(optarg);
-			break;
-		  case 'a':
-			address = strdup(optarg);
-			break;
-		  case 'p':
-			temp_int = strtol(optarg, &end, 0);
-			if ((*optarg != '\0') && (*end == '\0') &&
-			    (temp_int > 0) && (temp_int <= 0xFFFF)) {
-				port = temp_int;
-			} else {
-				report(RPT_ERR, "Illegal port value %s", optarg);
-				error = -1;
-			}
-			break;
-		  case 'f':
-			foreground = TRUE;
-			break;
-		  case 'r':
-			temp_int = strtol(optarg, &end, 0);
-			if ((*optarg != '\0') && (*end == '\0') && (temp_int >= 0)) {
-				report_level = temp_int;
-			} else {
-				report(RPT_ERR, "Illegal report level value %s", optarg);
-				error = -1;
-			}
-			break;
-		  case 's':
-			temp_int = strtol(optarg, &end, 0);
-			if ((*optarg != '\0') && (*end == '\0') && (temp_int >= 0)) {
-				report_dest = (temp_int ? RPT_DEST_SYSLOG : RPT_DEST_STDERR);
-			} else {
-				report(RPT_ERR, "Illegal log destination value %s", optarg);
-				error = -1;
-			}
-			break;
-		  case 'h':
-			fprintf(stderr, "%s", help_text);
-			exit(EXIT_SUCCESS);
-			/* NOTREACHED */
-		  case ':':
-			report(RPT_ERR, "Missing option argument for %c", optopt);
-			error = -1;
-			break;
-		  case '?':
-		  default:
-			report(RPT_ERR, "Unknown option: %c", optopt);
-			error = -1;
-			break;
-        	}
-        }
-	return error;
+	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
+	exit(EXIT_FAILURE);
 }
 
-
-static int process_configfile(char *configfile)
+static int process_config()
 {
-	const char *tmp;
+	ElektraError * error = NULL;
+	Elektra * elektra;
+	int rc = loadConfiguration(&elektra, &error);
 
-	if (configfile == NULL)
-		configfile = DEFAULT_CONFIGFILE;
-
-	if (config_read_file(configfile) < 0) {
-		report(RPT_WARNING, "Could not read config file: %s", configfile);
+	if (rc == -1)
+	{
+		fprintf(stderr, "An error occurred while initializing elektra: %s\n", elektraErrorDescription(error));
+		elektraErrorReset(&error);
+		return -1;
 	}
 
-	if (address == NULL) {
-		address = strdup(config_get_string(progname, "Address", 0, "localhost"));
-	}
-	if (port == UNSET_INT) {
-		port = config_get_int(progname, "Port", 0, 13666);
-	}
-	if (report_level == UNSET_INT) {
-		report_level = config_get_int(progname, "ReportLevel", 0, RPT_WARNING);
-	}
-	if (report_dest == UNSET_INT) {
-		report_dest = (config_get_bool(progname, "ReportToSyslog", 0, 0))
-				? RPT_DEST_SYSLOG
-				: RPT_DEST_STDERR;
-	}
-	if (foreground != TRUE) {
-		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
-	}
-	if (pidfile == NULL) {
-		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
+	if (rc == 1)
+	{
+		// help mode
+		printHelpMessage(elektra, NULL, help_prefix);
+		elektraClose (elektra);
+		exit(EXIT_SUCCESS);
 	}
 
-	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
-		displayname = strdup(tmp);
+	elektraFatalErrorHandler(elektra, on_fatal_error);
 
-	/* try to find a shell that understands the -c COMMAND syntax */
-	if ((tmp = config_get_string(progname, "Shell", 0, NULL)) != NULL)
-		default_shell = strdup(tmp);
-	else {
-		/* 1st fallback: SHELL environment variable */
-		report(RPT_WARNING, "Shell not set in configuration, falling back to variable SHELL");
-		default_shell = getenv("SHELL");
+	address = strdup(elektraGet(elektra, CONF_LCDEXEC_ADDRESS));
+	port = elektraGet(elektra, CONF_LCDEXEC_PORT);
+	report_level = elektraGet(elektra, CONF_LCDEXEC_REPORTLEVEL);
+	report_dest = elektraGet(elektra, CONF_LCDEXEC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
+	foreground = elektraGet(elektra, CONF_LCDEXEC_FOREGROUND);
+	pidfile = strdup(elektraGet(elektra, CONF_LCDEXEC_PIDFILE));
 
-		/* 2nd fallback: /bin/sh */
-		if (default_shell == NULL) {
-			report(RPT_WARNING, "variable SHELL not set, falling back to /bin/sh");
-			default_shell = "/bin/sh";
-		}
-	}
+	displayname = strdup(elektraGet(elektra, CONF_LCDEXEC_DISPLAYNAME));
 
-	main_menu = menu_read(NULL, "MainMenu");
-#if defined(DEBUG)
-	menu_dump(main_menu);
-#endif
+	default_shell = strdup(elektraGet(elektra, CONF_LCDEXEC_SHELL));
 
+	main_menu = elektraGet(elektra, CONF_MENU_MAIN);
 	// fail on non-existent main menu;
 	if (main_menu == NULL) {
 		report(RPT_ERR, "no main menu found in configuration");
 		return -1;
 	}
+	
+	main_menu_process(main_menu);
+
+#if defined(DEBUG)
+	menu_dump(main_menu, 0);
+#endif
+
+
 
 	return 0;
 }
@@ -373,18 +284,157 @@ static int connect_and_setup(void)
 	}
 
 	/* Create our menu */
-	if (menu_sock_send(main_menu, NULL, sock) < 0) {
+	if (main_menu_sock_send(main_menu, sock) < 0) {
 		return -1;
 	}
 
 	return 0;
 }
 
+/**
+ * returns the parameter with the given id, if it is contained in the given command
+ * returns NULL otherwise
+ */
+static CommandParameter * find_parameter(Command * command, int id, CommandParameterType * type)
+{
+	for (kdb_long_long_t i = 0; i < command->parametersSize; i++)
+	{
+		switch (command->parameterTypes[i])
+		{
+		case COMMAND_PARAMETER_TYPE_ALPHA:
+			if(command->parameters[i].alpha->id == id) {
+				*type = command->parameterTypes[i];
+				return &command->parameters[i];
+			}
+			break;
+		case COMMAND_PARAMETER_TYPE_CHECKBOX:
+			if(command->parameters[i].checkbox->id == id) {
+				*type = command->parameterTypes[i];
+				return &command->parameters[i];
+			}
+			break;
+		case COMMAND_PARAMETER_TYPE_IP:
+			if(command->parameters[i].ip->id == id) {
+				*type = command->parameterTypes[i];
+				return &command->parameters[i];
+			}
+			break;
+		case COMMAND_PARAMETER_TYPE_NUMERIC:
+			if(command->parameters[i].numeric->id == id) {
+				*type = command->parameterTypes[i];
+				return &command->parameters[i];
+			}
+			break;
+		case COMMAND_PARAMETER_TYPE_RING:
+			if(command->parameters[i].ring->id == id) {
+				*type = command->parameterTypes[i];
+				return &command->parameters[i];
+			}
+			break;
+		case COMMAND_PARAMETER_TYPE_SLIDER:
+			if(command->parameters[i].slider->id == id) {
+				*type = command->parameterTypes[i];
+				return &command->parameters[i];
+			}
+			break;
+		}
+	}
+	return NULL;
+}
+
+/**
+ * returns true and sets *command to the command, if id found and actually command
+ * returns true and sets *command = NULL, if id found but not command
+ * returns false and sets *command = NULL, if id not found
+ */
+static bool find_triggered_command(Menu * menu, int id, Command ** command)
+{
+	*command = NULL;
+	for (kdb_long_long_t i = 0; i < menu->entriesSize; i++)
+	{
+		switch (menu->entryTypes[i])
+		{
+		case MENU_ENTRY_TYPE_COMMAND:
+			if(menu->entries[i].command->id == id) {
+				*command = menu->entries[i].command;
+				return true;
+			} else if(menu->entries[i].command->actionId == id) {
+				*command = menu->entries[i].command;
+				return true;
+			}
+			CommandParameterType t;
+			if(find_parameter(menu->entries[i].command, id, &t) != NULL)
+			{
+				return true;
+			}
+			break;
+		case MENU_ENTRY_TYPE_MENU:
+			if(menu->entries[i].menu->id == id)
+			{
+				return true;
+			}
+			if(find_triggered_command(menu->entries[i].menu, id, command))
+			{
+				return true;
+			}
+			break;
+		}
+	}
+	
+	return false;
+}
+
+
+/**
+ * returns true and sets *parameter to the parameter and *type to the corresponding type, if id found and actually parameter
+ * returns true and sets *parameter = NULL, if id found but not parameter
+ * returns false and sets *parameter = NULL, if id not found
+ */
+static bool find_triggered_parameter(Menu * menu, int id, CommandParameter ** parameter, CommandParameterType * type)
+{
+	*parameter = NULL;
+	for (kdb_long_long_t i = 0; i < menu->entriesSize; i++)
+	{
+		switch (menu->entryTypes[i])
+		{
+		case MENU_ENTRY_TYPE_COMMAND:
+			if(menu->entries[i].command->id == id) {
+				return true;
+			} else if(menu->entries[i].command->actionId == id) {
+				return true;
+			}
+			*parameter = find_parameter(menu->entries[i].command, id, type);
+			if(*parameter != NULL)
+			{
+				return true;
+			}
+			break;
+		case MENU_ENTRY_TYPE_MENU:
+			if(menu->entries[i].menu->id == id)
+			{
+				return true;
+			}
+			if(find_triggered_parameter(menu->entries[i].menu, id, parameter, type))
+			{
+				return true;
+			}
+			break;
+		}
+	}
+	
+	return false;
+}
 
 static int process_response(char *str)
 {
 	char *argv[20];
 	int argc;
+
+	char * strCopy = NULL;
+	if (strncmp(str, "huh?", 4) == 0) {
+		// for error handling
+		strCopy = strdup(str);
+	}
 
 	debug(RPT_DEBUG, "Server said: \"%s\"", str);
 
@@ -401,79 +451,79 @@ static int process_response(char *str)
 
 		if ((strcmp(argv[1], "select") == 0) ||
 		    (strcmp(argv[1], "leave") == 0)) {
-			MenuEntry *entry;
+				if (argc < 3)
+					goto err_invalid;
 
-			if (argc < 3)
-				goto err_invalid;
+				/* Look for command by id or actionId */
+				Command * command;
+				if (!find_triggered_command(main_menu, atoi(argv[2]), &command)) {
+					// unknown id
+					report(RPT_WARNING, "Could not find the item id given by the server");
+					return -1;
+				}
 
-			/* Find the entry by id */
-			entry = menu_find_by_id(main_menu, atoi(argv[2]));
-			if (entry == NULL) {
-				report(RPT_WARNING, "Could not find the item id given by the server");
-				return -1;
-			}
-
-			/* The id has been found.
-			 * We trigger on the following conditions:
-			 * - command entry without args
-			 * - last arg of a command entry with args */
-			if (((entry->type == MT_EXEC) && (entry->children == NULL)) ||
-			    ((entry->type & MT_ARGUMENT) && (entry->next == NULL))) {
-
-				// last arg => get parent entry
-				if ((entry->type & MT_ARGUMENT) && (entry->next == NULL))
-					entry = entry->parent;
-
-				if (entry->type == MT_EXEC)
-					exec_command(entry);
-			}
+				if(command != NULL) {
+					// found command
+					exec_command(command);
+				} else {
+					// found menu or parameter
+					debug(RPT_DEBUG, "got %s for %s", argv[1], argv[2]);
+					return 0;	
+				}
 		}
 		else if ((strcmp(argv[1], "plus") == 0) ||
 			 (strcmp(argv[1], "minus") == 0) ||
 			 (strcmp(argv[1], "update") == 0)) {
-			MenuEntry *entry;
 
 			if (argc < 4)
 				goto err_invalid;
 
 			/* Find the entry by id */
-			entry = menu_find_by_id(main_menu, atoi(argv[2]));
-			if (entry == NULL) {
+			CommandParameter * parameter;
+			CommandParameterType parameterType;
+			if (!find_triggered_parameter(main_menu, atoi(argv[2]), &parameter, &parameterType)) {
+				// unknown id
 				report(RPT_WARNING, "Could not find the item id given by the server");
 				return -1;
 			}
 
-			switch (entry->type) {
-				case MT_ARG_SLIDER:
-					entry->data.slider.value = atoi(argv[3]);
+			if(parameter == NULL) {
+				// found menu or command
+				debug(RPT_DEBUG, "got %s for %s", argv[1], argv[2]);
+				return 0;
+			}
+
+			switch (parameterType) {
+				case COMMAND_PARAMETER_TYPE_SLIDER:
+					parameter->slider->value = atoi(argv[3]);
 					break;
-				case MT_ARG_RING:
-					entry->data.ring.value = atoi(argv[3]);
+				case COMMAND_PARAMETER_TYPE_RING:
+					parameter->ring->value = atoi(argv[3]);
 					break;
-				case MT_ARG_NUMERIC:
-					entry->data.numeric.value = atoi(argv[3]);
+				case COMMAND_PARAMETER_TYPE_NUMERIC:
+					parameter->numeric->value = atoi(argv[3]);
 					break;
-				case MT_ARG_ALPHA:
-					entry->data.alpha.value = realloc(entry->data.alpha.value,
+				case COMMAND_PARAMETER_TYPE_ALPHA:
+					parameter->alpha->value = realloc(parameter->alpha->value,
 									  strlen(argv[3]));
-					strcpy(entry->data.alpha.value, argv[3]);
+					strcpy(parameter->alpha->value, argv[3]);
 					break;
-				case MT_ARG_IP:
-					entry->data.ip.value = realloc(entry->data.ip.value,
+				case COMMAND_PARAMETER_TYPE_IP:
+					parameter->ip->value = realloc(parameter->ip->value,
 									strlen(argv[3]));
-					strcpy(entry->data.ip.value, argv[3]);
+					strcpy(parameter->ip->value, argv[3]);
 					break;
-				case MT_ARG_CHECKBOX:
-					if ((entry->data.checkbox.allow_gray) &&
+				case COMMAND_PARAMETER_TYPE_CHECKBOX:
+					if ((parameter->checkbox->allowgray) &&
 					    (strcasecmp(argv[3], "gray") == 0))
-						entry->data.checkbox.value = 2;
+						parameter->checkbox->value = 2;
 					else if (strcasecmp(argv[3], "on") == 0)
-						entry->data.checkbox.value = 1;
+						parameter->checkbox->value = 1;
 					else
-						entry->data.checkbox.value = 0;
+						parameter->checkbox->value = 0;
 					break;
 				default:
-					report(RPT_WARNING, "Illegal menu entry type for event");
+					report(RPT_WARNING, "Illegal parameter type for event %s", argv[1]);
 					return -1;
 			}
 		}
@@ -499,11 +549,16 @@ static int process_response(char *str)
 	}
 	else if (strcmp(argv[0], "huh?") == 0) {
 		/* Report errors */
-		report(RPT_WARNING, "Server said: \"%s\"", str);
+		report(RPT_WARNING, "Server said: \"%s\"", strCopy);
 	}
 	else {
 		; /* Ignore all other responses */
 	}
+
+	if (strCopy != NULL) {
+		free(strCopy);
+	}
+
 	return 0;
 
 err_invalid:
@@ -511,101 +566,111 @@ err_invalid:
 	return -1;
 }
 
-
-static int exec_command(MenuEntry *cmd)
+static int exec_command(Command *cmd)
 {
-	if ((cmd != NULL)  && (menu_command(cmd) != NULL)) {
-		const char *command = menu_command(cmd);
-		const char *argv[4];
-		pid_t pid;
-		ProcInfo *p;
-		char *envp[cmd->numChildren+1];
-		MenuEntry *arg;
-		int i;
-
-		/* set argument vector */
-		argv[0] = default_shell;
-		argv[1] = "-c";
-		argv[2] = command;
-		argv[3] = NULL;
-
-		/* set environment vector: allocate & fill contents */
-		for (arg = cmd->children, i = 0; arg != NULL; arg = arg->next, i++) {
-			char buf[1025];
-
-			switch (arg->type) {
-				case MT_ARG_SLIDER:
-					snprintf(buf, sizeof(buf)-1, "%s=%d",
-						 arg->name, arg->data.slider.value);
-					break;
-				case MT_ARG_RING:
-					snprintf(buf, sizeof(buf)-1, "%s=%s", arg->name,
-						 arg->data.ring.strings[arg->data.ring.value]);
-					break;
-				case MT_ARG_NUMERIC:
-					snprintf(buf, sizeof(buf)-1, "%s=%d",
-						 arg->name, arg->data.numeric.value);
-					break;
-				case MT_ARG_ALPHA:
-					snprintf(buf, sizeof(buf)-1, "%s=%s",
-						 arg->name, arg->data.alpha.value);
-					break;
-				case MT_ARG_IP:
-					snprintf(buf, sizeof(buf)-1, "%s=%s",
-						 arg->name, arg->data.ip.value);
-					break;
-				case MT_ARG_CHECKBOX:
-					if (arg->data.checkbox.map[arg->data.checkbox.value] != NULL)
-					    strncpy(buf, arg->data.checkbox.map[arg->data.checkbox.value],
-					    	    sizeof(buf)-1);
-					else
-						snprintf(buf, sizeof(buf)-1, "%s=%d",
-							 arg->name, arg->data.checkbox.value);
-					break;
-				default:
-					/* error ? */
-					break;
-			}
-			buf[sizeof(buf)-1] ='\0';
-			envp[i] = strdup(buf);
-
-			debug(RPT_DEBUG, "Environment: %s", envp[i]);
-		}
-		envp[cmd->numChildren] = NULL;
-
-		debug(RPT_DEBUG, "Executing '%s' via Shell %s", command, default_shell);
-
-		switch (pid = fork()) {
-		  case 0:
-			/* We're the child: execute the command */
-			execve(argv[0], (char **) argv, envp);
-			exit(EXIT_SUCCESS);
-			break;
-		  default:
-			/* We're the parent: setup the ProcInfo structure */
-			p = calloc(1, sizeof(ProcInfo));
-			if (p != NULL) {
-				p->cmd = cmd;
-				p->pid = pid;
-				p->starttime = time(NULL);
-				p->feedback = cmd->data.exec.feedback;
-				/* prepend it to existing queue atomically */
-				p->next = proc_queue;
-				proc_queue = p;
-			}
-        		break;
-		  case -1:
-			report(RPT_ERR, "Could not fork");
-			return -1;
-		}
-
-		/* free envp's contents */
-		for (i = 0; envp[i] != NULL; i++)
-			free(envp[i]);
-
-		return 0;
+	if (cmd == NULL  || strlen(cmd->exec) == 0) {
+		return -1;
 	}
-	return -1;
+
+	const char *command = cmd->exec;
+	const char *argv[4];
+	pid_t pid;
+	ProcInfo *p;
+	char ** envp = malloc((cmd->parametersSize + 1) * sizeof(char*));
+
+	/* set argument vector */
+	argv[0] = default_shell;
+	argv[1] = "-c";
+	argv[2] = command;
+	argv[3] = NULL;
+
+	/* set environment vector: allocate & fill contents */
+	for (kdb_long_long_t i = 0; i < cmd->parametersSize; ++i) {
+		CommandParameter param = cmd->parameters[i];
+		switch (cmd->parameterTypes[i]) {
+			case COMMAND_PARAMETER_TYPE_SLIDER:
+				envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.slider->envname, param.slider->value);
+				break;
+			case COMMAND_PARAMETER_TYPE_RING:
+				envp[i] = elektraFormat("%s=%s", param.ring->envname, param.ring->strings[param.ring->value]);
+				break;
+			case COMMAND_PARAMETER_TYPE_NUMERIC:
+				envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.numeric->envname, param.numeric->value);
+				break;
+			case COMMAND_PARAMETER_TYPE_ALPHA:
+				envp[i] = elektraFormat("%s=%s", param.alpha->envname, param.alpha->value);
+				break;
+			case COMMAND_PARAMETER_TYPE_IP:
+				envp[i] = elektraFormat("%s=%s", param.ip->envname, param.ip->value);
+				break;
+			case COMMAND_PARAMETER_TYPE_CHECKBOX:
+				switch (param.checkbox->value)
+				{
+				case CHECKBOX_STATE_ON:
+					if(strlen(param.checkbox->ontext) > 0) {
+						envp[i] = elektraFormat("%s", param.checkbox->ontext);
+					} else {
+						envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
+					}
+					break;
+				case CHECKBOX_STATE_OFF:
+					if(strlen(param.checkbox->offtext) > 0) {
+						envp[i] = elektraFormat("%s", param.checkbox->offtext);
+					} else {
+						envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
+					}
+					break;
+				case CHECKBOX_STATE_GRAY:
+					if(strlen(param.checkbox->graytext) > 0) {
+						envp[i] = elektraFormat("%s", param.checkbox->graytext);
+					} else {
+						envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
+					}
+					break;
+				}
+				break;
+			default:
+				/* error ? */
+				break;
+		}
+
+		debug(RPT_DEBUG, "Environment: %s", envp[i]);
+	}
+	envp[cmd->parametersSize] = NULL;
+
+	debug(RPT_DEBUG, "Executing '%s' via Shell %s", command, default_shell);
+
+	switch (pid = fork()) {
+		case 0:
+		/* We're the child: execute the command */
+		execve(argv[0], (char **) argv, envp);
+		exit(EXIT_SUCCESS);
+		break;
+		default:
+		/* We're the parent: setup the ProcInfo structure */
+		p = calloc(1, sizeof(ProcInfo));
+		if (p != NULL) {
+			p->cmd = cmd;
+			p->pid = pid;
+			p->starttime = time(NULL);
+			p->feedback = cmd->feedback;
+			/* prepend it to existing queue atomically */
+			p->next = proc_queue;
+			proc_queue = p;
+		}
+					break;
+		case -1:
+		report(RPT_ERR, "Could not fork");
+		return -1;
+	}
+
+	/* free envp's contents */
+	for (kdb_long_long_t i = 0; i < cmd->parametersSize; i++) {
+		elektraFree(envp[i]);
+	}
+	free (envp);
+
+	return 0;
 }
 
 

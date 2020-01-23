@@ -83,7 +83,7 @@ MODULE_EXPORT char *symbol_prefix = "rawserial_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-rawserial_init(Driver *drvthis)
+rawserial_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	char buf[256];
