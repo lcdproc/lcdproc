@@ -96,7 +96,7 @@ hd_init_ftdi(Driver *drvthis, const Hd44780DriverConfig * config)
     p->backlight_bit = 0;
 
     if (p->numDisplays > 1) {       /* For displays with two controllers */
-        p->ftdi_line_EN2 = drvthis->config_get_int(drvthis->name, "ftdi_line_EN2", 0, 0x00);
+        p->ftdi_line_EN2 = config->ftdiLineEn2;
         if(p->ftdi_line_EN2 == 0) {
             report(RPT_WARNING, "multiple displays enabled but ftdi_line_EN2 not configured");
         }
