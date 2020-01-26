@@ -29,7 +29,7 @@
 
 
 #define DEFAULT_DEVICE		"/dev/cuaU0"
-#define DISPLAY_DEFAULT_SIZE 	"40x4"
+#define DISPLAY_DEFAULT_SIZE 	"19x5"
 
 /* Default 9600 baud, 1 hz update rate, time resolution of 1 ms */
 #define DEFAULT_SPEED		B115200
