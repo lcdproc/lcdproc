@@ -1,454 +1,225 @@
 /** \file server/drivers/LonganNano.c
+ * LCDd \c LonganNano driver.
+ * This is primarily of use when you want to use LCDproc as a data-source for
+ * an external MCU or other similar hardware, in a situation where the LCD
+ * control characters normally emitted are actually obnoxious, rather then
+ * beneficial.
+ * As such, it simply dumps the ENTIRE (no deltas or such) framebuffer at a
+ * configurable rate (default 1 Hz).
  */
-/*
-     Copyright (C) 2020, Fabien Marteau <mail@fabienm.eu>
 
-   based on GPL'ed code:
-
-   * IOWarrior
-    Copyright (C) 2004, Peter Marschall <peter@adpm.de>
-    Copyright (c) 2004  Christian Vogelgsang <chris@lallafa.de>
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <usb.h>
+/*-
+ * Copyright (C) 2014 Connor Wolf <lcdproc@imaginaryindustries.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-/* Debug mode: un-comment to turn on debugging messages in the server */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-/* #define DEBUG 1 */
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <errno.h>
+#include <limits.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 
 #include "lcd.h"
-#include "hd44780-charmap.h"
 #include "LonganNano.h"
 #include "shared/report.h"
-#include "lcd_lib.h"
-#include "adv_bignum.h"
 
 
+/** private data for the \c LonganNano driver */
+typedef struct LonganNano_private_data {
+	int width;		/**< display width in characters */
+	int height;		/**< display height in characters */
+	char *framebuf;		/**< frame buffer */
+	int fd;		/**< handle to the device */
 
-/* ===================== LonganNano low level routines ====================== */
+	/** \name Event loop timing. refresh_time and refresh_delta form the
+	 * event loop timing mechanism for configurable update rates.
+	 *@{*/
+	unsigned int refresh_time;	/**< time at the last screen update */
+	unsigned int refresh_delta;	/**< time step to next screen update */
+	/**@}*/
+} PrivateData;
 
-/* ------------------- LonganNano LCD routines ------------------------------ */
-
-/* write a set report to interface 1 of warrior */
-static int ln_lcd_wcmd(usb_dev_handle *udh, int size, unsigned char *data)
-{
-  return(usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 0, 1,
-                         (char *) data, size, lnTimeout) == size) ? LN_OK : LN_ERROR;
-}
-
-
-/* ------------------- LonganNano LED routines ------------------------------ */
-
-/* write a set report to interface 0 of warrior */
-static int ln_led_wcmd(usb_dev_handle *udh, int len, unsigned char *data)
-{
-  return (usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 2, 0,
-                          (char *) data, len, lnTimeout) == len) ? LN_OK : LN_ERROR;
-}
+/* Local prototypes */
+static unsigned int get_millisecond_time(void);
 
 
-/* ================== LonganNano intermediate level routines ================ */
+/* Vars for the server core */
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "LonganNano_";
 
-/* ------------------- LonganNano LCD routines ------------------------------ */
-
-/* start LonganNano's LCD mode */
-static int lnlcd_enable(PrivateData *p)
-{
-  unsigned char lcd_cmd[64] = { 0x04, 0x01, 0, 0, 0, 0, 0, 0 };
-  int res = ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-
-  usleep(30000); /* wait for 30ms */
-  return res;
-}
-
-/* leave LonganNano's LCD mode */
-static int lnlcd_disable(PrivateData *p)
-{
-  unsigned char lcd_cmd[64] = { 0x04, 0x00, 0, 0, 0, 0, 0, 0 };
-  int res = ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-
-  usleep(30000);
-  return res;
-}
-
-/* clear LonganNano's display */
-static int lnlcd_display_clear(PrivateData *p)
-{
-  unsigned char lcd_cmd[64] = { 0x05, 1, 0x01, 0, 0, 0, 0, 0 };
-  int res = ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-
-  usleep(3000); /* 3ms */
-  return res;
-}
-
-static int lnlcd_display_on_off(PrivateData *p, int display, int cursor, int blink)
-{
-  unsigned char lcd_cmd[64] = { 0x05, 1, 0x08, 0, 0, 0, 0, 0 };
-
-  if (display) lcd_cmd[2] |= 0x04;
-  if (cursor)  lcd_cmd[2] |= 0x02;
-  if (blink)   lcd_cmd[2] |= 0x01;
-  return ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-}
-
-static int lnlcd_set_function(PrivateData *p, int eight_bit, int two_line, int ten_dots)
-{
-  unsigned char lcd_cmd[64] = { 0x05, 1, 0x20, 0, 0, 0, 0, 0 };
-
-  if (eight_bit) lcd_cmd[2] |= 0x10;
-  if (two_line)  lcd_cmd[2] |= 0x08;
-  if (ten_dots)  lcd_cmd[2] |= 0x04;
-  return ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-}
-
-static int lnlcd_set_cgram_addr(PrivateData *p, int addr)
-{
-  unsigned char lcd_cmd[64] = { 0x05, 1, 0x40, 0, 0, 0, 0, 0 };
-
-  lcd_cmd[2] |= (addr & 0x3f);
-  return ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-}
-
-static int lnlcd_set_ddram_addr(PrivateData *p, int addr)
-{
-  unsigned char lcd_cmd[64] = { 0x05, 1, 0x80, 0, 0, 0, 0, 0 };
-
-  lcd_cmd[2] |= (addr & 0x7f);
-  return ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd);
-}
-
-static int lnlcd_write_data(PrivateData *p, int len, unsigned char *data)
-{
-  unsigned char lcd_cmd[64] = { 0x05, 0x80, 0, 0, 0, 0, 0, 0 };
-  unsigned char *ptr = data;
-  int num_blk, last_blk, i;
-  int size = LNLCD_SIZE;
-
-  num_blk  = len / (size - 2);
-  last_blk = len % (size - 2);
-
-  /* write data in (size-2)-sized chunks */
-  for (i = 0; i < num_blk; i++) {
-    lcd_cmd[1] = 0x80 | (size-2);
-    memcpy(&lcd_cmd[2], ptr, size-2);
-    if (ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd) == LN_ERROR)
-      return ptr - data;
-    ptr += (size-2);
-  }
-
-  /* last block */
-  if (last_blk > 0) {
-    lcd_cmd[1] = 0x80 | last_blk;
-    memcpy(&lcd_cmd[2], ptr, last_blk);
-    if (ln_lcd_wcmd(p->udh, LNLCD_SIZE, lcd_cmd) == LN_ERROR)
-      return ptr - data;
-  }
-
-  return len;
-}
-
-static int lnlcd_set_pos(PrivateData *p, int x, int y)
-{
-  /* HD44780 character layout:
-   * + extended mode:
-   *   - 1st line starts at 0x0
-   *   - (n+1)th line starts 0x20 after (n)th line
-   * + regular mode:
-   *   - 1st line starts at 0x0
-   *   - (2n)th line starts 0x40 after (2n-1)th line
-   *   - 3rd line starts at an offset equal to the display's width
-   */
-  unsigned char addr = (p->ext_mode)
-                       ? (y * 0x20 + x)
-               : ((y % 2) * 0x40 + (y >= 2) * p->width + x);
-
-  return lnlcd_set_ddram_addr(p, addr);
-}
-
-static int lnlcd_set_text(PrivateData *p, int x, int y, int len, unsigned char *data)
-{
-  if (lnlcd_set_pos(p, x, y) == LN_ERROR)
-    return LN_ERROR;
-  return lnlcd_write_data(p, len, data);
-}
-
-static int lnlcd_load_chars(PrivateData *p, int offset, int num, unsigned char *bits)
-{
-  if (lnlcd_set_cgram_addr(p, offset << 3) == LN_ERROR)
-    return LN_ERROR;
-  return lnlcd_write_data(p, num * CELLHEIGHT, bits);
-}
-
-
-/* ------------------- LonganNano LED routines ------------------------------ */
-
-static int lnled_on_off(PrivateData *p, unsigned int pattern)
-{
-  unsigned char led_cmd[4] = { 0x00, 0x00, 0x00, 0x00 };
-  int i;
-
-  pattern ^= 0xFFFFFFFFU;    /* invert pattern */
-
-  /* map pattern to bytes */
-  //for (i = 0; i < (p->productID == lnProd40) ? 4 : 2; i++) {
-  //XXX
-  for (i = 0; i < ((p->productID == lnProd40) ? 4 : 2); i++) {
-    led_cmd[i] = (unsigned char) (0xFF & pattern);
-    pattern >>= 8;
-  }
-
-  return ln_led_wcmd(p->udh, (p->productID == lnProd40) ? 4 : 2, led_cmd);
-}
-
-
-
-/*****************************************************
- * Here start the API function
- */
 
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 LonganNano_init(Driver *drvthis)
 {
-  char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
-  char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
+	PrivateData *p;
+	char buf[256];
+	char device[200];
 
-  struct usb_bus *busses;
-  struct usb_bus *bus;
+	int speed = DEFAULT_SPEED;
+	int tmp;
+	double tmpf;
 
-  int w;
-  int h;
+	struct termios portset;
 
-  PrivateData *p;
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
+		return -1;
+	if (drvthis->store_private_ptr(drvthis, p) != 0)
+		return -1;
 
-  /* Allocate and store private data */
-  p = (PrivateData *) calloc(1, sizeof(PrivateData));
-  if (p == NULL)
-      return -1;
-  if (drvthis->store_private_ptr(drvthis, p))
-      return -1;
+	/* initialize private data */
+	tmpf = drvthis->config_get_float(drvthis->name, "UpdateRate", 0, DEFAULT_UPDATE_RATE);
+	if (tmpf < 0.0005 || tmpf > 10) {
+		report(RPT_WARNING, "%s: UpdateRate out of range; using default %g",
+		       drvthis->name, DEFAULT_UPDATE_RATE);
+		tmpf = DEFAULT_UPDATE_RATE;
+	}
+	p->refresh_delta = (int) ((double) SECOND_GRANULARITY / tmpf);
 
-  /* Initialize the PrivateData structure */
+	/* Subtract refresh delta so we update immediately on start */
+	p->refresh_time = get_millisecond_time() - p->refresh_delta;
+	report(RPT_INFO, "%s: start-up time: %u, refresh delta: %u ms per update", drvthis->name,
+	       p->refresh_time, p->refresh_delta);
 
-  p->cellwidth = CELLWIDTH;
-  p->cellheight = CELLHEIGHT;
+	/* Which speed */
+	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
+	switch (tmp) {
+	case 1200:
+		speed = B1200;
+		break;
+	case 2400:
+		speed = B2400;
+		break;
+	case 9600:
+		speed = B9600;
+		break;
+	case 19200:
+		speed = B19200;
+		break;
+	case 115200:
+		speed = B115200;
+		break;
+	default:
+		report(RPT_WARNING,
+		       "%s: Speed must be 1200, 2400, 9600, 19200 or 115200; using default %d",
+		       drvthis->name, DEFAULT_SPEED);
+		speed = DEFAULT_SPEED;
+	}
 
-  p->backlight = DEFAULT_BACKLIGHT;
+	/* which serial device should be used */
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE),
+		sizeof(device));
+	device[sizeof(device) - 1] = '\0';
+	report(RPT_INFO, "%s: using Device %s at baud rate: %d (configured = %d)",
+	       drvthis->name, device, speed, tmp);
 
-  debug(RPT_INFO, "%s: init(%p)", drvthis->name, drvthis);
+	/* Set display sizes */
+	if ((drvthis->request_display_width() > 0)
+	    && (drvthis->request_display_height() > 0)) {
+		/* Use size from primary driver */
+		p->width = drvthis->request_display_width();
+		p->height = drvthis->request_display_height();
+	}
+	else {
+		/* Use our own size from config file */
+		strncpy(buf,
+			drvthis->config_get_string(drvthis->name, "Size", 0, DISPLAY_DEFAULT_SIZE),
+			sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		if ((sscanf(buf, "%dx%d", &p->width, &p->height) != 2)
+		    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
+		    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
+			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+			       drvthis->name, buf, DISPLAY_DEFAULT_SIZE);
+			sscanf(DISPLAY_DEFAULT_SIZE, "%dx%d", &p->width, &p->height);
+		}
+	}
+	report(RPT_INFO, "%s: using Size %dx%d", drvthis->name, p->width, p->height);
 
-  /* Read config file */
+	/* Allocate the framebuffer */
+	p->framebuf = malloc(p->width * p->height);
+	if (p->framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
+		goto err_out;
+	}
+	memset(p->framebuf, ' ', p->width * p->height);
 
-  /* What IO-Warrior device should be used */
-  strncpy(serial, drvthis->config_get_string(drvthis->name, "SerialNumber",
-                                             0, DEFAULT_SERIALNO), sizeof(serial));
-  serial[sizeof(serial)-1] = '\0';
-  if (*serial != '\0') {
-    report(RPT_INFO, "%s: using serial number: %s", drvthis->name, serial);
-  }
+	/* Set up I/O port correctly, and open it... */
+	p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+	if (p->fd == -1) {
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
+		if (errno == EACCES)
+			report(RPT_ERR, "%s: device %s could not be opened", drvthis->name, device);
+		goto err_out;
+	}
+	report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
 
-  /* Which size */
-  strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
-                                           0, DEFAULT_SIZE), sizeof(size));
-  size[sizeof(size) - 1] = '\0';
-  if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
-      (w <= 0) || (w > LCD_MAX_WIDTH) ||
-      (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-    report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-            drvthis->name, size, DEFAULT_SIZE);
-    sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
-  }
-  p->width = w;
-  p->height = h;
+	tcgetattr(p->fd, &portset);
 
-  /* special options for displays with some incompatibilities */
-  p->lastline = drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
-  p->ext_mode = drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
-
-  /* Contrast of the LCD can be changed by adjusting a trimpot */
-
-  /* End of config file parsing */
-
-  /* Allocate framebuffer memory */
-  p->framebuf = (unsigned char *) calloc(p->width * p->height, 1);
-  if (p->framebuf == NULL) {
-    report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
-    return -1;
-  }
-
-  /* Allocate and clear the buffer for incremental updates */
-  p->backingstore = (unsigned char *) calloc(p->width * p->height, 1);
-  if (p->backingstore == NULL) {
-    report(RPT_ERR, "%s: unable to create backingstore", drvthis->name);
-    return -1;
-  }
-
-  /* set mode for custom chracter cache */
-  p->ccmode = standard;
-
-  /* initialize output stuff */
-  p->output_mask = 0;    /* not yet supported */
-  p->output_state = -1;
-
-  /* find USB device */
-  usb_init();
-  usb_find_busses();
-  usb_find_devices();
-  busses = usb_get_busses();
-
-  /* on all busses look for IO-Warriors */
-  p->udh = NULL;
-  for (bus = busses; bus != NULL; bus = bus->next) {
-    struct usb_device *dev;
-
-    for (dev = bus->devices; dev; dev = dev->next) {
-      /* Check if this device is a Code Mercenaries IO-Warrior */
-      if ((dev->descriptor.idVendor == lnVendor) &&
-         ((dev->descriptor.idProduct == lnProd24) ||
-          (dev->descriptor.idProduct == lnProd40) ||
-          (dev->descriptor.idProduct == lnProd56))) {
-
-        /* IO-Warrior found; try to find it's description and serial number */
-        p->udh = usb_open(dev);
-        if (p->udh == NULL) {
-          report(RPT_WARNING, "%s: unable to open device", drvthis->name);
-          // return -1;        /* it's better to continue */
-        }
-        else {
-          /* get device information & check for serial number */
-          p->productID = dev->descriptor.idProduct;
-          if (usb_get_string_simple(p->udh, dev->descriptor.iManufacturer,
-                                p->manufacturer, LCD_MAX_WIDTH) <= 0)
-            *p->manufacturer = '\0';
-          p->manufacturer[p->width] = '\0';
-          if (usb_get_string_simple(p->udh, dev->descriptor.iProduct,
-                                p->product, LCD_MAX_WIDTH) <= 0)
-            *p->product = '\0';
-          p->product[p->width] = '\0';
-          if (usb_get_string_simple(p->udh, dev->descriptor.iSerialNumber,
-                                    p->serial, LCD_MAX_WIDTH) <= 0)
-            *p->serial = '\0';
-          p->serial[sizeof(p->serial)-1] = '\0';
-          if ((*serial != '\0') && (*p->serial == '\0')) {
-            report(RPT_ERR, "%s: unable to get device's serial number", drvthis->name);
-            usb_close(p->udh);
-            return -1;
-          }
-
-          /* succeed if no serial was given in the config or the 2 numbers match */
-          if ((!*serial) || (strcmp(serial, p->serial) == 0))
-            goto done;
-
-          usb_close(p->udh);
-          p->udh = NULL;
-        }
-      }
-    }
-  }
-  done:
-
-  if (p->udh != NULL) {
-    debug(RPT_DEBUG, "%s: opening device succeeded", drvthis->name);
-
-    errno = 0;
-    if (usb_set_configuration(p->udh, 1) < 0) {
-      report(RPT_WARNING, "%s: unable to set configuration: %s",
-             drvthis->name, strerror(errno));
-    }
-
-    errno = 0;
-    if (usb_claim_interface(p->udh, 1) < 0) {
-#if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
-      report(RPT_WARNING, "%s: interface may be claimed by kernel driver, attempting to detach it",
-             drvthis->name);
-
-      errno = 0;
-      if ((usb_detach_kernel_driver_np(p->udh, 1) < 0) ||
-          (usb_claim_interface(p->udh, 1) < 0)) {
-        report(RPT_ERR, "%s: unable to re-claim interface: %s",
-           drvthis->name, strerror(errno));
-        usb_close(p->udh);
-        return -1;
-      }
+	/* We use RAW mode */
+#ifdef HAVE_CFMAKERAW
+	/* The easy way */
+	cfmakeraw(&portset);
 #else
-      report(RPT_ERR, "%s: unable to claim interface: %s",
-             drvthis->name, strerror(errno));
-      usb_close(p->udh);
-      return -1;
+	/* The hard way */
+	portset.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+	portset.c_oflag &= ~OPOST;
+	portset.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	portset.c_cflag &= ~(CSIZE | PARENB | CRTSCTS);
+	portset.c_cflag |= CS8 | CREAD | CLOCAL;
 #endif
-    }
-  }
-  else {
-    report(RPT_ERR, "%s: no (matching) IO-Warrior device found", drvthis->name);
-    return -1;
-  }
+	/* Set timeouts */
+	portset.c_cc[VMIN] = 1;
+	portset.c_cc[VTIME] = 3;
 
-  /* enable LCD in LN */
-  if (lnlcd_enable(p) == LN_ERROR)
-    return -1;
-  if (p->ext_mode) {
-    if (lnlcd_set_function(p, 1, 1, 1) == LN_ERROR)
-      return -1;
-  if (lnlcd_display_on_off(p, 0, 0, 1) == LN_ERROR)
-    return -1;
+	/* Set port speed */
+	cfsetospeed(&portset, speed);
+	cfsetispeed(&portset, B0);
 
-  }
-  /* enable 8bit transfer mode */
-  if (lnlcd_set_function(p, 1, 1, 0) == LN_ERROR)
-    return -1;
-  /* enable display, disable cursor+blinking */
-  if (lnlcd_display_on_off(p, 1, 0, 0) == LN_ERROR)
-    return -1;
+	/* Do it... */
+	tcsetattr(p->fd, TCSANOW, &portset);
 
-  report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	return 0;
 
-  /* clear screen */
-  LonganNano_clear(drvthis);
-
-  /* display information about the driver */
-  {
-    int y = 1;
-
-    if (p->height > 2)
-      LonganNano_string(drvthis, 1, y++, p->manufacturer);
-    LonganNano_string(drvthis, 1, y++, p->product);
-    if (p->height > 1) {
-      LonganNano_string(drvthis, 1, y, "# ");
-      LonganNano_string(drvthis, 3, y, p->serial);
-    }
-
-    LonganNano_flush(drvthis);
-    sleep(2);
-  }
-
-  return 0;
+      err_out:
+	LonganNano_close(drvthis);
+	return -1;
 }
 
 
@@ -459,146 +230,45 @@ LonganNano_init(Driver *drvthis)
 MODULE_EXPORT void
 LonganNano_close(Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  if (p != NULL) {
-    /* don't turn display off: keep the logoff message */
-    // lnlcd_display_on_off(p,0,0,0);
+	if (p != NULL) {
+		if (p->fd >= 0)
+			close(p->fd);
+		if (p->framebuf != NULL)
+			free(p->framebuf);
 
-    /* LN leave LCD mode */
-    lnlcd_disable(p);
-
-    /* release interface 1 */
-    usb_release_interface(p->udh, 1);
-
-    /* close USB */
-    usb_close(p->udh);
-
-    if (p->framebuf != NULL)
-      free(p->framebuf);
-    p->framebuf = NULL;
-
-    if (p->backingstore != NULL)
-      free(p->backingstore);
-    p->backingstore = NULL;
-
-    free(p);
-  }
-  drvthis->store_private_ptr(drvthis, NULL);
-
-  debug(RPT_DEBUG, "%s: closed", drvthis->name);
+		free(p);
+	}
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 LonganNano_width(Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  debug(RPT_DEBUG, "%s: returning width", drvthis->name);
-
-  return p->width;
+	return p->width;
 }
 
 
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 LonganNano_height(Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  debug(RPT_DEBUG, "%s: returning height", drvthis->name);
-
-  return p->height;
-}
-
-
-/**
- * Return the width of a character in pixels.
- * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel columns a character cell is wide.
- */
-MODULE_EXPORT int
-LonganNano_cellwidth(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-
-  debug(RPT_DEBUG, "%s: returning cellwidth", drvthis->name);
-
-  return p->cellwidth;
-}
-
-
-/**
- * Return the height of a character in pixels.
- * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel lines a character cell is high.
- */
-MODULE_EXPORT int
-LonganNano_cellheight(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-
-  debug(RPT_DEBUG, "%s: returning cellheight", drvthis->name);
-
-  return p->cellheight;
-}
-
-
-/**
- * Flush data on screen to the LCD.
- * \param drvthis  Pointer to driver structure.
- */
-MODULE_EXPORT void
-LonganNano_flush(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-
-  int x, y;
-  int i;
-  int count;
-
-  /* Update LCD incrementally by comparing with last contents */
-  for (y = 0; y < p->height; y++) {
-    int offset = y * p->width;
-
-    for (x = 0; x < p->width; x++) {
-      if (p->backingstore[offset+x] != p->framebuf[offset+x]) {
-        /* always flush a full line */
-        unsigned char buffer[LCD_MAX_WIDTH];
-
-        for (count = 0; count < p->width; count++) {
-          buffer[count] = HD44780_charmap[(unsigned char) p->framebuf[offset+count]];
-          p->backingstore[offset+count] = p->framebuf[offset+count];
-        }
-        lnlcd_set_text(p, 0, y, count, buffer);
-        debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
-            drvthis->name, count, 0, y);
-
-        x += count-1;
-      }
-    }
-  }
-
-  /* Check which definable chars we need to update */
-  count = 0;
-  for (i = 0; i < NUM_CCs; i++) {
-    if (!p->cc[i].clean) {
-      lnlcd_load_chars(p, i, 1, p->cc[i].cache);
-      p->cc[i].clean = 1;    /* mark as clean */
-      count++;
-    }
-  }
-  debug(RPT_DEBUG, "%s: flushed %d custom chars", drvthis->name, count);
+	return p->height;
 }
 
 
@@ -609,37 +279,64 @@ LonganNano_flush(Driver *drvthis)
 MODULE_EXPORT void
 LonganNano_clear(Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  memset(p->framebuf, ' ', p->width * p->height);
-
-  p->ccmode = standard;
-
-  debug(RPT_DEBUG, "%s: cleared framebuffer", drvthis->name);
+	memset(p->framebuf, ' ', p->width * p->height);
 }
 
 
 /**
- * Print a character on the screen at position (x,y).
- * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * Flush data on screen to the display.
+ *
+ * Output is written at every \c refresh_delta milliseconds to the device.
+ * However, updates do not occur more often than every 125 ms (8 Hz) which is
+ * the default rendering rate in LCDd.
+ *
+ * This function implements its own update scheduler which is independent of
+ * the main rendering loop to achieve a more constant output rate.
+ *
  * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column).
- * \param y        Vertical character position (row).
- * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-LonganNano_chr(Driver *drvthis, int x, int y, char c)
+LonganNano_flush(Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
+	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
 
-  y--;
-  x--;
+	unsigned int currentTime = get_millisecond_time();
+	int t_delta = currentTime - p->refresh_time;
 
-  if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
-    p->framebuf[(y * p->width) + x] = c;
+	/*
+	 * Sanity checking in case of major time-shifts due to NTP updates or
+	 * daylight savings time. (INT_MAX / 1e3) is 2147483 milliseconds, 2147
+	 * seconds, or 35 minutes.
+	 */
+	if (((t_delta + 1) > (INT_MAX / 1e3)) || (t_delta < 0)) {
+		report(RPT_WARNING,
+		       "%s: Major time-delta between flush calls! Old time: %d, new time: %d",
+		       drvthis->name, p->refresh_time, currentTime);
+		p->refresh_time = currentTime;
+	}
 
-  debug(RPT_DEBUG, "%s: writing char 0x%02X at (%d,%d)",
-          drvthis->name, (unsigned) c, x, y);
+	if (currentTime > (p->refresh_time + p->refresh_delta)) {
+		int dataEnd = p->height * p->width;
+
+		/* Dump the contents of the framebuffer out the serial port.
+		 * There is no processing and no control chars are emitted,
+		 * just a plain-old newline at the end of the record. */
+		memcpy(out, p->framebuf, dataEnd);
+		write(p->fd, out, dataEnd);
+		write(p->fd, "\n", 1);
+
+		report(RPT_DEBUG,
+		       "%s: flush exec time: %u, refresh delta: %u, current clock: %u, rendering loop overshoot: %d ms",
+		       drvthis->name, p->refresh_time, p->refresh_delta, currentTime,
+		       currentTime - p->refresh_time - p->refresh_delta);
+
+		/* Update the event timer so we'll trigger after the next
+		 * p->refresh_delta milliseconds */
+		p->refresh_time += p->refresh_delta;
+	}
 }
 
 
@@ -654,452 +351,75 @@ LonganNano_chr(Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 LonganNano_string(Driver *drvthis, int x, int y, const char string[])
 {
-  PrivateData *p = drvthis->private_data;
-  int i;
+	PrivateData *p = drvthis->private_data;
+	int i;
 
-  x--;
-  y--;
+	x--;
+	y--;			/* Convert 1-based coords to 0-based */
 
-  if ((y < 0) || (y >= p->height))
-      return;
+	if ((y < 0) || (y >= p->height))
+		return;
 
-  for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
-    if (x >= 0)     // no write left of left border
-      p->framebuf[(y * p->width) + x] = string[i];
-  }
-
-  debug(RPT_DEBUG, "%s: writing string \"%s\" at (%d,%d)",
-          drvthis->name, string, x, y);
-}
-
-
-/*
- * The LonganNanos' hardware does not support contrast or brightness settings
- * by software, but only by changing the hardware configuration.
- * Since the get_contrast and set_contrast are not mandatory in the API,
- * it is better not to implement a dummy version.
- */
-
-
-/**
- * Turn the LCD backlight on or off.
- * \param drvthis  Pointer to driver structure.
- * \param on       New backlight status.
- */
-MODULE_EXPORT void
-LonganNano_backlight(Driver *drvthis, int on)
-{
-  PrivateData *p = drvthis->private_data;
-
-  p->backlight = on;
+	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
+		if (x >= 0)	/* no write left of left border */
+			p->framebuf[(y * p->width) + x] = string[i];
+	}
 }
 
 
 /**
- * Draw a vertical bar bottom-up.
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column) of the starting point.
- * \param y        Vertical character position (row) of the starting point.
- * \param len      Number of characters that the bar is high at 100%
- * \param promille Current height level of the bar in promille.
- * \param options  Options (currently unused).
- */
-MODULE_EXPORT void
-LonganNano_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-  PrivateData *p = drvthis->private_data;
-
-  if (p->ccmode != vbar) {
-    unsigned char vBar[p->cellheight];
-    int i;
-
-    if (p->ccmode != standard) {
-      /* Not supported(yet) */
-      report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
-              drvthis->name);
-      return;
-    }
-    p->ccmode = vbar;
-
-    memset(vBar, 0x00, sizeof(vBar));
-
-    for (i = 1; i < p->cellheight; i++) {
-      // add pixel line per pixel line ...
-      vBar[p->cellheight - i] = 0xFF;
-      LonganNano_set_char(drvthis, i, vBar);
-    }
-  }
-
-  lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
-}
-
-
-/**
- * Draw a horizontal bar to the right.
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column) of the starting point.
- * \param y        Vertical character position (row) of the starting point.
- * \param len      Number of characters that the bar is long at 100%
- * \param promille Current length level of the bar in promille.
- * \param options  Options (currently unused).
- */
-MODULE_EXPORT void
-LonganNano_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-  PrivateData *p = drvthis->private_data;
-
-  if (p->ccmode != hbar) {
-    unsigned char hBar[p->cellheight];
-    int i;
-
-    if (p->ccmode != standard) {
-      /* Not supported(yet) */
-      report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
-              drvthis->name);
-      return;
-    }
-
-    p->ccmode = hbar;
-
-    for (i = 1; i <= p->cellwidth; i++) {
-      // fill pixel columns from left to right.
-      memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
-      LonganNano_set_char(drvthis, i, hBar);
-    }
-  }
-
-  lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
-}
-
-
-/**
- * Write a big number to the screen.
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column).
- * \param num      Character to write (0 - 10 with 10 representing ':')
- */
-MODULE_EXPORT void
-LonganNano_num(Driver *drvthis, int x, int num)
-{
-  PrivateData *p = drvthis->private_data;
-  int do_init = 0;
-
-    if ((num < 0) || (num > 10))
-        return;
-
-    if (p->ccmode != bignum) {
-        if (p->ccmode != standard) {
-            /* Not supported (yet) */
-            report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
-                    drvthis->name);
-            return;
-        }
-
-        p->ccmode = bignum;
-
-        do_init = 1;
-    }
-
-    // Lib_adv_bignum does everything needed to show the bignumbers.
-    lib_adv_bignum(drvthis, x, num, 0, do_init);
-}
-
-
-/* *
- * Set cursor position and state.
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal cursor position (column).
- * \param y        Vertical cursor position (row).
- * \param state    New cursor state.
- */
-/* not yet tested (needs input)
- * maybe better: set only variables here and update when flushing
-MODULE_EXPORT void
-LonganNano_cursor (Driver *drvthis, int x, int y, int state)
-{
-PrivateData *p = drvthis->private_data;
-
-  lnlcd_set_pos(p, x, y);
-
-  switch (state) {
-    case CURSOR_OFF:
-      lnlcd_display_on_off(p, 1, 0, 0);
-      break;
-    case CURSOR_UNDER:
-      lnlcd_display_on_off(p, 1, 1, 0);
-      break;
-    case CURSOR_BLOCK:
-    case CURSOR_DEFAULT_ON:
-    default:
-      lnlcd_display_on_off(p, 1, 1, 1);
-      break;
-  }
-}
-*/
-
-
-/**
- * Get total number of custom characters available.
- * \param drvthis  Pointer to driver structure.
- * \return  Number of custom characters (always NUM_CCs).
- */
-MODULE_EXPORT int
-LonganNano_get_free_chars (Driver *drvthis)
-{
-//PrivateData *p = drvthis->private_data;
-
-  return NUM_CCs;
-}
-
-
-/**
- * Define a custom character and write it to the LCD.
- * \param drvthis  Pointer to driver structure.
- * \param n        Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 8 (=cellheight) bytes, each representing a pixel row
- *                 starting from the top to bottom.
- *                 The bits in each byte represent the pixels where the LSB
- *                 (least significant bit) is the rightmost pixel in each pixel row.
- */
-MODULE_EXPORT void
-LonganNano_set_char(Driver *drvthis, int n, unsigned char *dat)
-{
-  PrivateData *p = drvthis->private_data;
-  unsigned char mask = (1 << p->cellwidth) - 1;
-  int row;
-
-  if ((n < 0) || (n >= NUM_CCs))
-    return;
-  if (dat == NULL)
-    return;
-
-  for (row = 0; row < p->cellheight; row++) {
-    int letter = 0;
-
-    if (p->lastline || (row < p->cellheight - 1))
-      letter = dat[row] & mask;
-
-    if (p->cc[n].cache[row] != letter)
-      p->cc[n].clean = 0;     /* only mark dirty if really different */
-    p->cc[n].cache[row] = letter;
-  }
-}
-
-
-/**
- * Place an icon on the screen.
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
- * \param icon     synbolic value representing the icon.
- * \retval 0       Icon has been successfully defined/written.
- * \retval <0      Server core shall define/write the icon.
- */
-MODULE_EXPORT int
-LonganNano_icon(Driver *drvthis, int x, int y, int icon)
-{
-static unsigned char heart_open[] =
-    { b__XXXXX,
-      b__X_X_X,
-      b_______,
-      b_______,
-      b_______,
-      b__X___X,
-      b__XX_XX,
-      b__XXXXX };
-static unsigned char heart_filled[] =
-    { b__XXXXX,
-      b__X_X_X,
-      b___X_X_,
-      b___XXX_,
-      b___XXX_,
-      b__X_X_X,
-      b__XX_XX,
-      b__XXXXX };
-static unsigned char arrow_up[] =
-    { b____X__,
-      b___XXX_,
-      b__X_X_X,
-      b____X__,
-      b____X__,
-      b____X__,
-      b____X__,
-      b_______ };
-static unsigned char arrow_down[] =
-    { b____X__,
-      b____X__,
-      b____X__,
-      b____X__,
-      b__X_X_X,
-      b___XXX_,
-      b____X__,
-      b_______ };
-/*
-static unsigned char arrow_left[] =
-    { b_______,
-      b____X__,
-      b___X___,
-      b__XXXXX,
-      b___X___,
-      b____X__,
-      b_______,
-      b_______ };
-static unsigned char arrow_right[] =
-    { b_______,
-      b____X__,
-      b_____X_,
-      b__XXXXX,
-      b_____X_,
-      b____X__,
-      b_______,
-      b_______ };
-*/
-static unsigned char checkbox_off[] =
-    { b_______,
-      b_______,
-      b__XXXXX,
-      b__X___X,
-      b__X___X,
-      b__X___X,
-      b__XXXXX,
-      b_______ };
-static unsigned char checkbox_on[] =
-    { b____X__,
-      b____X__,
-      b__XXX_X,
-      b__X_XX_,
-      b__X_X_X,
-      b__X___X,
-      b__XXXXX,
-      b_______ };
-static unsigned char checkbox_gray[] =
-    { b_______,
-      b_______,
-      b__XXXXX,
-      b__X_X_X,
-      b__XX_XX,
-      b__X_X_X,
-      b__XXXXX,
-      b_______ };
-/*
-static unsigned char selector_left[] =
-    { b___X___,
-      b___XX__,
-      b___XXX_,
-      b___XXXX,
-      b___XXX_,
-      b___XX__,
-      b___X___,
-      b_______ };
-static unsigned char selector_right[] =
-    { b_____X_,
-      b____XX_,
-      b___XXX_,
-      b__XXXX_,
-      b___XXX_,
-      b____XX_,
-      b_____X_,
-      b_______ };
-static unsigned char ellipsis[] =
-    { b_______,
-      b_______,
-      b_______,
-      b_______,
-      b_______,
-      b_______,
-      b__X_X_X,
-      b_______ };
-*/
-static unsigned char block_filled[] =
-    { b__XXXXX,
-      b__XXXXX,
-      b__XXXXX,
-      b__XXXXX,
-      b__XXXXX,
-      b__XXXXX,
-      b__XXXXX,
-      b__XXXXX };
-
-  /* Yes we know, this is a VERY BAD implementation */
-  switch (icon) {
-    case ICON_BLOCK_FILLED:
-      LonganNano_set_char(drvthis, 6, block_filled);
-      LonganNano_chr(drvthis, x, y, 6);
-      break;
-    case ICON_HEART_FILLED:
-      LonganNano_set_char(drvthis, 0, heart_filled);
-      LonganNano_chr(drvthis, x, y, 0);
-      break;
-    case ICON_HEART_OPEN:
-      LonganNano_set_char(drvthis, 0, heart_open);
-      LonganNano_chr(drvthis, x, y, 0);
-      break;
-    case ICON_ARROW_UP:
-      LonganNano_set_char(drvthis, 1, arrow_up);
-      LonganNano_chr(drvthis, x, y, 1);
-      break;
-    case ICON_ARROW_DOWN:
-      LonganNano_set_char(drvthis, 2, arrow_down);
-      LonganNano_chr(drvthis, x, y, 2);
-      break;
-    case ICON_ARROW_LEFT:
-      LonganNano_chr(drvthis, x, y, 0x1B);
-      break;
-    case ICON_ARROW_RIGHT:
-      LonganNano_chr(drvthis, x, y, 0x1A);
-      break;
-    case ICON_CHECKBOX_OFF:
-      LonganNano_set_char(drvthis, 3, checkbox_off);
-      LonganNano_chr(drvthis, x, y, 3);
-      break;
-    case ICON_CHECKBOX_ON:
-      LonganNano_set_char(drvthis, 4, checkbox_on);
-      LonganNano_chr(drvthis, x, y, 4);
-      break;
-    case ICON_CHECKBOX_GRAY:
-      LonganNano_set_char(drvthis, 5, checkbox_gray);
-      LonganNano_chr(drvthis, x, y, 5);
-      break;
-    default:
-      return -1; /* Let the core do other icons */
-  }
-  return 0;
-}
-
-
-/**
- * Set output port.
- * \param drvthis  Pointer to driver structure.
- * \param state    Integer with bits representingthe new states
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-LonganNano_output(Driver *drvthis, int state)
+LonganNano_chr(Driver *drvthis, int x, int y, char c)
 {
-  PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  /* output disabled */
-  if (!p->output_mask)
-     return;
+	y--;
+	x--;
 
-  p->output_state = state;
-
-  lnled_on_off(p, state & p->output_mask);
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = c;
 }
 
 
 /**
  * Provide some information about this driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Constant string with information.
+ * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
-LonganNano_get_info (Driver *drvthis)
+LonganNano_get_info(Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
+	static char *info_string =
+		"Raw Text mode driver for use as a source for sending data to external hardware";
 
-  snprintf(p->info, sizeof(p->info)-1, "LonganNano Driver: %s %s (0x%0x) S/N: %s",
-           p->manufacturer, p->product, p->productID, p->serial);
-  return p->info;
+	return info_string;
 }
 
-/* EOF */
+
+/**
+ * Get current time in milliseconds, used for determining update event timing
+ *
+ * This WILL wrap fairly often, but we don't care, since we're just comparing
+ * two values, both of which will wrap at the same time. Note that gettimeofday
+ * is the wrong thing to use here, since it's not monotonic at all. We *really*
+ * should use `clock_gettime(CLOCK_MONOTONIC, &ts);` since that's both
+ * monotonic and immune to NTP updates, DST time changes, etc. However, that
+ * would require linking librealtime.
+ *
+ * \return  int with current millisecond time.
+ */
+static unsigned
+get_millisecond_time(void)
+{
+	struct timeval ts;
+	gettimeofday(&ts, NULL);
+	return ((ts.tv_sec * SECOND_GRANULARITY) +
+		(ts.tv_usec / (1000000.0 / SECOND_GRANULARITY))) + 0.5;
+}
