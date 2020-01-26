@@ -327,7 +327,6 @@ LonganNano_flush(Driver *drvthis)
 		memcpy(out, p->framebuf, dataEnd);
 		write(p->fd, out, dataEnd);
 		write(p->fd, "\n", 1);
-
 		report(RPT_DEBUG,
 		       "%s: flush exec time: %u, refresh delta: %u, current clock: %u, rendering loop overshoot: %d ms",
 		       drvthis->name, p->refresh_time, p->refresh_delta, currentTime,
