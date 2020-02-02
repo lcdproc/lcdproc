@@ -53,6 +53,8 @@
 # include "eyebox.h"
 #endif
 
+extern IfaceInfo iface[MAX_INTERFACES];        /* interface info */
+
 /* The following 8 variables are defined 'external' in main.h! */
 int Quit = 0;
 int sock = -1;
