@@ -244,6 +244,9 @@ IrMan infrared (input)
 .B joy
 Joystick driver (input)
 .TP
+.B jw002
+Hyundai HG12603 24x8 textual display with replacement firmware from the PJRC project
+.TP
 .B lb216
 LB216 LCD displays
 .TP
