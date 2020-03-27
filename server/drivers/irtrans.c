@@ -48,7 +48,7 @@
 #include "irtrans_remote.h"
 #include "irtrans_network.h"
 #include "irtrans_errcode.h"
-#include "report.h"
+#include "shared/report.h"
 
 // Variables
 

@@ -33,6 +33,7 @@ char *typenames[] = {
 	"string",	/* WID_STRING */
 	"hbar",		/* WID_HBAR */
 	"vbar",		/* WID_VBAR */
+	"pbar",		/* WID_PBAR */
 	"icon",		/* WID_ICON */
 	"title",	/* WID_TITLE */
 	"scroller",	/* WID_SCROLLER */
@@ -85,57 +86,26 @@ widget_create(char *id, WidgetType type, Screen *screen)
 	debug(RPT_DEBUG, "%s(id=\"%s\", type=%d, screen=[%s])", __FUNCTION__, id, type, screen->id);
 
 	/* Create it */
-	w = malloc(sizeof(Widget));
-	if (w == NULL) {
-		report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
-		return NULL;
-	}
+	w = calloc(1, sizeof(Widget));
 
 	w->id = strdup(id);
-	if (w->id == NULL) {
-		report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
-		free(w);
-		return NULL;
-	}
-
 	w->type = type;
 	w->screen = screen;
 	w->x = 1;
 	w->y = 1;
-	w->width = 0;
-	w->height = 0;
 	w->left = 1;
 	w->top = 1;
-	w->right = 0;
-	w->bottom = 0;
 	w->length = 1;
 	w->speed = 1;
-	w->text = NULL;
-	//w->kids = NULL;
 
-	if (w->type == WID_FRAME) {
+	if (type == WID_FRAME) {
 		/* create a screen for the frame widget */
-		char *frame_name = malloc(strlen("frame_") + strlen(id) + 1);
+		char frame_name[sizeof("frame_") + strlen(id)];
 
-		if (frame_name == NULL) {
-			report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
-			free(w->id);
-			free(w);
-			return NULL;
-		}
 		strcpy(frame_name, "frame_");
 		strcat(frame_name, id);
 
 		w->frame_screen = screen_create(frame_name, screen->client);
-		if (w->frame_screen == NULL) {
-			report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
-			free(w->id);
-			free(w);
-			/* return NULL after cleaning up */
-			w = NULL;
-		}
-
-		free(frame_name); /* not needed anymore */
 	}
 	return w;
 }
@@ -143,36 +113,23 @@ widget_create(char *id, WidgetType type, Screen *screen)
 
 /** Destroy a widget.
  * \param w    Widget to destroy.
- * \retval <0  Error; no widget given.
- * \retval  0  Success.
  */
-int
+void
 widget_destroy(Widget *w)
 {
 	debug(RPT_DEBUG, "%s(w=[%s])", __FUNCTION__, w->id);
 
 	if (!w)
-		return -1;
+		return;
 
-	if (w->id != NULL) {
-		free(w->id);
-		w->id = NULL;
-	}
-	if (w->text != NULL) {
-		free(w->text);
-		w->text = NULL;
-	}
+	free(w->id);
+	free(w->text);
 
 	/* Free subscreen of frame widget too */
-	if (w->type == WID_FRAME) {
+	if (w->type == WID_FRAME)
 		screen_destroy(w->frame_screen);
-		w->frame_screen = NULL;
-	}
 
 	free(w);
-	w = NULL;
-
-	return 0;
 }
 
 
@@ -183,16 +140,13 @@ widget_destroy(Widget *w)
 WidgetType
 widget_typename_to_type(char *typename)
 {
-	WidgetType wid_type = WID_NONE;
 	int i;
 
 	for (i = 0; typenames[i] != NULL; i++) {
-		if (strcmp(typenames[i], typename) == 0) {
-			wid_type = i;
-			break; /* it's valid: skip out...*/
-		}
+		if (strcmp(typenames[i], typename) == 0)
+			return i; /* it's valid: skip out...*/
 	}
-	return wid_type;
+	return WID_NONE;
 }
 
 

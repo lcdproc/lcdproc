@@ -21,7 +21,7 @@
 
 #include "hd44780-usbtiny.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 /* connection type specific functions to be exposed using pointers in init() */

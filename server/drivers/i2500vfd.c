@@ -37,7 +37,7 @@
 #include "lcd.h"
 #include "i2500vfd.h"
 #include "glcd_font5x8.h"
-#include "report.h"
+#include "shared/report.h"
 
 // The display itself stores three pixels in one byte
 // We waste a little memory as we store one pixel per byte

@@ -43,26 +43,6 @@ int set_predecessor(MenuItem *item, char *itemid, Client *client);
 int set_successor(MenuItem *item, char *itemid, Client *client);
 
 
-/** small utility for debug output of command line. */
-static char *argv2string(int argc, char **argv)
-{
-	char *rtn = NULL;
-	unsigned int len;
-	unsigned int i;
-	for (i = len = 0; i < argc; i++)
-		len += strlen(argv[i]) + 1;
-	rtn = malloc(len + 1);
-	if (rtn != NULL) {
-		rtn[0] = '\0';
-		for (i = 0; i < argc; i++) {
-			strcat(rtn, argv[i]);
-			strcat(rtn, " ");
-		}
-	}
-	return rtn;
-}
-
-
 /**
  * Adds an item to a menu.
  *
@@ -233,7 +213,7 @@ menu_add_item_func(Client *c, int argc, char **argv)
  * Deletes an item from a menu
  *
  *\verbatim
- * Usage: menu_del_item <menuid> <itemid>
+ * Usage: menu_del_item [ignored] <itemid>
  *\endverbatim
  *
  * The given item in the given menu will be deleted. If you have deleted all
@@ -242,21 +222,18 @@ menu_add_item_func(Client *c, int argc, char **argv)
 int
 menu_del_item_func(Client *c, int argc, char **argv)
 {
-	Menu *menu;
 	MenuItem *item;
-	char *menu_id;
 	char *item_id;
 
 	if (c->state != ACTIVE)
 		return 1;
 
-	if (argc != 3) {
-		sock_send_error(c->sock, "Usage: menu_del_item <menuid> <itemid>\n");
+	if (argc != 3 && argc != 2) {
+		sock_send_error(c->sock, "Usage: menu_del_item [ignored] <itemid>\n");
 		return 0;
 	}
 
-	menu_id = argv[1];
-	item_id = argv[2];
+	item_id = argv[argc - 1];
 
 	/* Does the client have a menu already ? */
 	if (c->menu == NULL) {
@@ -265,21 +242,13 @@ menu_del_item_func(Client *c, int argc, char **argv)
 	}
 
 	/* use either the given menu or the client's main menu if none was specified */
-	menu = (menu_id[0] != '\0')
-	       ? menu_find_item(c->menu, menu_id, true)
-	       : c->menu;
-	if (menu == NULL) {
-		sock_send_error(c->sock, "Cannot find menu id\n");
-		return 0;
-	}
-
 	item = menu_find_item(c->menu, item_id, true);
 	if (item == NULL) {
 		sock_send_error(c->sock, "Cannot find item\n");
 		return 0;
 	}
 	menuscreen_inform_item_destruction(item);
-	menu_remove_item(menu, item);
+	menu_remove_item(item->parent, item);
 	menuscreen_inform_item_modified(item->parent);
 	menuitem_destroy(item);
 
@@ -301,7 +270,7 @@ menu_del_item_func(Client *c, int argc, char **argv)
  * For example, text displayed, value, etc...
  *
  *\verbatim
- * Usage: menu_set_item <menuid> <itemid> {<option>}+
+ * Usage: menu_set_item "" <itemid> {<option>}+
  *
  * The following parameters can be set per item:
  * (you should include the - in the option)
@@ -447,38 +416,19 @@ menu_set_item_func(Client *c, int argc, char **argv)
 	float float_value = 0;
 	char *string_value = NULL;
 
-	Menu *menu;
 	MenuItem *item;
-	char *menu_id;
 	char *item_id;
-	char *tmp_argv;
 	int argnr;
 
-	tmp_argv = argv2string(argc, argv);
-	if (tmp_argv != NULL) {
-		debug(RPT_DEBUG, "%s(Client [%d]: %s)",
-		       __FUNCTION__, c->sock, tmp_argv);
-		free(tmp_argv);
-	}
 	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc < 4) {
-		sock_send_error(c->sock, "Usage: menu_set_item <menuid> <itemid> {<option>}+\n");
+		sock_send_error(c->sock, "Usage: menu_set_item "" <itemid> {<option>}+\n");
 		return 0;
 	}
 
-	menu_id = argv[1];
 	item_id = argv[2];
-
-	/* use either the given menu or the client's main menu if none was specified */
-	menu = (menu_id[0] != '\0')
-	       ? menu_find_item(c->menu, menu_id, true)
-	       : c->menu;
-	if (menu == NULL) {
-		sock_send_error(c->sock, "Cannot find menu id\n");
-		return 0;
-	}
 
 	item = menu_find_item(c->menu, item_id, true);
 	if (item == NULL) {

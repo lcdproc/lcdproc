@@ -6,7 +6,7 @@
  * low to prevent 5V logic appearing on the GPIO pins.
  *
  * Mappings can be set in the config file using the keys:
- * pin_EN, pin_RS, pin_D7, pin_D6, pin_D5, pin_D4, pin_BL, pin_RW
+ * pin_EN, pin_EN2, pin_RS, pin_D7, pin_D6, pin_D5, pin_D4, pin_BL, pin_RW
  * in the [hd44780] section.
  */
 
@@ -27,7 +27,7 @@
 
 #include "hd44780-gpio.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 void gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 			   unsigned char flags, unsigned char ch);
@@ -41,6 +41,7 @@ typedef struct {
 	ugpio_t *d6;
 	ugpio_t *d5;
 	ugpio_t *d4;
+	ugpio_t *en2;
 	ugpio_t *bl;
 	ugpio_t *rw;
 } gpio_pins;
@@ -80,7 +81,7 @@ init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
 		return -1;
 	}
 
-	debug(RPT_INFO, "init_gpio_pin: Pin %s mapped to GPIO%d", name, number);
+	report(RPT_INFO, "init_gpio_pin: Pin %s mapped to GPIO%d", name, number);
 
 	return 0;
 }
@@ -93,7 +94,7 @@ init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
  * \param ch    The value to send (lower nibble must contain the data).
  */
 static void
-send_nibble(PrivateData *p, unsigned char ch)
+send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
@@ -103,9 +104,16 @@ send_nibble(PrivateData *p, unsigned char ch)
 	ugpio_set_value(pins->d4, ch & 0x01);
 
 	/* Data is clocked on the falling edge of EN */
-	ugpio_set_value(pins->en, 1);
-	p->hd44780_functions->uPause(p, 50);
-	ugpio_set_value(pins->en, 0);
+	if (displayID == 1 || displayID == 0)
+		ugpio_set_value(pins->en, 1);
+	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+		ugpio_set_value(pins->en2, 1);
+        p->hd44780_functions->uPause(p, 50);
+
+	if (displayID == 1 || displayID == 0)
+		ugpio_set_value(pins->en, 0);
+	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+		ugpio_set_value(pins->en2, 0);
 	p->hd44780_functions->uPause(p, 50);
 }
 
@@ -140,14 +148,22 @@ hd_init_gpio(Driver *drvthis)
 		return -1;
 	}
 
+	if (p->numDisplays > 1) {       /* For displays with two controllers */
+		if (init_gpio_pin(drvthis, &pins->en2, "EN2") != 0) {
+			report(RPT_ERR, "hd_init_gpio: unable to initialize GPIO pins");
+			gpio_HD44780_close(p);
+			return -1;
+		}
+	}
+
 	p->hd44780_functions->senddata = gpio_HD44780_senddata;
 	p->hd44780_functions->close = gpio_HD44780_close;
 
-	if (p->have_backlight) {
+	if (have_backlight_pin(p)) {
 		if (init_gpio_pin(drvthis, &pins->bl, "BL") != 0) {
 			report(RPT_WARNING,
 			       "hd_init_gpio: unable to initialize pin_BL - disabling backlight");
-			p->have_backlight = 0;
+			set_have_backlight_pin(p, 0);
 		}
 		else {
 			p->hd44780_functions->backlight = gpio_HD44780_backlight;
@@ -159,12 +175,12 @@ hd_init_gpio(Driver *drvthis)
 
 	ugpio_set_value(pins->rs, 0);
 
-	send_nibble(p, (FUNCSET | IF_8BIT) >> 4);
+	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	p->hd44780_functions->uPause(p, 4100);
-	send_nibble(p, (FUNCSET | IF_8BIT) >> 4);
+	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	p->hd44780_functions->uPause(p, 100);
-	send_nibble(p, (FUNCSET | IF_8BIT) >> 4);
-	send_nibble(p, (FUNCSET | IF_4BIT) >> 4);
+	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
+	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
 	common_init(p, IF_4BIT);
 
@@ -188,8 +204,8 @@ gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 
 	ugpio_set_value(pins->rs, (flags == RS_INSTR) ? 0 : 1);
 
-	send_nibble(p, ch >> 4);
-	send_nibble(p, ch);
+	send_nibble(p, ch >> 4, displayID);
+	send_nibble(p, ch, displayID);
 }
 
 
@@ -237,7 +253,10 @@ gpio_HD44780_close(PrivateData *p)
 	release_gpio_pin(&pins->d5);
 	release_gpio_pin(&pins->d4);
 
-	if (p->have_backlight)
+	if (p->numDisplays > 1)
+		release_gpio_pin(&pins->en2);
+
+	if (have_backlight_pin(p))
 		release_gpio_pin(&pins->bl);
 
 	if (pins->rw)

@@ -74,7 +74,7 @@ server_screen_init(void)
 		return -1;
 	}
 	server_screen->name = "Server screen";
-	server_screen->duration = RENDER_FREQ; /* 1 second, instead of 4...*/
+	server_screen->duration = 1e6 / frame_interval + 1; /* about 1 second, instead of 4...*/
 
 	/* Create all the widgets...*/
 	for (i = 0; i < display_props->height; i++) {

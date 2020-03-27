@@ -63,7 +63,7 @@ Different implementations of (n)curses available on:
 
 #include "lcd.h"
 #include "curses_drv.h"
-#include "report.h"
+#include "shared/report.h"
 
 // ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
 // However, ACS_S3 and ACS_S7 are not; these definitions were created to support

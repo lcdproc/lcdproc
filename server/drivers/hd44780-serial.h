@@ -21,9 +21,11 @@ struct hd44780_SerialInterface {
 	 * data_escape_max.
 	 *@{*/
 	unsigned char instruction_escape;	/**< Instruction escape character. */
+	unsigned int  instruction_pause;	/**< Instruction pause in ms */
 	unsigned char data_escape;	/**< Data escape character. */
 	unsigned char data_escape_min;	/**< Escaped data lower limit (inclusive) */
 	unsigned char data_escape_max;	/**< Escaped data upper limit (inclusive) */
+	unsigned char pre_init;		/**< Command to send prior to common initialization */
 	/**@}*/
 
 	unsigned int  default_bitrate;	/**< Bitrate device is set to by default */
@@ -33,6 +35,7 @@ struct hd44780_SerialInterface {
 	 *@{*/
 	char          keypad;		/**< Flag: keypad available */
 	unsigned char keypad_escape;	/**< Keys are escaped with this character */
+	unsigned char keypad_command;	/**< Command to request keys */
 	/**@}*/
 
 	/** \name Backlight options
@@ -65,14 +68,14 @@ struct hd44780_SerialInterface {
  * here, remember also to change hd44780-drivers.h as well.
  */
 static const struct hd44780_SerialInterface serial_interfaces[] = {
-	/*    type                  instr data     v     ^ bitrate bits  K   esc  B  Besc  Boff   Bon Multi  End */
-	{ HD44780_CT_PICANLCD,      0x11, 0x12, 0x00, 0x1F,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
-	{ HD44780_CT_LCDSERIALIZER, 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
-	{ HD44780_CT_LOS_PANEL,     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1, 0xFD,    0, 0xFF,   0,    0 },
-	{ HD44780_CT_VDR_LCD,       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,    0,    0,    0,   0,    0 },
-	{ HD44780_CT_VDR_WAKEUP,    0xC0, 0xC4, 0xC0, 0xCF,   9600,   4, 0, 0x00, 1,    0, 0xC9, 0xC8,   1, 0xCF },
-	{ HD44780_CT_PERTELIAN,     0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 1, 0xFE, 0x02, 0x03,   0,    0 },
-	{ HD44780_CT_UNKNOWN, 0x00, 0, 0x00, 0x00, 0, 0, 0, 0, 0, 0x00, 0x00, 0x00, 0, 0 }
+	/*    type                  instr ms  data     v     ^   pre bitrate bits  K   esc   cmd  B  Besc  Boff   Bon Multi  End */
+	{ HD44780_CT_PICANLCD,      0x11,  0, 0x12, 0x00, 0x1F,    0,   9600,   8, 0, 0x00,    0, 0,    0,    0,    0,   0,    0 },
+	{ HD44780_CT_LCDSERIALIZER, 0xFE,  0,    0, 0x00, 0x00,    0,   9600,   8, 0, 0x00,    0, 0,    0,    0,    0,   0,    0 },
+	{ HD44780_CT_LOS_PANEL,     0xFE,  0,    0, 0x00, 0x00,    0,   9600,   4, 1, 0xFE,    0, 1, 0xFD,    0, 0xFF,   0,    0 },
+	{ HD44780_CT_VDR_LCD,       0xFE,  0,    0, 0x00, 0x00,    0,   9600,   4, 0, 0x00,    0, 0,    0,    0,    0,   0,    0 },
+	{ HD44780_CT_VDR_WAKEUP,    0xC0,  0, 0xC4, 0xC0, 0xCF,    0,   9600,   4, 0, 0x00,    0, 1,    0, 0xC9, 0xC8,   1, 0xCF },
+	{ HD44780_CT_PERTELIAN,     0xFE,  0,    0, 0x00, 0x00,    0,   9600,   8, 0, 0x00,    0, 1, 0xFE, 0x02, 0x03,   0,    0 },
+	{ HD44780_CT_EZIO,          0xFE, 40,    0, 0x00, 0x00, 0x28,   2400,   4, 1, 0xFD, 0x06, 0,    0,    0,    0,   0,    0 }
 };
 
 /* initialize this particular driver */

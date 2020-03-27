@@ -24,7 +24,7 @@
 #endif
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 #include "glcd-render.h"
 #include "glcd_font5x8.h"

@@ -40,7 +40,7 @@
 
 #include "lcd.h"
 #include "ea65.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 

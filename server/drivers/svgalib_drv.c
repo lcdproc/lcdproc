@@ -30,7 +30,7 @@
 #endif
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "svgalib_drv.h"
 
 

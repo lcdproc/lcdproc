@@ -46,7 +46,7 @@
 
 #include "hd44780-pifacecad.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -54,6 +54,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <linux/ioctl.h>
 #include <stdint.h>
 #include <linux/spi/spidev.h>
 
@@ -125,6 +126,7 @@ mcp23s17_write_reg(PrivateData *p, unsigned char reg, unsigned char data)
 	unsigned char rx_buf[3];
 
 	struct spi_ioc_transfer spi;
+	memset(&spi, 0, sizeof(spi));
 	spi.tx_buf = (unsigned long) tx_buf;
 	spi.rx_buf = (unsigned long) rx_buf;
 	spi.len = sizeof(tx_buf);
@@ -156,6 +158,7 @@ mcp23s17_read_reg(PrivateData *p, unsigned char reg)
 	unsigned char rx_buf[3] = { 0, 0, 0 };
 
 	struct spi_ioc_transfer spi;
+	memset(&spi, 0, sizeof(spi));
 	spi.tx_buf = (unsigned long) tx_buf;
 	spi.rx_buf = (unsigned long) rx_buf;
 	spi.len = sizeof(tx_buf);

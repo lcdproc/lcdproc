@@ -87,7 +87,7 @@
 #include "lcd.h"
 #include "futaba.h"
 #include "errno.h"
-#include "report.h"
+#include "shared/report.h"
 
 #define SET_REPORT 0x09
 

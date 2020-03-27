@@ -29,12 +29,12 @@
    PCF8574AP: P0 P1 P2 P3 P4 P5 P6 P7
               |  |  |  |  |  |  |  |
    HD44780:   RS RW EN BL D4 D5 D6 D7
-   
+
    in LCDd.conf we then need to define
     i2c_line_RS=0x01
     i2c_line_RW=0x02
     i2c_line_EN=0x04
-    i2c_line_BL=0x80
+    i2c_line_BL=0x08
     i2c_line_D4=0x10
     i2c_line_D5=0x20
     i2c_line_D6=0x40
@@ -74,7 +74,7 @@
 #include "hd44780-i2c.h"
 #include "hd44780-low.h"
 
-#include "report.h"
+#include "shared/report.h"
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -155,7 +155,7 @@ hd_init_i2c(Driver *drvthis)
 	p->i2c_line_D5 = drvthis->config_get_int(drvthis->name, "i2c_line_D5", 0, D5);
 	p->i2c_line_D6 = drvthis->config_get_int(drvthis->name, "i2c_line_D6", 0, D6);
 	p->i2c_line_D7 = drvthis->config_get_int(drvthis->name, "i2c_line_D7", 0, D7);
-	
+
 	report(RPT_INFO, "HD44780: I2C: Init using D4 and D5, and or'd lines, invert", p->i2c_line_RS);
 	report(RPT_INFO, "HD44780: I2C: Pin RS mapped to 0x%02X", p->i2c_line_RS);
 	report(RPT_INFO, "HD44780: I2C: Pin RW mapped to 0x%02X", p->i2c_line_RW);
@@ -166,11 +166,6 @@ hd_init_i2c(Driver *drvthis)
 	report(RPT_INFO, "HD44780: I2C: Pin D6 mapped to 0x%02X", p->i2c_line_D6);
 	report(RPT_INFO, "HD44780: I2C: Pin D7 mapped to 0x%02X", p->i2c_line_D7);
 	report(RPT_INFO, "HD44780: I2C: Invert Backlight %d", p->i2c_backlight_invert);
-	
-#ifdef HAVE_DEV_IICBUS_IIC_H
-	struct iiccmd cmd;
-	bzero(&cmd, sizeof(cmd));
-#endif
 
 	p->backlight_bit = p->i2c_line_BL;
 
@@ -254,8 +249,8 @@ hd_init_i2c(Driver *drvthis)
 	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
-	hd44780_functions->uPause(p, 40);
+	//hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	//hd44780_functions->uPause(p, 40);
 
 	common_init(p, IF_4BIT);
 
@@ -323,8 +318,8 @@ i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flag
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	if ( p->i2c_backlight_invert == 0 )
-		p->backlight_bit = ((!p->have_backlight||state) ? 0 : p->i2c_line_BL);
+		p->backlight_bit = ((!have_backlight_pin(p)||state) ? 0 : p->i2c_line_BL);
 	else // Inverted backlight - npn transistor
-		p->backlight_bit = ((p->have_backlight && state) ? p->i2c_line_BL : 0);
+		p->backlight_bit = ((have_backlight_pin(p) && state) ? p->i2c_line_BL : 0);
 	i2c_out(p, p->backlight_bit);
 }

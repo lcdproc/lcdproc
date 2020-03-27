@@ -190,7 +190,7 @@ t6963_low_dsp_ready(T6963_port *p, u8 sta)
  * \param type     Command or Data
  * \param byte     Data byte.
  */
-inline void
+void
 t6963_low_send(T6963_port *p, u8 type, u8 byte)
 {
 	int portcontrol = 0;

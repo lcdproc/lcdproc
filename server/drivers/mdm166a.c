@@ -30,7 +30,7 @@
 #include "lcd.h"
 #include "mdm166a.h"
 #include "glcd_font5x8.h"
-#include "report.h"
+#include "shared/report.h"
 
 /*
  * The display itself stores eight pixels in one byte. We waste a little

@@ -241,7 +241,7 @@ associated with your driver. You put your driver name followed by
 of the source and header files. See below for an example.</para>
 
 <screen>
-myDriver_SOURCES =  lcd.h myDriver.c myDriver.h report.h
+myDriver_SOURCES =  lcd.h myDriver.c myDriver.h
 </screen>
 
 </sect3>
@@ -256,7 +256,9 @@ You're almost done! You only need to check out if you didn't made any mistake.
 Just run sh autogen.sh to regenerate the configure script and Makefiles,
 then run ./configure --enable-drivers=myDriver and type make.
 If your driver compiles without error, then congratulations, you've just added
-your driver to LCDproc! Remember to submit a patch to the mailing list so that
+your driver to LCDproc! Remember to submit a patch to the mailing list
+or open a pull request on
+<ulink url="https://github.com/lcdproc/lcdproc/">github</ulink> so that
 we can add it to the standard distribution, but do not forget the documentation.
 </para>
 

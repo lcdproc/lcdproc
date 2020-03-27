@@ -65,7 +65,7 @@
 #include "hd44780-low.h"
 #include "lpt-port.h"
 #include "port.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -109,17 +109,17 @@ hd_init_winamp(Driver *drvthis)
 
 	// Safety check against common configuration errors
 	if (p->numDisplays == 2) {
-		if (p->have_backlight && (EnMask[1] == BL)) {
+		if (have_backlight_pin(p) && (EnMask[1] == BL)) {
 			report(RPT_ERR, "hd_init_winamp: backlight must be on different pin than 2nd controller");
 			report(RPT_ERR, "hd_init_winamp: please change connection mapping in hd44780-winamp.c");
 			return -1;
 		}
-		if (p->have_backlight && p->have_output) {
+		if (have_backlight_pin(p) && p->have_output) {
 			report(RPT_ERR, "hd_init_winamp: backlight and output not possible with 2 controllers");
 			return -1;
 		}
 	}
-	else if (p->numDisplays == 3 && (p->have_backlight || p->have_output)) {
+	else if (p->numDisplays == 3 && (have_backlight_pin(p) || p->have_output)) {
 		report(RPT_ERR, "hd_init_winamp: backlight or output not possible with 3 controllers");
 		return -1;
 	}

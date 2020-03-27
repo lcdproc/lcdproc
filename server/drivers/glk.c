@@ -10,8 +10,10 @@
 
 /*-
  * Copyright ???
+ *   2018, Raphaël Doursenaud <rdoursenaud@free.fr>
  *
  * License ???
+ *
  */
 
 #include <stdlib.h>
@@ -37,12 +39,12 @@
 #include "lcd.h"
 #include "glk.h"
 #include "glkproto.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 #define GLK_DEFAULT_DEVICE	"/dev/lcd"
 #define GLK_DEFAULT_SPEED	19200
-#define GLK_DEFAULT_CONTRAST	560
+#define GLK_DEFAULT_CONTRAST	500
 #define GLK_DEFAULT_CELLWIDTH	6
 #define GLK_DEFAULT_CELLHEIGHT	8
 
@@ -110,7 +112,7 @@ glk_init(Driver *drvthis)
   p->framebuf = NULL;
   p->cellwidth = GLK_DEFAULT_CELLWIDTH;
   p->cellheight = GLK_DEFAULT_CELLHEIGHT;
-  p->contrast = GLK_DEFAULT_SPEED;
+  p->contrast = GLK_DEFAULT_CONTRAST;
   p->clearcount = 0;
 
   /* Read config file */
@@ -126,8 +128,7 @@ glk_init(Driver *drvthis)
 
   if (p->speed == 9600)       p->speed = B9600;
   else if (p->speed == 19200) p->speed = B19200;
-  /* not in the specs: */
-  //else if (p->speed == 38400) p->speed = B38400;
+  else if (p->speed == 38400) p->speed = B38400;
   else if (p->speed == 57600) p->speed = B57600;
   else if (p->speed == 115200) p->speed = B115200;
   else {
@@ -212,6 +213,12 @@ glk_init(Driver *drvthis)
 	p->width = 20; p->height = 4;
 	p->gpo_count = 2;
 	break;
+		case 0x27:
+			p->model = "GLK19264-7T-1U-USB";
+			p->width = 32;
+			p->height = 8;
+			p->gpo_count = 6;
+			break;
       default :
 	report(RPT_ERR, "%s: unrecognized module type: 0x%02X", drvthis->name, i);
 	return -1;
@@ -231,6 +238,7 @@ glk_init(Driver *drvthis)
 
   memset(p->framebuf, ' ', p->width * p->height);
 
+  /* Clear the screen */
   glkputl(p->fd, GLKCommand, 0x58, EOF);
 
   /* Enable flow control */
@@ -247,6 +255,9 @@ glk_init(Driver *drvthis)
 
   /* Set p->contrast */
   glk_set_contrast(drvthis, p->contrast);
+
+	/* Disable auto scroll */
+	glkputl(p->fd, GLKCommand, 0x52, EOF);
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -391,7 +402,7 @@ glk_flush(Driver *drvthis)
     for (x = 0; x < p->width; ++x) {
       if ((*qf == *pf) && (xs >= 0)) {
         /* Write accumulated string */
-        glkputl(p->fd, GLKCommand, 0x79, xs * p->cellwidth + 1, y * p->cellheight, EOF);
+        glkputl(p->fd, GLKCommand, 0x79, xs * p->cellwidth, y * p->cellheight, EOF);
         glkputa(p->fd, x - xs, ps);
         debug(RPT_DEBUG, "flush: Writing at (%d,%d) for %d", xs, y, x - xs);
         xs = -1;
@@ -405,7 +416,7 @@ glk_flush(Driver *drvthis)
     }
     if (xs >= 0) {
       /* Write accumulated line */
-      glkputl(p->fd, GLKCommand, 0x79, xs * p->cellwidth + 1, y * p->cellheight, EOF);
+      glkputl(p->fd, GLKCommand, 0x79, xs * p->cellwidth, y * p->cellheight, EOF);
       glkputa(p->fd, p->width - xs, ps);
       debug(RPT_DEBUG, "flush: Writing at (%d,%d) for %d", xs, y, p->width - xs);
     }
@@ -427,13 +438,16 @@ glk_string(Driver *drvthis, int x, int y, const char string[])
 	PrivateData *p = drvthis->private_data;
 	const char *s;
 
+	x--;			/* Convert 1-based coords to 0-based... */
+	y--;
+
 	debug(RPT_DEBUG, "glk_string(%d, %d, \"%s\")", x, y, string);
 
-	if ((y <= 0) || (y > p->height))
+	if ((y < 0) || (y >= p->height))
 		return;
 
 	for (s = string; (*s != '\0') && (x <= p->width); s++, x++) {
-		glk_chr(drvthis, x, y, *s);
+		glk_chr(drvthis, x + 1, y + 1, *s);
 	}
 }
 
@@ -450,18 +464,18 @@ MODULE_EXPORT void
 glk_chr(Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
-	int  myc = (unsigned char) c;
+	int myc = (unsigned char) c;
 
 	x--;			/* Convert 1-based coords to 0-based... */
 	y--;
 
 	if (p->fontselected != 1) {
 		debug(RPT_DEBUG, "Switching to font 1");
-		/* Select font 2 */
+		/* Select default "Small Filled" font */
 		glkputl(p->fd, GLKCommand, 0x31, 1, EOF);
 		p->fontselected = 1;
 		/* Set font metrics */
-		glkputl(p->fd, GLKCommand, 0x32, 1, 0, 0, 0, 32, EOF);
+		glkputl(p->fd, GLKCommand, 0x32, 0, 0, 0, 1, p->height, EOF);
 		/* Clear the screen */
 		glk_clear_forced(drvthis);
 	}

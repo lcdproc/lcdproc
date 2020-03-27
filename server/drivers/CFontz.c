@@ -40,7 +40,7 @@
 
 #include "lcd.h"
 #include "CFontz.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 #include "CFontz-charmap.h"
 #include "adv_bignum.h"
@@ -243,11 +243,6 @@ CFontz_init(Driver *drvthis)
 		report(RPT_INFO, "%s: rebooting LCD...", drvthis->name);
 		CFontz_reboot(drvthis);
 	}
-
-#ifndef SEAMLESS_HBARS
-	report(RPT_WARNING, "%s: driver built without SEAMLESS_HBARS. "
-	       "Hbars will NOT display correctly!", drvthis->name);
-#endif
 
 	sleep (1);
 	CFontz_hidecursor(drvthis);
@@ -699,7 +694,7 @@ CFontz_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 		}
 	}
 
-	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
+	lib_hbar_static(drvthis, x, y, len, promille, options | BAR_SEAMLESS, p->cellwidth, 0);
 }
 
 

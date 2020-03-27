@@ -47,7 +47,7 @@
 
 #include "hd44780-piplate.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdio.h>
 #include <string.h>

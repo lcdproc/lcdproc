@@ -43,7 +43,7 @@
 #include "lcd_lib.h"
 #include "EyeboxOne.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 #define INPUT_PAUSE_KEY         'A'
 #define INPUT_BACK_KEY          'B'

@@ -30,12 +30,11 @@
 #include <string.h>
 #include <errno.h>
 
-#include <usb.h>
 #include <ftdi.h>
 
 #include "lcd.h"
 #include "ula200.h"
-#include "report.h"
+#include "shared/report.h"
 #include "hd44780-charmap.h"
 #include "adv_bignum.h"
 
@@ -815,8 +814,6 @@ ula200_flush(Driver *drvthis)
 	int x, y;
 	int wid = p->width;
 	char ch;
-	char drawing;
-	int count;
 	int firstdiff;
 	int lastdiff;
 
@@ -826,9 +823,7 @@ ula200_flush(Driver *drvthis)
 	}
 
 	/* Update LCD incrementally by comparing with last contents */
-	count = 0;
 	for (y = 0; y < p->height; y++) {
-		drawing = 0;
 		firstdiff = -1;
 		lastdiff = 0;
 		for (x = 0; x < wid; x++) {

@@ -36,9 +36,10 @@ For fun, here are some example METAR codes:
  Chicago: KMDW
  Graz/Austria (Thalerhof) : LOWG
  Quebec City: CYQB
+ Amundsen-Scott South Pole Station: NZSP
 
 More informations about METAR codes is available at:
-http://www.nws.noaa.gov/oso/oso1/oso12/metar.htm
+https://www.weather.gov/media/wrh/mesowest/metar_decode_key.pdf
 
 =back
 
@@ -54,8 +55,8 @@ the port lcdMetar connects to by modifying the script's variables $host and $por
 
 =item METAR is too short! Something went wrong.
 
-The METAR data we received is not what we expected, check out NOOA's web site
-(http://weather.noaa.gov/) to see if something has changed.
+The METAR data we received is not what we expected, check out NOAA's web site
+(https://www.aviationweather.gov/metar?gis=off) to see if something has changed.
 
 =item Can't connect to METAR source
 
@@ -66,7 +67,7 @@ will retry in 15 minutes.
 
 =head1 REQUIRES
 
-Perl 5.004, Geo::METAR, LWP::Simple;
+Perl 5.004, Geo::METAR, LWP::Simple, LWP::Protocol::https;
 
 These are all available on CPAN: http://www.cpan.org/
 
@@ -106,6 +107,7 @@ Visit B<http://www.lcdproc.org/> for more infos and the lastest version.
 use strict;
 use Geo::METAR;
 use LWP::Simple;
+use LWP::Protocol::https;
 use IO::Socket;
 use Fcntl;
 
@@ -180,7 +182,9 @@ print $remote "widget_add metar cloud string\n" if ($lcdheight > 4);
 while (1) {
 	# fetch weather information
 	print "Fetching weather information\n" if ($verbose >= 5);
-	my $data = get("http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code");
+	# NOAA decomissioned weather.noaa.gov on 15-Jun-2016.
+	#my $data = get("http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code");
+	my $data = get("http://tgftp.nws.noaa.gov/data/observations/metar/stations/${site_code}.TXT");
 
 	if (not $data) {
 	    warn "Can't connect to METAR source." if ($verbose >= 1);
@@ -190,8 +194,9 @@ while (1) {
 
 	    my $m = new Geo::METAR;
 	    $data =~ s/\n//go;                          # remove newlines
-	    $data =~ m/($site_code\s\d+Z.*?)</go;       # find the METAR string
+	    $data =~ m/($site_code\s\d+Z.*)/go;       # find the METAR string
 	    my $metar = $1;                             # keep it
+            print "Metar is '${metar}'\n" if ($verbose >= 5);
 
 	    # Sanity check
 		die "METAR is too short! Something went wrong." if (length($metar)<1);

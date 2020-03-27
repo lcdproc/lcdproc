@@ -27,7 +27,7 @@
 int
 get_args (char **argv, char *str, int max_args)
 {
-	char *delimiters = " \n\0";
+	char *delimiters = " \n";
 	char *item;
 	int i = 0;
 

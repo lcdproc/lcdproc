@@ -6,7 +6,7 @@
  * and are connected to a serial port using some microcontroller. It supports
  * protocols using escape sequences to trigger commands, backlight or keys.
  *
- * Currently supported are: \c picanlcd, \c lcdserializer, \c los-panel,
+ * Currently supported are: \c ezio, \c picanlcd, \c lcdserializer, \c los-panel,
  * \c vdr-lcd, \c vdr-wakeup, and \c pertelian.
  */
 
@@ -20,6 +20,7 @@
  *                1999-2000, Benjamin Tse <blt@Comports.com>
  *                2001, Rene Wagner
  *                2001-2002, Joris Robijn <joris@robijn.net>
+ *                2017, Francois Mertz <fireboxled@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -49,11 +50,12 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
+#include <poll.h>
 
 #include "lcd.h"
 #include "hd44780-low.h"
 #include "hd44780-serial.h"
-#include "report.h"
+#include "shared/report.h"
 
 /** Shortcut to select an entry from serial_interfaces table */
 #define SERIAL_IF serial_interfaces[p->serial_type]
@@ -169,7 +171,7 @@ hd_init_serial(Driver *drvthis)
 
 	/* Get interface type */
 	p->serial_type = 0;
-	for (i = 0; serial_interfaces[i].connectiontype != HD44780_CT_UNKNOWN; i++) {
+	for (i = 0; i < sizeof(serial_interfaces); i++) {
 		if (p->connectiontype == serial_interfaces[i].connectiontype) {
 			p->serial_type = i;
 			break;
@@ -186,7 +188,7 @@ hd_init_serial(Driver *drvthis)
 		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
 	}
-	if (p->have_backlight && !(SERIAL_IF.backlight)) {
+	if (have_backlight_pin(p) && !(SERIAL_IF.backlight)) {
 		report(RPT_ERR, "HD44780: serial: backlight control is not supported by connection type");
 		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
@@ -244,6 +246,13 @@ hd_init_serial(Driver *drvthis)
 	p->hd44780_functions->scankeypad = serial_HD44780_scankeypad;
 	p->hd44780_functions->close = serial_HD44780_close;
 
+	/* Do pre-initialization */
+	if (SERIAL_IF.pre_init) {
+		serial_HD44780_senddata(p, 0, RS_INSTR,
+			SERIAL_IF.pre_init);
+		p->hd44780_functions->uPause(p, 40);
+	}
+
 	/* Do initialization */
 	if (SERIAL_IF.if_bits == 8) {
 		report(RPT_INFO,"HD44780: serial: initializing with 8 bits interface");
@@ -289,7 +298,9 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 	}
 	else {
 		write(p->fd, &SERIAL_IF.instruction_escape, 1);
+		p->hd44780_functions->uPause(p, SERIAL_IF.instruction_pause*1000);
 		write(p->fd, &ch, 1);
+		p->hd44780_functions->uPause(p, SERIAL_IF.instruction_pause*1000);
 	}
 	lastdisplayID = displayID;
 }
@@ -331,16 +342,25 @@ serial_HD44780_backlight(PrivateData *p, unsigned char state)
 /**
  * Read keypress.
  * \param p  Pointer to driver's private data structure.
- * \return   Scancode of the pressed keys.
+ * \return   Scancode of the pressed key
  */
 unsigned char
 serial_HD44780_scankeypad(PrivateData *p)
 {
-	unsigned char buffer = 0;
+
+	struct pollfd pfd = { .fd = p->fd, .events = POLLIN };
+	unsigned char buffer;
 	char hangcheck = 100;
 
-	read(p->fd, &buffer, 1);
-	if (buffer == SERIAL_IF.keypad_escape) {
+	if (SERIAL_IF.keypad_command) {
+
+		serial_HD44780_senddata(p, 0, RS_INSTR, SERIAL_IF.keypad_command);
+
+		if (poll(&pfd, 1, 250) != 1)
+			return 0;
+	}
+
+	if (read(p->fd, &buffer, 1) == 1 && buffer == SERIAL_IF.keypad_escape) {
 		while (hangcheck > 0) {
 			/* Check if I can read another byte */
 			if (read(p->fd, &buffer, 1) == 1) {
@@ -362,16 +382,34 @@ serial_HD44780_scankeypad(PrivateData *p)
 					}
 					return retval;
 				}
-				else {
-					return buffer;
+				if (SERIAL_IF.connectiontype == HD44780_CT_EZIO) {
+					/* Support EZIO-100 0x4n and EZIO-300 0xBn */
+					switch (buffer) {
+					    case 0x4B:
+					    case 0xBB:
+						return 0x14;	/* KeyMatrix_4_1=Enter  */
+					    case 0x4D:
+					    case 0xBE:
+						return 0x24;	/* KeyMatrix_4_2=Up     */
+					    case 0x47:
+					    case 0xBD:
+						return 0x34;	/* KeyMatrix_4_3=Down   */
+					    case 0x4E:
+					    case 0xB7:
+						return 0x44;	/* KeyMAtrix_4_4=Escape */
+					    /* No key 0x4F/0xBF or more than one key */
+					    default:
+						return 0;
+					}
 				}
+				return buffer;
 			}
 			hangcheck--;
 		}
 	}
-	return '\0';
-}
 
+	return 0;
+}
 
 /**
  * Close the driver (do necessary clean-up).

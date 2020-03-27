@@ -52,7 +52,7 @@
 
 #include "lcd.h"
 #include "ms6931.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 /** private data for the \c ms6931 driver */
@@ -447,12 +447,9 @@ ms6931_heartbeat (Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 	static int timer = 0;
-	static int saved_state = HEARTBEAT_ON;
 
 	report(RPT_DEBUG, "%s: heartbeat: state=%d", drvthis->name, state);
 
-	if (state)
-		saved_state = state;
 	if (state == HEARTBEAT_ON) {
 		char ch = ((timer + 4) & 5) ? p->heartbeatCharacter : ' ';
 

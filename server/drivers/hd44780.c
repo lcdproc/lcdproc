@@ -50,18 +50,6 @@
  *		  2007 Peter Marschall <peter@adpm.de>
  */
 
-
-/*
- * Uncomment one of the lines below to select your desired delay generation
- * mechanism. Using DELAY_NANOSLEEP  seems to provide the best performance.
- *
- * Setting this here, overrides the set or selected algorithm in timing.h.
- * FIXME: Is this on purpose?
- */
-//#define DELAY_GETTIMEOFDAY
-#define DELAY_NANOSLEEP
-//#define DELAY_IOCALLS
-
 /* Default parallel port address */
 #define LPTPORT	 0x378
 
@@ -84,7 +72,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "hd44780.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 #include "timing.h"
@@ -124,6 +112,185 @@ unsigned char HD44780_scankeypad(PrivateData *p);
 static int parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist);
 
 
+static const struct ModelMapping {
+	const char *name;
+	int model;
+} model_mapping[] = {
+	{ "default",      HD44780_MODEL_DEFAULT },
+	{ "standard",     HD44780_MODEL_DEFAULT },
+
+	{ "extended",     HD44780_MODEL_EXTENDED },
+	{ "ks0073",       HD44780_MODEL_EXTENDED },
+	{ "hd66710",      HD44780_MODEL_EXTENDED },
+
+	{ "winstar_oled", HD44780_MODEL_WINSTAR_OLED },
+	{ "weh00xxyya",   HD44780_MODEL_WINSTAR_OLED },
+
+	{ "pt6314_vfd",   HD44780_MODEL_PT6314_VFD },
+
+	{ "",             HD44780_MODEL_DEFAULT }
+};
+
+static int model_by_name( const char *name )
+{
+	int i;
+
+	for (i=0; i<sizeof(model_mapping)/sizeof(model_mapping[0]); i++) {
+		if (strcasecmp(model_mapping[i].name, name) == 0 )
+			return model_mapping[i].model;
+	}
+
+	return -1;
+}
+
+static const char *model_name( int type )
+{
+	int i;
+
+	for (i=0; i<sizeof(model_mapping)/sizeof(model_mapping[0]); i++) {
+		if (model_mapping[i].model == type)
+			return model_mapping[i].name;
+	}
+
+	return "";
+}
+
+static const struct BacklightValueMapping {
+	const char *name;
+	int value;
+} bl_value_mapping[] = {
+	{"none",         BACKLIGHT_NONE },
+	{"external",     BACKLIGHT_EXTERNAL_PIN },
+	{"internal",     BACKLIGHT_INTERNAL     },
+	{"internalCmds", BACKLIGHT_CONFIG_CMDS },
+};
+
+/* Reads from configuration setting for `Backlight` option, which can occur multiple times
+ * Returns -1 if configuration value is not valid */
+static int get_config_backlight_type(Driver *drvthis)
+{
+	int i, opt_idx;
+	int result = BACKLIGHT_NONE;
+	const char *value;
+	int was_none = 0;
+	PrivateData *p = drvthis->private_data;
+
+	/* allow multiple occurences of option Backlight, with values specified above
+	 * in bl_value_mapping, first one occurrence may be also boolean for backward compability */
+
+	for (opt_idx=0; /* nop */; opt_idx++) {
+		const char *def_value;
+		/* for first occurence of option 'backlight' default value depends
+		 * on model (which should be read before invoking this function) */
+		if (opt_idx != 0)
+			def_value = NULL;
+		else if (p->model ==  (HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD))
+			def_value = "internal";
+		else
+			def_value = "none";
+		value = drvthis->config_get_string(drvthis->name, "backlight", opt_idx, def_value);
+
+		if (value == NULL)
+			/* this is for second and next occurrences */
+			break;
+
+		/* find option name. */
+		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+			if (strcasecmp(value, bl_value_mapping[i].name) == 0) {
+				result |= bl_value_mapping[i].value;
+				if (bl_value_mapping[i].value == BACKLIGHT_NONE)
+					was_none = 1;
+				break;
+			}
+		}
+
+		if (i == sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0])) {
+			/* name not recognized */
+			if (opt_idx == 0) {
+				/* not found - try boolean for backward compability. If found, ignore other occurences */
+				short tmp = drvthis->config_get_bool(drvthis->name, "backlight", opt_idx, -1);
+				if (tmp < 0) {
+					report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, value);
+					return -1;
+				}
+				result = tmp ? BACKLIGHT_EXTERNAL_PIN : BACKLIGHT_NONE;
+				report(RPT_WARNING, "%s: deprecated boolean '%s' for 'Backlight' option found, consider updating configuration !!", drvthis->name, value);
+				return result;
+			}
+			else {
+				/* invalid option value */
+				report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, value);
+				return -1;
+			}
+		}
+	}
+
+	if (result != BACKLIGHT_NONE && was_none) {
+		report(RPT_ERR, "%s: conflicting types of 'Backlight' option provided", drvthis->name);
+		return -2;
+	}
+
+	return result;
+}
+
+static void strappend(char *dst, size_t dsize, const char *src) {
+
+	size_t dlen = strlen(dst);
+	size_t slen = strlen(src);
+
+	if (slen + dlen < dsize) {
+		memcpy(dst + dlen, src, slen);
+		dst[dlen+slen] = 0;
+	}
+	else if (dlen < dsize) {
+		memcpy(dst + dlen, src, dsize - dlen);
+		dst[dsize-1] = 0;
+	}
+}
+
+/* reports textually setting of backlight */
+static void report_backlight_type(int report_level, int backlight_type)
+{
+	/* should be enough for current options set and all possible combinations */
+	const char *text_value = NULL;
+	char buffer[256] = "";
+	int i;
+
+	/* first find just whole option name */
+	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+		if (bl_value_mapping[i].value == backlight_type) {
+			text_value = bl_value_mapping[i].name;
+			break;
+		}
+	}
+
+	if (!text_value) {
+		/* no single option value found, search for combinations */
+		int unknown = backlight_type;
+		char *s;
+
+		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]) && bl_value_mapping[i].name[0] != '\0'; i++) {
+
+			if (bl_value_mapping[i].value & backlight_type) {
+				if (buffer[0])
+					strappend(buffer, sizeof(buffer), ",");
+
+				strappend(buffer, sizeof(buffer), bl_value_mapping[i].name);
+				unknown &= ~bl_value_mapping[i].value;
+			}
+		}
+		if (unknown) {
+			if (buffer[0])
+				strappend(buffer, sizeof(buffer), ",");
+			s = buffer + strlen(buffer);
+			snprintf(s, buffer + sizeof(buffer) - s, "%08x", unknown);
+		}
+		text_value = buffer;
+	}
+
+	report(report_level, "HD44780: backlight: %s", text_value);
+}
+
 /**
  * Initialize the driver.
  * Initialize common part of drive & call sub-initialization
@@ -141,7 +308,7 @@ HD44780_init(Driver *drvthis)
 	int i = 0;
 	int (*init_fn) (Driver *drvthis) = NULL;
 	int if_type = IF_TYPE_UNKNOWN;
-	int tmp;
+	int tmp, ext_mode;
 	PrivateData *p;
 	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
 
@@ -165,10 +332,44 @@ HD44780_init(Driver *drvthis)
 	/* READ THE CONFIG FILE */
 
 	p->port			= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
-	p->ext_mode		= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
+	s			= drvthis->config_get_string(drvthis->name, "model", 0, "default");
+	p->model		= model_by_name(s);
+	if (p->model < 0) {
+		report(RPT_ERR, "%s: unknown Model: %s", drvthis->name, s);
+		return -1;
+	}
+	/* config file compability stuff */
+	if (p->model == HD44780_MODEL_DEFAULT) {
+		ext_mode	= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
+		if (ext_mode)
+			p->model = HD44780_MODEL_EXTENDED;
+	}
+	else {
+		tmp = (p->model == HD44780_MODEL_EXTENDED);
+		ext_mode = !!drvthis->config_get_bool(drvthis->name, "extendedmode", 0, tmp);
+		if (ext_mode != tmp) {
+			report(RPT_ERR, "%s: conflicting Model %s and extended mode: %d", drvthis->name, model_name(p->model), ext_mode);
+			return -1;
+		}
+	}
+
 	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
-	p->have_backlight	= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
+
+	/* parse backlight option. Default is model specific */
+	p->backlight_type	= get_config_backlight_type(drvthis);
+	if (p->backlight_type < 0) {
+		/* error already logged in get_config_backlight_type() */
+		return -1;
+	}
+
+	p->backlight_cmd_on	= drvthis->config_get_int(drvthis->name, "backlightcmdon", 0, 0);
+	p->backlight_cmd_off	= drvthis->config_get_int(drvthis->name, "backlightcmdoff", 0, 0);
+	if ((p->backlight_type & BACKLIGHT_CONFIG_CMDS) && (!p->backlight_cmd_on || !p->backlight_cmd_off)) {
+		report(RPT_ERR, "%s: No commands for enabling or disabling backlight specified for backlight type internalCmds", drvthis->name);
+		return -1;
+	}
+
 	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
 	p->delayMult 		= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
 	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
@@ -196,6 +397,11 @@ HD44780_init(Driver *drvthis)
 		if_type = connectionMapping[i].if_type;
 		init_fn = connectionMapping[i].init_fn;
 	}
+	report(RPT_INFO, "HD44780: selecting Model: %s", model_name(p->model));
+	report_backlight_type(RPT_INFO, p->backlight_type);
+	if (p->backlight_type & BACKLIGHT_CONFIG_CMDS) {
+		report(RPT_INFO, "HD44780: backlight config commands: on: %02x, off: %02x", p->backlight_cmd_on, p->backlight_cmd_off);
+	}
 
 	/* Get and parse vspan only when specified */
 	s = drvthis->config_get_string(drvthis->name, "vspan", 0, "");
@@ -216,27 +422,27 @@ HD44780_init(Driver *drvthis)
 
 	/* set contrast */
 	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_CONTRAST);
+	if ((tmp < 0) || (tmp > MAX_CONTRAST)) {
+		report(RPT_WARNING, "%s: Contrast must be between 0 and %d; using default %d",
+			drvthis->name, MAX_CONTRAST, DEFAULT_CONTRAST);
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
 
 	/* set brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_BRIGHTNESS);
+	if ((tmp < 0) || (tmp > MAX_BRIGHTNESS)) {
+		report(RPT_WARNING, "%s: Brightness must be between 0 and %d; using default %d",
+			drvthis->name, MAX_BRIGHTNESS, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	/* set backlight-off "brightness" */
 	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_OFFBRIGHTNESS);
+	if ((tmp < 0) || (tmp > MAX_BRIGHTNESS)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and %d; using default %d",
+			drvthis->name, MAX_BRIGHTNESS, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
@@ -325,7 +531,7 @@ HD44780_init(Driver *drvthis)
 				/* Was a key specified in the config file ? */
 				if (s) {
 					p->keyMapMatrix[y][x] = strdup(s);
-					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s);
+					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x+1, y+1, s);
 				}
 			}
 		}
@@ -344,6 +550,14 @@ HD44780_init(Driver *drvthis)
 		return -1;
 	}
 	report(RPT_INFO, "%s: Using %s charmap", drvthis->name, available_charmaps[p->charmap].name);
+
+	/* Get configured font bank */
+	tmp = drvthis->config_get_int(drvthis->name, "FontBank", 0, 0);
+	if ((tmp < 0) || (tmp > 3)) {
+		report(RPT_WARNING, "%s: FontBank must be between 0 and 3; using default %d", drvthis->name, 0);
+		tmp = 0;
+	}
+	p->font_bank = tmp;
 
 	/* Output latch state - init to a non-valid value */
 	p->output_state = 999999;
@@ -390,9 +604,11 @@ HD44780_init(Driver *drvthis)
 	if (p->hd44780_functions->scankeypad == NULL)
 		p->have_keypad = 0;
 
-	/* consistency check: no local backlight function => no backlight */
+	/* consistency check: no local backlight function => no external backlight
+	 * still backlight might be set using internal commands of display independant
+	 * of connection type*/
 	if (p->hd44780_functions->backlight == NULL)
-		p->have_backlight = 0;
+		set_have_backlight_pin(p, 0);
 
 	/* consistency check: no local output function => no output */
 	if (p->hd44780_functions->output == NULL)
@@ -401,57 +617,7 @@ HD44780_init(Driver *drvthis)
 	/* set contrast */
 	HD44780_set_contrast(drvthis, p->contrast);
 
-	/* Display startup parameters on the LCD */
 	HD44780_clear(drvthis);
-	sprintf(buf, "HD44780 %dx%d", p->width, p->height);
-	HD44780_string(drvthis, 1, 1, buf);
- 	switch(if_type) {
- 	  case IF_TYPE_USB:
-  		sprintf(buf, "USB %s%s%s",
- 			 (p->have_backlight?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_SERIAL:
- 		sprintf(buf, "SERIAL %s%s%s",
- 			 (p->have_backlight?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_I2C:
- 		sprintf(buf, "I2C %s%s%s",
- 			 (p->have_backlight?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_SPI:
- 		sprintf(buf, "SPI %s%s%s",
- 			 (p->have_backlight?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_TCP:
- 		sprintf(buf, "TCP %s%s%s",
- 			 (p->have_backlight?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
-	  case IF_TYPE_PARPORT:
- 	  default:
- 		sprintf(buf, "LPT 0x%x%s%s%s", p->port,
- 			 (p->have_backlight?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
-  			);
-  	}
-	HD44780_string(drvthis, 1, 2, buf);
-	HD44780_flush(drvthis);
-	sleep(2);
 
 	return 0;
 }
@@ -470,23 +636,74 @@ HD44780_init(Driver *drvthis)
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
-	if (p->ext_mode) {
+	/* Set initial brightness according to Brightness setting.
+	 * This assumes that initially backlight is on (or is not used at all) */
+	int init_brightness = p->brightness;
+
+	unsigned char cmd_funcset =  FUNCSET | if_bit | TWOLINE | SMALLCHAR;
+	if (has_extended_mode(p)) {
 		/* Set up extended mode */
-		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | EXTREG);
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd_funcset | EXTREG);
 		p->hd44780_functions->uPause(p, 40);
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR);
+
+	if (p->model == HD44780_MODEL_PT6314_VFD) {
+		cmd_funcset &= ~PT6314_BRIGHT_MASK;
+
+		if (init_brightness >= 3 * (MAX_BRIGHTNESS / 4))
+			cmd_funcset |= PT6314_BRIGHT_100; /* = 0x00 */
+		else if (init_brightness >= MAX_BRIGHTNESS / 2)
+			cmd_funcset |= PT6314_BRIGHT_75; /* = 0x01 */
+		else if (init_brightness > MAX_BRIGHTNESS / 4 && init_brightness > DEFAULT_OFFBRIGHTNESS)
+			/* Idea is to set to lowest default */
+			cmd_funcset |= PT6314_BRIGHT_50; /* = 0x02 */
+		else
+			cmd_funcset |= PT6314_BRIGHT_25; /* = 0x03 */
+	}
+	else {
+		/* by default font_bank is zero
+		 * this is ignored on most of displays, except of PT6314 VFD,
+		 * which this value means completely different thing, but is handled above */
+		cmd_funcset |=  p->font_bank;
+	}
+
+	/* save used cmd for FUNCSET */
+	p->func_set_mode = cmd_funcset;
+
+	/* set up standard mode.  */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd_funcset);
 	p->hd44780_functions->uPause(p, 40);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+
+	/* Turn off display, as manipulatimg below can cause some garbage on screen */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPOFF | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
+
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
-	p->hd44780_functions->uPause(p, 1600);
+	/* winstar OLEDs require 6.2ms for this command, according to spec */
+	p->hd44780_functions->uPause(p, (p->model == HD44780_MODEL_WINSTAR_OLED) ? 6200 : 1600);
+
+	if (p->model == HD44780_MODEL_WINSTAR_OLED) {
+		/* For WINSTAR OLED displays need to set TEXT mode and additionally level of brigtness.
+		 * It is particularly important on reinitialization without powering off it first */
+		unsigned char pwr = WINST_PWROFF;
+		if (init_brightness >= MAX_BRIGHTNESS / 2) {
+			pwr = WINST_PWRON;
+		}
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, WINST_MODESET | WINST_TEXTMODE | pwr);
+		p->hd44780_functions->uPause(p, 500);
+	}
+
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
 	p->hd44780_functions->uPause(p, 1600);
+
+	/* Turn on display again */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+	p->hd44780_functions->uPause(p, 40);
+
 	if (p->hd44780_functions->flush != NULL)
 		p->hd44780_functions->flush(p);
 }
@@ -599,7 +816,7 @@ HD44780_position(Driver *drvthis, int x, int y)
 	int relY = y - p->dispVOffset[dispID - 1];
 	int DDaddr;
 
-	if (p->ext_mode) {
+	if (has_extended_mode(p)) {
 		/* Linear addressing, each line starts 0x20 higher. */
 		DDaddr = x + relY * p->line_address;
 	} else {
@@ -863,7 +1080,7 @@ HD44780_set_brightness(Driver *drvthis, int state, int promille)
 	PrivateData *p = drvthis->private_data;
 
 	/* Check it */
-	if (promille < 0 || promille > 1000)
+	if (promille < 0 || promille > MAX_BRIGHTNESS)
 		return;
 
 	/* store the software value since there is not get */
@@ -881,6 +1098,69 @@ HD44780_set_brightness(Driver *drvthis, int state, int promille)
 	p->backlightstate = -1;
 }
 
+/** Sets internal backlight state using internal commands (based on configured model) */
+static void
+hd44780_set_backlight_internal(PrivateData *p, int state)
+{
+	unsigned char cmd = 0;
+	int brightness = state ? p->brightness : p->offbrightness;
+	switch (p->model) {
+		case HD44780_MODEL_WINSTAR_OLED:
+			cmd = WINST_MODESET | WINST_TEXTMODE \
+			    | (brightness >= MAX_BRIGHTNESS/2 ? WINST_PWRON : WINST_PWROFF);
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			report(RPT_DEBUG, "hd44780: setting BL %s using winstar_oled internal cmd: %02x", state ? "on" : "off", cmd);
+			break;
+
+		case HD44780_MODEL_PT6314_VFD:
+			cmd =  p->func_set_mode & ~PT6314_BRIGHT_MASK;
+			if (brightness >= 3 * MAX_BRIGHTNESS / 4)
+				cmd |= PT6314_BRIGHT_100; /* = 0x00 */
+			else if (brightness >= MAX_BRIGHTNESS / 2)
+				cmd |= PT6314_BRIGHT_75; /* = 0x01 */
+			else if (brightness > MAX_BRIGHTNESS / 4)
+				cmd |= PT6314_BRIGHT_50; /* = 0x02 */
+			else
+				cmd |= PT6314_BRIGHT_25; /* = 0x03 */
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			report(RPT_DEBUG, "hd44780: setting BL %s using pt6314_vfd internal cmd: %02x", state ? "on" : "off", cmd);
+			break;
+
+		default:
+			/* do nothing for other models */
+			break;
+	}
+}
+
+static void
+hd44780_set_backlight_config_cmds(PrivateData *p, int state)
+{
+	int brightness = state ? p->brightness : p->offbrightness;
+	int i, shift;
+	unsigned char cmd;
+
+	/* Assume two levels of brightness */
+	if (brightness >= MAX_BRIGHTNESS/2) {
+		for (i=0; i<sizeof(p->backlight_cmd_on); i++) {
+			shift = (sizeof(p->backlight_cmd_on) - i - 1)*8;
+			cmd =  (unsigned char)(p->backlight_cmd_on >> shift) & 0xff;
+			if (cmd) {
+				report(RPT_DEBUG, "hd44780: setting BL on using cmd %02x", cmd);
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			}
+		}
+	}
+	else {
+		for (i=0; i<sizeof(p->backlight_cmd_off); i++) {
+			shift = (sizeof(p->backlight_cmd_on) - i - 1)*8;
+			cmd =  (unsigned char)(p->backlight_cmd_off >> shift) & 0xff;
+			if (cmd) {
+				report(RPT_DEBUG, "hd44780: setting BL off using cmd %02x", cmd);
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			}
+		}
+	}
+}
 
 /**
  * Turn the LCD backlight on or off.
@@ -892,12 +1172,19 @@ HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	/* Immediately return if no backlight is available or no change is necessary */
-	if (!p->have_backlight || p->backlightstate == on)
+	/* Immediately return if no way of setting backlight is available
+           or no change is necessary */
+	if (!p->backlight_type|| p->backlightstate == on)
 		return;
 
 	if (p->hd44780_functions->backlight != NULL)
 		p->hd44780_functions->backlight(p, on);
+
+	if (p->backlight_type & BACKLIGHT_INTERNAL)
+		hd44780_set_backlight_internal(p, on);
+
+	if (p->backlight_type & BACKLIGHT_CONFIG_CMDS)
+		hd44780_set_backlight_config_cmds(p, on);
 
 	p->backlightstate = on;
 }

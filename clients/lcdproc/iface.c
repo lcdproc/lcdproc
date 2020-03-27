@@ -32,6 +32,7 @@
 #define UNSET_INT -1
 #define UNSET_STR "\01"
 
+IfaceInfo iface[MAX_INTERFACES];
 
 static int iface_count = 0;	/* number of interfaces */
 static char unit_label[10] = "B";	/* default unit label is Bytes */

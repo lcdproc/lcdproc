@@ -33,7 +33,7 @@
 
 #include "lcd.h"
 //#define DEBUG
-#include "report.h"
+#include "shared/report.h"
 #include "yard2LCD.h"
 #include "lcd_lib.h"
 
@@ -63,7 +63,7 @@ typedef struct driver_private_data {
 	int hspace, vspace;
 	int cellwidth, cellheight;
 	int bigcellwidth, bigcellheight;
-	char *framebuf;
+	unsigned char *framebuf;
 	int on_brightness;
 	int off_brightness;
 	char hw_brightness;
@@ -76,10 +76,10 @@ typedef struct driver_private_data {
 /* Prototypes of internal functions */
 static int yard_hwWrite(Driver *drvthis, unsigned char *yardData, unsigned char Datalen);
 static int yard_hwClearLCD(Driver *drvthis);
-static int yard_hwEnterGmode(Driver *drvthis);
+//static int yard_hwEnterGmode(Driver *drvthis);
 static int yard_hwGotoXY(Driver *drvthis, unsigned char x, unsigned char y);
-static int yard_hwPrintChar(Driver *drvthis, char c);
-static int yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len);
+//static int yard_hwPrintChar(Driver *drvthis, char c);
+static int yard_hwPrintCharArray(Driver *drvthis, unsigned char *str, unsigned char len);
 static int yard_hwSetBrightness(Driver *drvthis, unsigned char brightVal);
 static int yard_hwWriteCGRam(Driver *drvthis, unsigned char numChar, unsigned char *data);
 
@@ -181,8 +181,9 @@ yard_hwGotoXY(Driver *drvthis, unsigned char x, unsigned char y)
 
 
 /*
- * Hardware function: Prints a single character
+ * Hardware function: Prints a single character not used now
  */
+ /*
 static int 
 yard_hwPrintChar(Driver *drvthis, char c)
 {
@@ -196,12 +197,13 @@ yard_hwPrintChar(Driver *drvthis, char c)
 	// Send command
 	return yard_hwWrite(drvthis, cmdBuf, 2);
 }
+*/
 
 /*
  * Hardware function: Prints a character array
  */
 static int 
-yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len)
+yard_hwPrintCharArray(Driver *drvthis, unsigned char *str, unsigned char len)
 {
 	debug(RPT_DEBUG, "%s: Event 05 - Enter yard_hwPrintCharArray: %d - %s",drvthis->name,len,str);
 	unsigned char cmdBuf[MAX_YARDDATA_SIZE];
@@ -223,6 +225,7 @@ yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len)
 /*
  * Hardware function: Sets brightness of the backlight
  */
+static int 
 yard_hwSetBrightness(Driver *drvthis, unsigned char brightVal)
 {
 	debug(RPT_DEBUG, "%s: Event 06 - Enter yard_hwSetBrightness: %d",drvthis->name,brightVal);
@@ -305,7 +308,7 @@ yard_init(Driver *drvthis)
 	}
 	
 	//Get the config from yard2srvd. Config is not in LCDd.conf !
-	sprintf(Recbuffer,"LCDPROC\0");
+	sprintf(Recbuffer,"LCDPROC");
 	byteCnt = write(p->fd,Recbuffer, strlen(Recbuffer)); 
 	if (byteCnt < 0) 
 	{

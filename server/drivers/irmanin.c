@@ -28,7 +28,7 @@
 
 #include "lcd.h"
 #include "irmanin.h"
-#include "report.h"
+#include "shared/report.h"
 #include "irman.h"
 
 

@@ -61,7 +61,7 @@
 
 #include "lcd.h"
 #include "CwLnx.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 /* for the icon definitions & the big numbers */
@@ -114,7 +114,6 @@ MODULE_EXPORT char *symbol_prefix = "CwLnx_";
 static void CwLnx_linewrap(int fd, int on);
 static void CwLnx_autoscroll(int fd, int on);
 static void CwLnx_hidecursor(int fd);
-static void CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *dat);
 
 
 #define LCD_CMD			254
@@ -960,15 +959,11 @@ CwLnx_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 	for (i = 1; i <= p->cellwidth; i++) {
 	    // fill pixel columns from left to right.
 	    memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
-#if defined(SEAMLESS_HBARS)
-	    CwLnx_set_char_unrestricted(drvthis, i+1, hBar);
-#else
 	    CwLnx_set_char(drvthis, i+1, hBar);
-#endif
 	}
     }
 
-    lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 1);
+    lib_hbar_static(drvthis, x, y, len, promille, options | BAR_SEAMLESS, p->cellwidth, 1);
 }
 
 
@@ -1034,7 +1029,6 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
     PrivateData *p = drvthis->private_data;
 
     char c;
-    int rc;
 
     if ((n <= 0) || (n > CwLnx_get_free_chars(drvthis)))
 	return;
@@ -1042,70 +1036,11 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 	return;
 
     c = LCD_CMD;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
     c = LCD_SETCHAR;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
     c = (char) n;
-    rc = Write_LCD(p->fd, &c, 1);
-
-    if (p->model == 1602) {	// the character model
-	unsigned char mask = (1 << p->cellwidth) - 1;
-	int row;
-
-	for (row = 0; row < p->cellheight; row++) {
-	    c = dat[row] & mask;
-	    Write_LCD(p->fd, &c, 1);
-	}
-    } else if ((p->model == 12232) || (p->model == 12832)) {	// graphical models
-	int col;
-
-	for (col = p->cellwidth - 1; col >= 0; col--) {
-	    int letter = 0;
-	    int row;
-
-	    for (row = p->cellheight - 1; row >= 0; row--) {
-		letter <<= 1;
-		letter |= ((dat[row] >> col) & 1);
-	    }
-
-	    /* restrict width to 5 pixels */
-	    c = (col < p->cellwidth - 1) ? letter : '\0';
-
-	    Write_LCD(p->fd, &c, 1);
-	}
-    }
-
-    c = LCD_CMD_END;
-    rc = Write_LCD(p->fd, &c, 1);
-}
-
-
-/*
- * Identical to CwLnx_set_char, but it doesn't restrict the 12232 to
- * using only 5 of its 6 columns.  Full 6-column mode is required
- * for seamless H-bars.
- */
-
-#if defined(SEAMLESS_HBARS)
-static void
-CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *dat)
-{
-    PrivateData *p = drvthis->private_data;
-
-    char c;
-    int rc;
-
-    if ((n <= 0) || (n > CwLnx_get_free_chars(drvthis)))
-	return;
-    if (!dat)
-	return;
-
-    c = LCD_CMD;
-    rc = Write_LCD(p->fd, &c, 1);
-    c = LCD_SETCHAR;
-    rc = Write_LCD(p->fd, &c, 1);
-    c = (char) n;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
 
     if (p->model == 1602) {	// the character model
 	unsigned char mask = (1 << p->cellwidth) - 1;
@@ -1134,9 +1069,8 @@ CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *dat)
     }
 
     c = LCD_CMD_END;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
 }
-#endif
 
 
 /**

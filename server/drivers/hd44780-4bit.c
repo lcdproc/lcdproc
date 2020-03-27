@@ -75,7 +75,7 @@
 #include "hd44780-low.h"
 #include "lpt-port.h"
 #include "port.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -262,7 +262,7 @@ lcdstat_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
  */
 void lcdstat_HD44780_backlight(PrivateData *p, unsigned char state)
 {
-	p->backlight_bit = ((!p->have_backlight||state)?0:BL);
+	p->backlight_bit = ((have_backlight_pin(p)||state)?0:BL);
 
 	port_out(p->port, p->backlight_bit);
 }
@@ -279,7 +279,7 @@ unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 	unsigned char readval;
 
 	/* If at most two controllers and NO backlight, 10 bits may be used */
-	if ((p->numDisplays <= 2) && (!p->have_backlight)) {
+	if ((p->numDisplays <= 2) && (have_backlight_pin(p))) {
 		port_out(p->port, ~YData & 0x003F);
 		port_out(p->port + 2, (((~YData & 0x03C0) >> 6)) ^ OUTMASK);
 	}

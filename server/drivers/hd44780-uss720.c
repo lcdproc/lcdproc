@@ -27,7 +27,7 @@
 #include "hd44780-uss720.h"
 #include "hd44780-low.h"
 #include "lpt-port.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -223,7 +223,7 @@ uss720_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 
 	if (displayID == 0)
 		enableLines = EnMask[0]
-		| ((p->have_backlight) ? 0 : EnMask[1])
+		| ((have_backlight_pin(p)) ? 0 : EnMask[1])
 		| ((p->numDisplays == 3) ? EnMask[2] : 0);
 	else
 		enableLines = EnMask[displayID - 1];

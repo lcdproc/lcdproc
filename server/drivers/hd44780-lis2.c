@@ -23,7 +23,7 @@
 #include "hd44780-lis2.h"
 #include "hd44780-low.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -211,7 +211,7 @@ static unsigned char rowNum = 0;
 	}
 	else {	// RS_INSTR: we have an instruction
 		if ((ch & POSITION) != 0) {
-			unsigned char divisor = (p->ext_mode) ? 0x20 : 0x40;
+			unsigned char divisor = has_extended_mode(p) ? 0x20 : 0x40;
 
 			// get mangled position by stripping POSITION flag from given data
 			ch &= ~POSITION;

@@ -22,7 +22,7 @@
 
 #include "lcd.h"
 #include "wirz-sli.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 #define SLI_DEFAULT_DEVICE	"/dev/lcd"

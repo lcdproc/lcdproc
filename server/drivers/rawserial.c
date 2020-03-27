@@ -47,7 +47,7 @@
 
 #include "lcd.h"
 #include "rawserial.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 /** private data for the \c rawserial driver */

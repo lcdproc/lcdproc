@@ -13,6 +13,7 @@
     ftdi_line_RS=0x20
     ftdi_line_RW=0x40
     ftdi_line_backlight=0x80
+    ftdi_line_EN2=0x00
 
    RW of your display can either be connected to D6 or GND.
 \endverbatim
@@ -48,7 +49,7 @@
 
 #include "hd44780-ftdi.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 /* connection type specific functions to be exposed using pointers in init() */
 void ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
@@ -67,16 +68,25 @@ hd_init_ftdi(Driver *drvthis)
 {
     int vendor_id, product_id;
     int f;
+    const char *s;
+    char *usb_description, *serial_number;
 
     PrivateData *p = (PrivateData *)drvthis->private_data;
 
     p->hd44780_functions->senddata = ftdi_HD44780_senddata;
     p->hd44780_functions->backlight = ftdi_HD44780_backlight;
     p->hd44780_functions->close = ftdi_HD44780_close;
+    usb_description = serial_number = NULL;
 
     /* Load config */
     vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x0403);
     product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x6001);
+    if ((s = drvthis->config_get_string(drvthis->name, "UsbDescription", 0, NULL)) != NULL) {
+        usb_description = strdup(s);
+    }
+    if ((s = drvthis->config_get_string(drvthis->name, "SerialNumber", 0, NULL)) != NULL) {
+        serial_number = strdup(s);
+    }
 
     /* these config settings are not documented intentionally */
     p->ftdi_mode = drvthis->config_get_int(drvthis->name, "ftdi_mode", 0, 8);
@@ -86,19 +96,37 @@ hd_init_ftdi(Driver *drvthis)
     p->ftdi_line_backlight = drvthis->config_get_int(drvthis->name, "ftdi_line_backlight", 0, 0x08);
     p->backlight_bit = 0;
 
+    if (p->numDisplays > 1) {       /* For displays with two controllers */
+        p->ftdi_line_EN2 = drvthis->config_get_int(drvthis->name, "ftdi_line_EN2", 0, 0x00);
+        if(p->ftdi_line_EN2 == 0) {
+            report(RPT_WARNING, "multiple displays enabled but ftdi_line_EN2 not configured");
+        }
+    }
+
+
     /* some foolproof check */
     if (p->ftdi_mode != 4 && p->ftdi_mode != 8) {
 	report(RPT_ERR, "invalid ftdi_mode: %d", p->ftdi_mode);
-	return -1;
+	f = -1;
+	goto hd_init_ftdi_done;
     }
 
     /* Init 1. channel: data */
     ftdi_init(&p->ftdic);
     ftdi_set_interface(&p->ftdic, INTERFACE_A);
-    f = ftdi_usb_open(&p->ftdic, vendor_id, product_id);
+
+    report(RPT_INFO,
+        "opening usb ftdi lcd with vendorID: %#x, productID: %#x, description: %s, serial: %s",
+        vendor_id, product_id,
+        (usb_description==NULL?"<any>":usb_description),
+        (serial_number==NULL?"<any>":serial_number)
+    );
+    f = ftdi_usb_open_desc(&p->ftdic, vendor_id, product_id, usb_description, serial_number);
+
     if (f < 0 && f != -5) {
 	report(RPT_ERR, "unable to open ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic));
-	return -1;
+	f = -1;
+        goto hd_init_ftdi_done;
     }
     debug(RPT_DEBUG, "ftdi open succeeded(channel 1): %d", f);
 
@@ -109,7 +137,8 @@ hd_init_ftdi(Driver *drvthis)
 	f = ftdi_set_baudrate(&p->ftdic, 921600);
 	if (f < 0) {
 	    report(RPT_ERR, "unable to open ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic));
-	    return -1;
+	    f = -1;
+            goto hd_init_ftdi_done;
 	}
     }
 
@@ -119,10 +148,17 @@ hd_init_ftdi(Driver *drvthis)
 	/* Init 2. channel: control */
 	ftdi_init(&p->ftdic2);
 	ftdi_set_interface(&p->ftdic2, INTERFACE_B);
-	f = ftdi_usb_open(&p->ftdic2, vendor_id, product_id);
+        report(RPT_INFO,
+            "opening usb ftdi2 lcd with vendorID: %#x, productID: %#x, description: %s, serial: %s",
+            vendor_id, product_id,
+            (usb_description==NULL?"<any>":usb_description),
+            (serial_number==NULL?"<any>":serial_number)
+        );
+        f = ftdi_usb_open_desc(&p->ftdic2, vendor_id, product_id, usb_description, serial_number);
 	if (f < 0 && f != -5) {
 	    report(RPT_ERR, "unable to open second ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic2));
-	    return -2;
+	    f = -2;
+	    goto hd_init_ftdi_done;
 	}
 	debug(RPT_DEBUG, "ftdi open succeeded(channel 2): %d", f);
 
@@ -146,8 +182,11 @@ hd_init_ftdi(Driver *drvthis)
 	common_init(p, IF_4BIT);
     }
 
-
-    return 0;
+    f = 0;
+hd_init_ftdi_done:
+    if (usb_description) free(usb_description);
+    if (serial_number) free(serial_number);
+    return f;
 }
 
 
@@ -161,6 +200,15 @@ hd_init_ftdi(Driver *drvthis)
 void
 ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
+    unsigned char enableLines = 0;
+    /* Which EN to control */
+    if (displayID == 1 || displayID == 0) {
+        enableLines |= p->ftdi_line_EN;
+    }
+    if (displayID == 2 || (p->numDisplays > 1 && displayID == 0)) {
+        enableLines |= p->ftdi_line_EN2;
+    }
+
     if (p->ftdi_mode == 8) {
 	/* Output data on first channel */
 	int f = ftdi_write_data(&p->ftdic, &ch, 1);
@@ -171,7 +219,7 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	}
 
 	/* Setup RS and R/W and EN on second channel */
-	ch = p->ftdi_line_EN | p->backlight_bit;
+	ch = enableLines | p->backlight_bit;
 	if (flags == RS_DATA) {
 	    ch |= p->ftdi_line_RS;
 	}
@@ -203,9 +251,9 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	    portControl |= p->ftdi_line_RS;
 	}
 
-	buf[0] = ((ch >> 4) & 0x0F) | portControl | p->ftdi_line_EN;
+	buf[0] = ((ch >> 4) & 0x0F) | portControl | enableLines;
 	buf[1] = ((ch >> 4) & 0x0F) | portControl;
-	buf[2] = (ch & 0x0F) | portControl | p->ftdi_line_EN;
+	buf[2] = (ch & 0x0F) | portControl | enableLines;
 	buf[3] = (ch & 0x0F) | portControl;
 	int f = ftdi_write_data(&p->ftdic, buf, 4);
 

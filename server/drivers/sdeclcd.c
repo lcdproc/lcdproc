@@ -39,7 +39,7 @@
 #include "lpt-port.h"
 #include "timing.h"
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 #include "lcd_lib.h"
 
@@ -51,8 +51,9 @@
  * mapping between the parallel port Control register and the
  * LCD control lines, as follows: (see lpt-port.h for defs)
  */
-#define SDEC_BACKLIGHT	STRB	/* Strobe, bit 0			*/
-#define SDEC_ENABLE	LF	/* Linefeed, bit			*/
+#define SDEC_BACKLIGHT_ON STRB	/* Strobe, bit 0			*/
+#define SDEC_BACKLIGHT_OFF 0
+#define SDEC_ENABLE	LF	/* Linefeed, bit 1			*/
 #define SDEC_CONTRAST	INIT	/* Init, bit 2 <--FIXME, Untested	*/
 #define SDEC_REG_SEL	SEL	/* Select Printer, bit 3		*/
 
@@ -178,10 +179,12 @@ static inline void
 _sdec_control_wait(unsigned char register_select, unsigned char backlight,
 		   unsigned char data, int usec)
 {
-	port_out(LPT_CONTROL, (register_select | backlight | SDEC_ENABLE) ^ LPT_CTRL_MASK);
+	unsigned char backlight_bit = (backlight ? SDEC_BACKLIGHT_ON : SDEC_BACKLIGHT_OFF);
+
+	port_out(LPT_CONTROL, (register_select | backlight_bit | SDEC_ENABLE) ^ LPT_CTRL_MASK);
 	port_out(LPT_DEFAULT, data);
 	timing_uPause(SDEC_HOLD_ENABLE);
-	port_out(LPT_CONTROL, (register_select | backlight) ^ LPT_CTRL_MASK);
+	port_out(LPT_CONTROL, (register_select | backlight_bit) ^ LPT_CTRL_MASK);
 	timing_uPause(usec);
 }
 

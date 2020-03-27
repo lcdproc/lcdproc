@@ -42,7 +42,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "lcterm.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 

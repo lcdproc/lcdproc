@@ -9,7 +9,7 @@ LCDd_SOURCES= client.c client.h clients.c clients.h input.c input.h main.c main.
 LDADD = ../shared/libLCDstuff.a commands/libLCDcommands.a @LIBPTHREAD_LIBS@
 
 if !DARWIN
-AM_LDFLAGS = -rdynamic -uget_args
+AM_LDFLAGS = -rdynamic
 endif
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir)\"

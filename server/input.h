@@ -22,7 +22,7 @@
 #include "shared/defines.h"
 
 /* Accepts and uses keypad input while displaying screens... */
-int handle_input(void);
+void handle_input(void);
 
 typedef struct KeyReservation {
 	char *key;
@@ -34,7 +34,7 @@ typedef struct KeyReservation {
 int input_init(void);
 	/* Init the input handling system */
 
-int input_shutdown(void);
+void input_shutdown(void);
 	/* Shut it down */
 
 int input_reserve_key(const char *key, bool exclusive, Client *client);

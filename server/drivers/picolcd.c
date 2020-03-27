@@ -16,7 +16,7 @@
  * 		 2007-2008 Mini-Box.com, Nicu Pavel <npavel@ituner.com>
  * 		 2008 Jack Cleaver
  * 		 2009 Andries van Schie
- * 		 2010-2014 Martin Jones <martin@brasskipper.org.uk>
+ * 		 2010-2014, 2019 Martin Jones <martin@brasskipper.org.uk>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -41,7 +41,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "adv_bignum.h"
-#include "report.h"
+#include "shared/report.h"
 #include "picolcd.h"
 #include "timing.h"
 
@@ -137,8 +137,9 @@ typedef struct picolcd_private_data {
 	picolcd_device *device;
 	/* For communicating with LIRC */
 	int IRenabled;
-	int lircsock;
-	struct sockaddr_in lircserver;
+	int lirc_sock;
+	struct sockaddr lirc_addr;
+	socklen_t lirc_addrlen;
 	/* IR transcode results */
 	unsigned char result[512];
 	unsigned char *resptr;
@@ -180,6 +181,8 @@ static void usb_cb_input(struct libusb_transfer *transfer);
 #else
 static void get_key_event(USB_DEVICE_HANDLE *lcd, lcd_packet *packet, int timeout);
 #endif
+static void *get_in_addr(struct sockaddr *sa);
+
 
 /**
  * Table describing various features of known picoLCD devices and pointers
@@ -253,7 +256,7 @@ picoLCD_init(Driver *drvthis)
 	struct usb_device *dev;
 #endif
 	const char *lirchost;
-	int lircport;
+	const char *lircport;
 	int id;
 	int tmp;
 
@@ -279,7 +282,11 @@ picoLCD_init(Driver *drvthis)
 		report(RPT_ERR, "%s: libusb_init error %d", drvthis->name, error);
 		return -1;
 	}
+#if LIBUSB_API_VERSION >= 0x01000106
+	libusb_set_option(p->lib_ctx, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_WARNING);	// or LIBUSB_LOG_LEVEL_NONE
+#else
 	libusb_set_debug(p->lib_ctx, 3);
+#endif
 #endif
 
 	p->key_read_index = 0;
@@ -503,7 +510,7 @@ done:
 	}
 	p->key_repeat_interval = tmp;
 
-	report(RPT_WARNING, "%s: Key repeat: delay %d, interval %d",
+	report(RPT_NOTICE, "%s: Key repeat: delay %d, interval %d",
 	       drvthis->name, p->key_repeat_delay, p->key_repeat_interval);
 
 	p->reported_keys.high_key = 0;
@@ -552,7 +559,7 @@ done:
 
 	/* setup LIRC */
 	lirchost = drvthis->config_get_string(drvthis->name, "LircHost", 0, NULL);
-	lircport = drvthis->config_get_int(drvthis->name, "LircPort", 0, DEFAULT_LIRCPORT);
+	lircport = drvthis->config_get_string(drvthis->name, "LircPort", 0, DEFAULT_LIRCPORT);
 	/* LIRC is only enabled if a hostname is set */
 	p->IRenabled = (lirchost != NULL && *lirchost != '\0') ? 1 : 0;
 
@@ -600,31 +607,47 @@ done:
 
 	if (p->IRenabled) {
 		/* Initialize communication with LIRC */
-		struct hostent *hostinfo = gethostbyname(lirchost);
-
-		if (hostinfo == NULL) {
-			report(RPT_ERR, "%s: unknown LIRC host %s", drvthis->name, lirchost);
-			return -1;
-		}
-		if ((p->lircsock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-			report(RPT_ERR, "%s: failed to create socket to send data to LIRC", drvthis->name);
-			return -1;
-		}
+		struct addrinfo hints, *res, *ap;
+		int status;
+		char ipstr[INET6_ADDRSTRLEN];
 
 		/* Restrict LircPort to usable values */
-		if ((lircport < 1) || (lircport > 0xFFFF)) {
-			report(RPT_WARNING, "%s: invalid LircPort, using default");
+		if ((atoi(lircport) < 1) || (0xFFFF < atoi(lircport))) {
+			report(RPT_WARNING, "%s: invalid LircPort, using default", drvthis->name);
 			lircport = DEFAULT_LIRCPORT;
 		}
 
-		/* Construct the server sockaddr_in structure */
-		memset(&p->lircserver, 0, sizeof(p->lircserver));		/* Clear struct */
-		p->lircserver.sin_family = AF_INET;				/* Internet/IP */
-		p->lircserver.sin_addr = *(struct in_addr *) hostinfo->h_addr;	/* IP address */
-		p->lircserver.sin_port = htons(lircport);			/* server port */
+		// Look up address for lircd socket
+		memset(&hints, 0, sizeof hints);
+		hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version
+		hints.ai_socktype = SOCK_DGRAM;
+		if ((status = getaddrinfo(lirchost, lircport, &hints, &res)) != 0) {
+			report(RPT_ERR, "%s: getaddrinfo: %s (%s:%s)", drvthis->name, gai_strerror(status), lirchost, lircport);
+			return -1;
+		}
+		// loop through all the results and connect to the first we can
+		for(ap = res; ap != NULL; ap = ap->ai_next) {
+			if ((p->lirc_sock = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol)) == -1) {
+				report(RPT_WARNING, "%s: failed to create socket", drvthis->name);
+				continue;
+			}
+			break;
+		}
 
-		report(RPT_INFO, "%s: IR events will be sent to LIRC on %s:%d, with flush threshold=%d, time unit: %s",
-			drvthis->name, lirchost, lircport, p->flush_threshold, p->lirc_time_us ? "us" : "1/16384s");
+		if (p->lirc_sock == -1) {
+			report(RPT_WARNING, "%s: failed to create socket to send data to LIRC", drvthis->name);
+			return -1;
+		}
+
+		memcpy(&(p->lirc_addr), ap->ai_addr, sizeof(p->lirc_addr));
+		p->lirc_addrlen = ap->ai_addrlen;
+		inet_ntop(ap->ai_family, get_in_addr((struct sockaddr *)ap->ai_addr), ipstr, sizeof ipstr);
+
+		freeaddrinfo(res); // all done with this structure
+
+		report(RPT_NOTICE, "%s: IR events sent to LIRC on %s %s:%s, flush threshold: %d, time unit: %s",
+			drvthis->name, lirchost, ipstr, lircport, p->flush_threshold, p->lirc_time_us ? "us" : "1/16384s");
+
 	}
 
 	report(RPT_INFO, "%s: init complete", drvthis->name);
@@ -781,6 +804,7 @@ picoLCD_flush(Driver *drvthis)
  * \param string   String that gets written.
  *
  * The picoLCD uses a HD44780UA00 which provides ASCII and Japanese fonts.
+ * A modified version of JIS X 0201.
  *
  * Characters 0x20-0x7F are ASCII with the following substitutions:
  *	| Index | ASCII | Substitute       |
@@ -1847,8 +1871,12 @@ picolcd_lircsend(Driver *drvthis)
 			debug(RPT_DEBUG, "picolcd: data:%s", logbuf);
 		}
 #endif
-		if (sendto(p->lircsock, p->result, len, 0,
-			   (struct sockaddr *)&(p->lircserver), sizeof(p->lircserver)) == -1) {
+		if (sendto(	p->lirc_sock,
+					p->result, len,	// message
+					0,				// flags
+					&p->lirc_addr, p->lirc_addrlen
+				  ) == -1)
+		{
 			/* Ignore not connected errors when lirc has gone away */
 			if (errno != ECONNREFUSED) {
 				report(RPT_WARNING, "picolcd: failed to send IR data, reason: %s", strerror(errno));
@@ -1879,8 +1907,7 @@ picolcd_send(USB_DEVICE_HANDLE * lcd, unsigned char *data, int size)
 	unsigned int timeout = 1000;	/* milliseconds */
 	error = libusb_interrupt_transfer(lcd, LIBUSB_ENDPOINT_OUT + 1, data, size, &transferred, timeout);
 	if (error) {
-		/* can't use report here */
-		fprintf(stderr, "libusb_interrupt_transfer error %d, sent %d of %d bytes\n",
+		report(RPT_WARNING, "libusb_interrupt_transfer error %d, sent %d of %d bytes\n",
 			error, transferred, size);
 	}
 #else
@@ -2188,11 +2215,11 @@ usb_cb_input(struct libusb_transfer *transfer)
 
 	switch (transfer->buffer[0]) {
 	    case IN_REPORT_KEY_STATE:
-		debug(RPT_INFO, "%s: USB input call-back key", drvthis->name);
+		debug(RPT_DEBUG, "%s: USB input call-back key", drvthis->name);
 		key_buffer_put(drvthis, transfer->buffer[1], transfer->buffer[2]);
 		break;
 	    case IN_REPORT_IR_DATA:
-		debug(RPT_INFO, "%s: USB input call-back IR length %i", drvthis->name, transfer->buffer[1]);
+		debug(RPT_DEBUG, "%s: USB input call-back IR length %i", drvthis->name, transfer->buffer[1]);
 		if (p_data->IRenabled)
 			ir_transcode(drvthis, &transfer->buffer[2], transfer->buffer[1]);
 		break;
@@ -2207,5 +2234,17 @@ usb_cb_input(struct libusb_transfer *transfer)
 		report(RPT_ERR, "%s: input transfer submit status %d", drvthis->name, p->status);
 }
 #endif
+
+/** Convert Internet address
+ *  \param sa	generic IP address
+ *  \return		IPv4 or IPv6 variant
+ */
+static void *get_in_addr(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET) {
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
 
 /* EOF */

@@ -4,209 +4,14 @@
 <para>
 This chapter describes the steps necessary to create a software release of
 LCDproc. It is intended to guide the release manager when creating a new
-release.
+release. (This is somewhat outdated now, that lcdproc development happens
+on github. We should revise this once things are fully in place.)
 </para>
 
-<sect1 id="releasing-software">
-<title>Creating a source code release</title>
-
-<procedure><title>Steps to create a new software release of LCDproc</title>
-<step>
-  <para>
-  Update year of release in HEAD. The following files need to be updated:
-  <itemizedlist spacing="compact">
-    <listitem><para><filename>server/main.c</filename></para></listitem>
-    <listitem><para><filename>clients/lcdproc/main.c</filename></para></listitem>
-    <listitem><para><filename>docs/lcdproc-user/bookinfo.docbook</filename></para></listitem>
-    <listitem><para><filename>docs/lcdproc-dev/bookinfo.docbook</filename></para></listitem>
-  </itemizedlist>
-  </para>
-</step>
-
-<step>
-  <para>
-  Make a backup of the CVS repository to the local disk. This is needed if
-  something goes wrong. Run:
-  <userinput>rsync -av 'lcdproc.cvs.sourceforge.net::cvsroot/lcdproc/*' .</userinput>
-  </para>
-</step>
-
-<step>
-  <para>
-  Check out the CVS stable release branch. Run:
-  <userinput>
-  cvs -d:ext:<replaceable>&lt;your_sf_userid&gt;</replaceable>@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc checkout -r stable-0-5-x -d lcdproc-0-5-x lcdproc
-  </userinput> and change into the <filename>stable-0-5-x</filename> directory.
-  </para>
-</step>
-
-<step performance="optional">
-  <para>
-  Merge HEAD to stable. This step is only required if the release
-  will be done from HEAD.
-  </para>
-  <substeps>
-  <step>
-    <para>
-    Run:
-    <userinput>cvs -q update -j stable-0-5-x -j HEAD</userinput>
-    </para>
-  </step>
-
-  <step>
-    <para>
-    Update version numbers for stable branch. See <xref linkend="files-with-version-numbers"/>
-    for the list of affected files.
-    </para>
-  </step>
-
-  <step>
-    <para>
-    Commit everything. Run: <userinput>cvs commit -m "Sync with HEAD"</userinput>
-    </para>
-  </step>
-  </substeps>
-</step>
-
-<step>
-  <substeps>
-  <step>
-    <para>
-    Tag the stable tree to indicate the file revision where the branch was
-    made. This eases later diffs against that point.
-    </para>
-    <para>
-    Run: <userinput>cvs tag LCDPROC_0_5_<replaceable>A</replaceable>_BP</userinput>
-    (where <replaceable>A</replaceable> is the version number of the next
-    release and <quote>_BP</quote> means <quote>branch point</quote>).
-    </para>
-    <note>
-      <para>Tag names are all uppercase with underscores to separate elements!</para>
-    </note>
-  </step>
-  <step>
-    <para>
-    Create a release branch in CVS. Run:
-    <userinput>cvs tag -b lcdproc-0-5-<replaceable>A</replaceable></userinput>
-    </para>
-    <note>
-      <para>Release branch names are all lowercase with hyphens to separate
-      elements!</para>
-    </note>
-  </step>
-  <step>
-    <para>
-    Now you have created a branch from which the new release will done. Before
-    continuing either checkout this new branch to a new working directory
-    or update the current one by running:
-    <userinput>cvs update -r lcdproc-0-5-<replaceable>A</replaceable></userinput>
-    </para>
-  </step>
-  </substeps>
-</step>
-
-<step>
-  <para>
-  Update version numbers for release and commit the changes. See
-  <xref linkend="files-with-version-numbers"/> for the list of affected files.
-  </para>
-</step>
-
-<step>
-  <para>
-  Set a CVS tag for the release. Run: <userinput>cvs tag LCDPROC_0_5_<replaceable>A</replaceable>_RELEASE</userinput>
-  where <replaceable>A</replaceable> is the version number of the next release.
-  </para>
-</step>
-
-<step>
-  <para>
-  Export the release source tree as anonymous. This step is intended to check
-  if all files are correctly tagged with the new release in the source tree.
-  </para>
-  <para>
-  Run: <userinput>cvs -d :pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc
-  -z3 export -r LCDPROC_0_5_<replaceable>A</replaceable>_RELEASE lcdproc</userinput>
-  </para>
-</step>
-
-<step>
-  <para>
-  Create the release tarball by running:
-  </para>
-  <screen>
-  <userinput>
-    sh autogen.sh
-    ./configure
-    make distcheck
-  </userinput>
-  </screen>
-</step>
-
-<step>
-  <para>
-  Test the newly created release tarball at least once. Try to build and
-  install it with all drivers enabled. Better: Try to build and install with
-  several library options turned on and off.
-  </para>
-</step>
-
-<step>
-  <para>
-  Create the release notes. The release notes should be an easy to read
-  summary of changes in this release. The <filename>ChangeLog</filename>
-  file is not very good as release notes as it is just a chronological
-  list of things that happen.
-  </para>
-  <para>
-  The release notes should talk about:
-  <itemizedlist>
-    <listitem><para>Fingerprint (SHA-1) of the release tarball</para></listitem>
-    <listitem><para>Known bugs</para></listitem>
-    <listitem><para>New drivers</para></listitem>
-    <listitem><para>Other important changes within drivers, the server core and
-    clients</para></listitem>
-    <listitem><para>Everything else the user has to know for upgrading his
-    installed version</para></listitem>
-  </itemizedlist>
-  grouped by topics of interest.
-  </para>
-</step>
-
-<step>
-  <para>
-  Upload the new release and release notes to Sourceforge.
-  </para>
-</step>
-
-<step>
-  <para>
-  Announce the new release.
-  </para>
-  <para>
-  Send notice about the new release to the LCDproc mailing list
-  (<email>lcdproc@lists.omnipotent.net</email>) and the lcdproc-announce
-  mailing list on Sourceforge (<email>lcdproc-announce@lists.sourceforge.net</email>).
-  Also mention the new release on the LCDproc website download and front page.
-  </para>
-</step>
-
-</procedure>
-
-<itemizedlist id="files-with-version-numbers">
-  <title>Files that need version numbers updated</title>
-  <listitem><para><filename>BUGS</filename></para></listitem>
-  <listitem><para><filename>ChangeLog</filename></para></listitem>
-  <listitem><para><filename>configure.ac</filename></para></listitem>
-  <listitem><para><filename>server/menuscreens.c</filename></para></listitem>
-  <listitem><para><filename>docs/lcdproc-dev/bookinfo.docbook</filename></para></listitem>
-  <listitem><para><filename>docs/lcdproc-dev/driver-api.docbook</filename></para></listitem>
-  <listitem><para><filename>docs/lcdproc-dev/introduction.docbook</filename></para></listitem>
-  <listitem><para><filename>docs/lcdproc-user/bookinfo.docbook</filename></para></listitem>
-  <listitem><para><filename>docs/lcdproc-user/how-to-obtain.docbook</filename></para></listitem>
-</itemizedlist>
-
-</sect1>
+<para>
+There is a checklist how to create a release on github in
+<filename>docs/release-checklist.md</filename>
+</para>
 
 <sect1 id="releasing-documentation">
 <title>Creating a documentation release</title>
@@ -219,8 +24,8 @@ Here is how to create these documentation packages.
 <procedure><title>Steps to create the documentation package</title>
 <step>
   <para>
-  Get the release tarball and extract it (or change to the CVS directory
-  exported in <xref linkend="releasing-software"/> and change to <filename>docs/lcdproc-user</filename>.
+  Get the release tarball and extract it
+  and change to <filename>docs/lcdproc-user</filename>.
   </para>
 </step>
 <step>
@@ -257,8 +62,8 @@ converted to a single file for viewing online.
 <procedure><title>Steps to create the online documentation</title>
 <step>
   <para>
-  Get the release tarball and extract it (or change to the CVS directory
-  exported exported in <xref linkend="releasing-software"/> and change to <filename>docs/lcdproc-user</filename>.
+  Get the release tarball and extract it and change to
+  <filename>docs/lcdproc-user</filename>.
   </para>
 </step>
 <step>

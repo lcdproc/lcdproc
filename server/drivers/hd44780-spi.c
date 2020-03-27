@@ -21,7 +21,7 @@
 
 #include "hd44780-spi.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <linux/ioctl.h>
 #include <stdint.h>
 #include <linux/spi/spidev.h>
 

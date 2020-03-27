@@ -25,7 +25,7 @@
 #include <usb.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 #include "glcd-glcd2usb.h"
 
@@ -95,7 +95,7 @@ usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int
 		int i = 0;
 
 		if (len > 128 + 4)
-			fprintf(stderr, "%d bytes usb report is too long \n", len);
+			report(RPT_ERR, "%d bytes usb report is too long \n", len);
 
 		while (allowed_lengths[i] != (128 + 4) && allowed_lengths[i] < len)
 			i++;
@@ -110,7 +110,7 @@ usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int
 
 	if (bytesSent != len) {
 		if (bytesSent < 0)
-			fprintf(stderr, "Error sending message: %s", usb_strerror());
+			report(RPT_ERR, "Error sending message: %s", usb_strerror());
 		return USB_ERROR_IO;
 	}
 	return 0;
@@ -139,7 +139,7 @@ usbGetReport(usb_dev_handle * device, int reportType, int reportNumber, unsigned
 			       reportType << 8 | reportNumber, 0, (char *)buffer, *len, 1000);
 
 	if (*len < 0) {
-		fprintf(stderr, "Error sending message: %s", usb_strerror());
+		report(RPT_ERR, "Error sending message: %s", usb_strerror());
 		return USB_ERROR_IO;
 	}
 	return 0;

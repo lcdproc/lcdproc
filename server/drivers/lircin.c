@@ -45,7 +45,7 @@
 #include "lcd.h"
 #include "lircin.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 
 /** private data for the \c lirc driver */

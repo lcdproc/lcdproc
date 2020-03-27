@@ -35,7 +35,7 @@
 
 #include "hd44780-usb4all.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 /* connection type specific functions to be exposed using pointers in init() */
 void usb4all_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
@@ -206,7 +206,7 @@ usb4all_init(PrivateData *p)
 	}
 
 	usb4all_init_pwm(p, USB4ALL_PWM_CONTRAST);
-	if (p->have_backlight) {
+	if (have_backlight_pin(p)) {
 		usb4all_init_pwm(p, USB4ALL_PWM_BRIGHTNESS);
 	}
 
@@ -343,13 +343,13 @@ hd_init_usb4all(Driver *drvthis)
 		return -1;
 	}
 
+	/* initialize usb-4-all controller */
+	usb4all_init(p);
+
 	common_init(p, IF_4BIT);
 
 	/* replace uPause with empty one after initialization */
 	p->hd44780_functions->uPause = usb4all_HD44780_uPause;
-
-	/* initialize usb-4-all controller */
-	usb4all_init(p);
 
 	return 0;
 }
@@ -452,7 +452,7 @@ void
 usb4all_HD44780_close(PrivateData *p)
 {
 	if (p->usbHandle != NULL) {
-		if (p->have_backlight) {
+		if (have_backlight_pin(p)) {
 			usb4all_HD44780_backlight(p, BACKLIGHT_OFF);
 		}
 
