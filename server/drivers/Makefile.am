@@ -23,7 +23,7 @@ AM_LDFLAGS = @LDSHARED@
 
 lcdexecbindir = $(pkglibdir)
 lcdexecbin_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne futaba g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD Olimex_MOD_LCD1x9 picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd yard2LCD
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne futaba g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy jw002 lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD Olimex_MOD_LCD1x9 picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd yard2LCD
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 futaba_CFLAGS =      @LIBUSB_CFLAGS@ @LIBUSB_1_0_CFLAGS@ $(AM_CFLAGS)
@@ -57,6 +57,7 @@ imon_LDADD =         libLCD.a libbignum.a
 imonlcd_LDADD =      libLCD.a
 IOWarrior_LDADD =    @LIBUSB_LIBS@ libLCD.a libbignum.a
 irman_LDADD =        @LIBIRMAN@
+jw002_LDADD =        libLCD.a libbignum.a
 lb216_LDADD =        libLCD.a
 lcterm_LDADD =       libLCD.a libbignum.a
 lirc_LDADD =         @LIBLIRC_CLIENT@
@@ -107,6 +108,7 @@ IOWarrior_SOURCES =  lcd.h lcd_lib.h hd44780-charmap.h IOWarrior.c IOWarrior.h a
 irman_SOURCES =      lcd.h irmanin.c irmanin.h
 irtrans_SOURCES =    lcd.h irtrans.c irtrans.h irtrans_network.h irtrans_remote.h irtrans_errcode.h
 joy_SOURCES =        lcd.h joy.c joy.h port.h
+jw002_SOURCES =      lcd.h lcd_lib.h jw002.c jw002.h adv_bignum.h
 lb216_SOURCES =      lcd.h lcd_lib.h lb216.c lb216.h
 lcdm001_SOURCES =    lcd.h lcdm001.c lcdm001.h
 lcterm_SOURCES =     lcd.h lcd_lib.h lcterm.c lcterm.h
