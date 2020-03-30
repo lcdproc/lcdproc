@@ -1,0 +1,195 @@
+<sect1 id="JW002">
+<title>The JW002 Driver</title>
+
+<para>
+      This section covers the installation process for the JW002 LCD
+      module intended for use with LCDproc.
+</para>
+
+<sect2 id="jw002-features">
+<title>JW002 LCD Module</title>
+        <para>
+          The "JW002 LCD Module" is an HG12603(A) 2" x 4" display with a
+          Samsung KS107B controller driven by an on-board MCS/51 microcontroller.
+          Normally, the KS107B is used to drive a graphical LCD, but on this
+          display, the pixels on the glass are diced up into 8 lines of 24 5x7
+          pixel character areas rather than a contiguous 120x56 drawing area.
+        </para>
+        <para>
+          This LCD module seems to have originally been used in some sort of
+          AT&T telephone product, but has been available for a number of years
+          in the surplus channel, typically selling for between $20 and $50,
+          depending on quantity and if it was being sold as a bare module or
+          with the necessary circuitry to interface to a host machine.
+        </para>
+        <para>
+          The most visible use of this LCD module has been the PJRC MP3 player
+          (http://www.pjrc.com/tech/mp3/index.html).  The original AT&T firmware
+          was severely limited as to what it could do.  Paul Stoffregen of PJRC
+          has made replacement firmware available in the public domain.  Owners
+          of "stock" HG12603A modules (also sold as "JW-002" modules) can either
+          download Paul's firmware from his site and burn their own chips, or
+          more simply, purchase a chip ready to drop into a stock display.
+        </para>
+</sect2>
+
+<sect2 id="jw002-hardware">
+<title>JW002 Hardware Installation</title>
+      <para>
+          The PJRC firmware takes care of the command set, but the module itself
+          needs a few external components added to it for easy PC use.  The
+          HG12603A requires a Vee of about -7V for LCD contrast.  In addition,
+          the serial interface to the 8051 microcontroller is at TTL levels
+          (0 and +5VDC), not RS-232 levels (+/- 3-12VDC).  Fortunately, it's
+          easy to tap off the charge pump caps of an ordinary MAX232A chip for
+          Vee, making the interface a single chip and a few caps.  As a bonus.
+          the PJRC software uses the 8051 I/O lines present on the 17-pin
+          connector to scan a 3x4 keypad matrix.
+      </para>
+      <para>
+          Paul has also made the schematics to a level shifter/Vee supply/keypad
+          available on his website - http://www.pjrc.com/tech/mp3/pushbutton_info.html
+          If you have your own HG12603A/JW-002 module, you can roll your own,
+          or, as of this writing, it's still possible to buy a ready-to-plug-in
+          LCD module *with* a "pushbutton adaptor board" and cables directly
+          from PJRC - http://www.pjrc.com/store/mp3_display.html
+      </para>
+      <para>
+          While the PJRC display was really designed to work hand-in-hand with
+          the PJRC MP3 player, an intelligent, serially interfaced, 8x24 character
+          display with 12 buttons is a luxury compared to the standard LCDproc
+          4x20 display with 0-5 buttons.
+      </para>
+</sect2>
+
+<!-- ## JW-002 driver ## -->
+<sect2 id="jw002-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="jw002-config-section">
+<title>[jw002]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Size</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Set the display size [default: <literal>24x8</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>X_offset</property> = 
+    <parameter><literal>0</literal></parameter>
+  </term>
+  <listitem><para>
+    X offset (in characters) to center a smaller display size on the full 24x8 panel
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Y_offset</property> = 
+    <parameter><literal>0</literal></parameter>
+  </term>
+  <listitem><para>
+    Y offset (in characters) to center a smaller display size on the full 24x8 panel
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <parameter><literal>9600</literal></parameter> |
+      <emphasis><parameter><literal>19200</literal></parameter></emphasis>
+    }
+  </term>
+  <listitem><para>
+    Set the the baud rate to use when communicating with the LCD.
+    If not specified, it defaults to <literal>19200</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Font</property> = 
+    <parameter><literal>0</literal></parameter>
+  </term>
+  <listitem><para>
+    Pick which font page to use.  Note that different fonts probably have their
+    bargraph characters in different spots.  For ROM-based fonts 0-3, those
+    characters are already known
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>KeyMap_<replaceable>LETTER</replaceable></property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <listitem>
+    <para>
+    The JW002 display supports up to 12 keys which return
+    one of the letters <literal>A</literal> - <literal>L</literal> for each
+    pressed key.
+    </para>
+    <para>
+    These settings allow to map the letter <replaceable>LETTER</replaceable>,
+    that is generated by the display when a key is pressed, to be mapped to
+    a key name <replaceable>KEY</replaceable> that <property>LCDd</property>
+    can understand (see <link linkend="menu-section" endterm="menu-section.title"/>
+    for more information).
+    </para>
+    <para>
+    There is no default key mapping; if no keys are mapped in the
+    <filename>LCDd.conf</filename> config file, the display is treated
+    as if it had no keys attached.
+    </para>
+    <example id="JW002-config-keymap-example">
+      <title>JW002: keymap config</title>
+      <programlisting>
+      KeyMap_A=Left
+      KeyMap_B=Right
+      KeyMap_C=Up
+      KeyMap_D=Down
+      KeyMap_E=Enter
+      KeyMap_F=Escape
+      </programlisting>
+    </example>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>keypad_test_mode</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+    You can find out which key of your display sends which
+    character by setting keypad_test_mode to yes and running
+    LCDd. LCDd will output all characters it receives.
+    Afterwards you can modify the settings above and set
+    keypad_set_mode to no again.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
