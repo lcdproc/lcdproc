@@ -109,6 +109,10 @@ print $remote "hello\n";
 # your program crashes after running for a while when the buffers fill up:
 my $lcdresponse = <$remote>;
 #print $lcdresponse;
+# connect LCDproc 0.5.2 protocol 0.3 lcd wid 20 hgt 4 cellwid 5 cellhgt 8
+($lcdresponse =~ /lcd.+wid\s+(\d+)\s+hgt\s+(\d+)/);
+my $lcdwidth = $1; my $lcdheight= $2;
+print "Detected LCD size of $lcdwidth x $lcdheight\n" if ($VERBOSE >= 3);
 
 # Turn off blocking mode...
 fcntl($remote, F_SETFL, O_NONBLOCK);
@@ -175,7 +179,7 @@ my $text;
     print "Fortune: '${text}'\n" if ($VERBOSE >= 3);
 
     # Now, show a fortune...
-    print $remote "widget_set fortune text 1 2 20 4 v 16 {$text}\n";
+    print $remote "widget_set fortune text 1 2 ${lcdwidth} ${lcdheight} v 16 {$text}\n";
     $text = <$remote>;
 }
 
