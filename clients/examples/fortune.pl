@@ -166,8 +166,12 @@ my $text;
 
     # Grab some text
     $text = `$FORTUNE` || error(1, "error running `$FORTUNE'.\nPlease check that the path is correct.");
+    # Remove trailing new-line
+    chomp $text;
     # replace new-line by slashes
     $text =~ s,\n, / ,g;
+    # replace tabs with two spaces
+    $text =~ s,\t,  ,g;
     print "Fortune: '${text}'\n" if ($VERBOSE >= 3);
 
     # Now, show a fortune...
