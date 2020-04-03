@@ -10,6 +10,7 @@
 #               2002, Jonathan Oxer
 #               2002, Rene Wagner <reenoo@gmx.de>
 #               2006, Peter Marschall
+#               2020, Ethan Dicks
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +36,12 @@ use Fcntl;
 ############################################################
 # Configurable part. Set it according your setup.
 ############################################################
+
+# Verbose
+# 0 : None (only fatal errors)
+# 1 : Warnings
+# 5 : Explain every step.
+my $VERBOSE = 0;
 
 # Path to `fortune' program.
 my $FORTUNE = "fortune";
@@ -62,14 +69,14 @@ sub usage($);
 my %opt = ();
 
 # get options #
-if (getopts('F:s:p:hV', \%opt) == 0) {
+if (getopts('F:s:p:hv:V', \%opt) == 0) {
   usage(1);
 }
 
 # check options
 usage(0)  if ($opt{h});
 if ($opt{V}) {
-  print STDERR $progname ." version 1.1\n";
+  print STDERR $progname ." version 1.2\n";
   exit(0);
 }
 
@@ -81,6 +88,7 @@ usage(1)  if ($#ARGV >= 0);
 $SERVER = defined($opt{s}) ? $opt{s} : $SERVER;
 $PORT = defined($opt{p}) ? $opt{p} : $PORT;
 $FORTUNE = defined($opt{F}) ? $opt{F} : $FORTUNE;
+$VERBOSE = defined($opt{v}) ? $opt{v} : $VERBOSE;
 
 # Connect to the server...
 my $remote = IO::Socket::INET->new(
@@ -127,7 +135,7 @@ while (1)
 	# Handle input...  (spew it to the console)
         # Also, certain keys scroll the display
 	while (defined(my $input = <$remote>)) {
-	    #print $input;
+	    print $input if ($VERBOSE >= 5);
 
 	    # Make sure we handle each line...
 	    my @lines = split(/\n/, $input);
@@ -160,6 +168,7 @@ my $text;
     $text = `$FORTUNE` || error(1, "error running `$FORTUNE'.\nPlease check that the path is correct.");
     # replace new-line by slashes
     $text =~ s,\n, / ,g;
+    print "Fortune: '${text}'\n" if ($VERBOSE >= 3);
 
     # Now, show a fortune...
     print $remote "widget_set fortune text 1 2 20 4 v 16 {$text}\n";
@@ -192,6 +201,7 @@ my $status = shift;
                  "    -s <server>                connect to <server> (default: $SERVER)\n" .
                  "    -p <port>                  connect to <port> on <server> (default: $PORT)\n" .
                  "    -F <fortune>               use <fortune> as fortune program (default: $FORTUNE)\n" .
+                 "    -v <verbosity>             verbosity level (default: $VERBOSE, max verbosity 5)\n" .
 		 "    -h                         show this help page\n" .
 		 "    -V                         display version number\n";
   }
@@ -247,6 +257,10 @@ LCDd port C<13666>.
 
 Use I<fortune> as the program generation fortune messages instead of the
 default C<fortune>
+
+=item B<-v> I<verbosity>
+
+Use I<verbosity> as the verbosity level instead of the default C<0> (max 5).
 
 =item B<-h>
 
