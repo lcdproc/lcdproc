@@ -52,6 +52,7 @@
 typedef struct lircin_private_data {
 	char *lircrc;			/**< path/name of the LIRC config file */
 	char *prog;			/**< program identifier in LIRC config file */
+	char *code;			/**< last received code*/
 	int lircin_fd;			/**< LIRC socket file handle */
 	struct lirc_config *lircin_irconfig;	/**< LIRC config */
 } PrivateData;
@@ -91,6 +92,7 @@ lircin_init (Driver *drvthis)
 	/* Initialise the PrivateData structure */
 	p->lircrc = NULL;
 	p->prog = NULL;
+	p->code = NULL;
 	p->lircin_irconfig = NULL;
 	p->lircin_fd = -1;
 
@@ -177,6 +179,10 @@ lircin_close (Driver *drvthis)
 			free(p->prog);
 		p->prog = NULL;
 
+		if (p->code != NULL)
+			free(p->code);
+		p->code = NULL;
+
 		if (p->lircin_irconfig != NULL)
 			lirc_freeconfig (p->lircin_irconfig);
 		p->lircin_irconfig = NULL;
@@ -202,15 +208,22 @@ lircin_close (Driver *drvthis)
 MODULE_EXPORT const char *
 lircin_get_key (Driver *drvthis)
 {
-        PrivateData * p = drvthis->private_data;
+	PrivateData * p = drvthis->private_data;
 
-	char *code = NULL, *cmd = NULL;
+	if (p->code == NULL) {
+		lirc_nextcode(&p->code);
+	}
 
-	if ((lirc_nextcode(&code) == 0) && (code != NULL)) {
-		if ((lirc_code2char(p->lircin_irconfig,code,&cmd)==0) && (cmd!=NULL)) {
-			report(RPT_DEBUG, "%s: \"%s\"", drvthis->name, cmd);
+	char *cmd = NULL;
+	if (p->code != NULL) {
+		if (lirc_code2char(p->lircin_irconfig,p->code,&cmd)==0) {
+			if (cmd == NULL) {
+				free(p->code);
+				p->code = NULL;
+			} else {
+				report(RPT_DEBUG, "%s: \"%s\"", drvthis->name, cmd);
+			}
 		}
-		free(code);
 	}
 
 	return cmd;
