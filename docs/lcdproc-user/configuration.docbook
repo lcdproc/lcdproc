@@ -684,14 +684,18 @@ You can configure what keys the menu should use.
 </variablelist>
 
 <para>
-The minimal keys required for the menu work correctly are the <command>MenuKey</command>,
-the <command>EnterKey</command> and one of <command>UpKey</command> or
-<command>DownKey</command>.
-With these 3 keys the menus can be operated.
+The minimal keys required for most menus to work correctly are the
+<command>MenuKey</command>, the <command>EnterKey</command> and one of
+<command>UpKey</command> or <command>DownKey</command>.
+With these 3 keys the menus can usually be operated.
 Of course with only 3 keys the navigation gets a bit awkward.
 So if you have 4 or more keys, you better use them.
 Especially the <command>LeftKey</command> and <command>RightKey</command>
 make a big difference in user experience.
+Menus using checkbox or ring widgets within configuration wizards additionally
+need one of <command>LeftKey</command> or <command>RightKey</command> to work
+correctly, because <command>EnterKey</command> is used to jump to the next
+option then.
 </para>
 
 
