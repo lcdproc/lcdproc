@@ -68,7 +68,7 @@ will need to have JavaScript enabled in your browser.
 ## Code of Merit
 
 This project adopts the Code of Merit, version 1.0, originally published at
-http://code-of-merit.org/. Refer to [CODE_OF_MERIT.md](CODE_OF_MERIT.md) for
+[codeofmerit.org](https://codeofmerit.org/). Refer to [CODE_OF_MERIT.md](CODE_OF_MERIT.md) for
 details, but in short, we focus on writing software and leave politics out of
 it.
 
