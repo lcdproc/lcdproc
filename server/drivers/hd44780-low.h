@@ -14,6 +14,10 @@
 # include <usb.h>
 #endif
 
+#ifdef HAVE_LIBUSB_1_0
+# include <libusb-1.0/libusb.h>
+#endif
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -198,6 +202,10 @@ typedef struct hd44780_private_data {
 	int usbEpOut;		/**< USB Endpoint Out */
 	int usbEpIn;		/**< USB Endpoint In */
 	tx_buffer rx_buf;	/**< Input buffer */
+#endif
+
+#ifdef HAVE_LIBUSB_1_0
+	libusb_device_handle *libusbHandle;
 #endif
 
 #ifdef HAVE_LIBFTDI
