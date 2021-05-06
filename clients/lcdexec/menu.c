@@ -401,8 +401,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 					return -1;
 
 				break;
-			case MT_AUTOMATIC:
-			case MT_ARG_ACTION:
+			case MT_ARG_ACTION | MT_AUTOMATIC:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
 						parent_id, me->id, me->displayname) < 0)
 					return -1;
