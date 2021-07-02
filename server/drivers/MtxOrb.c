@@ -1085,7 +1085,7 @@ MtxOrb_get_info (Driver *drvthis)
 
 	/* Wait the specified amount of time for the module return firmware revision number */
 	tv.tv_sec = 0;		/* seconds */
-	tv.tv_usec = 10000;	/* microseconds */
+	tv.tv_usec = 25000;	/* microseconds */
 
 	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
@@ -1114,7 +1114,7 @@ MtxOrb_get_info (Driver *drvthis)
 
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
-	tv.tv_usec = 10000;	/* microseconds */
+	tv.tv_usec = 25000;	/* microseconds */
 
 	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
