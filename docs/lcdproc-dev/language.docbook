@@ -1343,7 +1343,20 @@
 		  <listitem><para>
 		      The menu item to go to (any menu type e.g. an
 		      action or a menu).
-		    </para></listitem>
+		      Special values:
+		      <variablelist>
+			<varlistentry>
+			  <term>
+			    <literal>_quit_</literal>
+			  </term>
+			  <listitem>
+			  <para>
+			      Quits the client menu.
+			  </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para>
+		  </listitem>
 		</varlistentry>
 		<varlistentry>
 		  <term><replaceable>parent_id</replaceable>
