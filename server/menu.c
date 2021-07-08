@@ -676,19 +676,23 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_CHECKBOX:
-			subitem->data.checkbox.value++;
-			subitem->data.checkbox.value %= (subitem->data.checkbox.allow_gray) ? 3 : 2;
+			if (subitem->successor_id == NULL) {
+				subitem->data.checkbox.value++;
+				subitem->data.checkbox.value %= (subitem->data.checkbox.allow_gray) ? 3 : 2;
 
-			if (subitem->event_func)
-				subitem->event_func(subitem, MENUEVENT_UPDATE);
+				if (subitem->event_func)
+					subitem->event_func(subitem, MENUEVENT_UPDATE);
+			}
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_RING:
-			subitem->data.ring.value++;
-			subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
+			if (subitem->successor_id == NULL) {
+				subitem->data.ring.value++;
+				subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
 
-			if (subitem->event_func)
-				subitem->event_func(subitem, MENUEVENT_UPDATE);
+				if (subitem->event_func)
+					subitem->event_func(subitem, MENUEVENT_UPDATE);
+			}
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_MENU:
