@@ -166,6 +166,7 @@ check_board_rev(Driver *drvthis)
 	/* On boards that have been overvolted, the MSB will be set */
 	if ((strcmp(hw, "BCM2708") != 0 &&
 	     strcmp(hw, "BCM2709") != 0 &&
+	     strcmp(hw, "BCM2711") != 0 &&
 	     strcmp(hw, "BCM2835") != 0) ||
 	    rev & 0xFFFFFF == 0) {
 		report(RPT_ERR, "check_board_rev: This board is not recognized as a Raspberry Pi!");
@@ -181,6 +182,11 @@ check_board_rev(Driver *drvthis)
 			/* older boards: A, B, A+, B+, ALPHA, CM */
 			report(RPT_INFO, "check_board_rev: Revision 2 board detected");
 			gpio_base_address = BCM2835_PERI_BASE_OLD + GPIO_BASE_OFFSET;
+		}
+		else if (bType == 19) {
+			/* Raspberry Pi 400 */
+			report(RPT_INFO, "check_board_rev: Raspberry Pi 400 detected ");
+			gpio_base_address = BCM2711_PERI_BASE + GPIO_BASE_OFFSET;
 		}
 		else {
 			/* modern boards: Pi2 B, Pi3 B */

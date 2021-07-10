@@ -22,6 +22,7 @@ struct rpi_gpio_map {
 /** Peripheral base address of the BCM2835 */
 #define BCM2835_PERI_BASE_OLD        0x20000000
 #define BCM2835_PERI_BASE_NEW        0x3F000000
+#define BCM2711_PERI_BASE            0xFE000000
 /** GPIO register start address offset from PERI_BASE */
 #define GPIO_BASE_OFFSET               0x200000
 /** Length of register space */
