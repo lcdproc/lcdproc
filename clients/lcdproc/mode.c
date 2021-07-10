@@ -66,12 +66,12 @@ update_screen(ScreenMode *m, int display)
 	static int status = -1;
 	int old_status = status;
 
-	if (m && m->func) {
+	if (m && m->update_function) {
 #ifdef LCDPROC_EYEBOXONE
 		/* Save the initialized flag (may be modified by m->func) */
 		int init_flag = (m->flags & INITIALIZED);
 #endif
-		status = m->func(m->timer, display, &(m->flags));
+		status = m->update_function(m->timer, display, &(m->flags));
 #ifdef LCDPROC_EYEBOXONE
 		/* Eyebox Init */
 		if (init_flag == 0)
