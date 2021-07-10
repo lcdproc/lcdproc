@@ -186,7 +186,7 @@ time_screen(int rep, int display, int *flags_ptr)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
- * \return  Always 0
+ * \return           Backlight status (default is BACKLIGHT_ON).
  */
 int
 clock_screen(int rep, int display, int *flags_ptr)
@@ -196,6 +196,7 @@ clock_screen(int rep, int display, int *flags_ptr)
 	int xoffs;
 	static int heartbeat = 0;
 	static int showTitle = 1;
+	static int doBacklight = 1;
 	static const char *timeFormat = NULL;
 	static const char *dateFormat = NULL;
 	time_t thetime;
@@ -210,6 +211,7 @@ clock_screen(int rep, int display, int *flags_ptr)
 		timeFormat = config_get_string("OldTime", "TimeFormat", 0, "%H:%M:%S");
 		dateFormat = config_get_string("OldTime", "DateFormat", 0, "%b %d %Y");
 		showTitle = config_get_bool("OldTime", "ShowTitle", 0, 1);
+		doBacklight = config_get_bool("OldTime", "Backlight", 0, 1);
 
 		sock_send_string(sock, "screen_add O\n");
 		sock_printf(sock, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
@@ -276,7 +278,7 @@ clock_screen(int rep, int display, int *flags_ptr)
 		}
 	}
 
-	return 0;
+	return ( doBacklight ? BACKLIGHT_ON : BACKLIGHT_OFF );
 }				/* End clock_screen() */
 
 
