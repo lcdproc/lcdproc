@@ -59,7 +59,7 @@ disk_screen(int rep, int display, int *flags_ptr)
 
 	/* Holds info to display (avoid recalculating it) */
 	struct disp {
-		char dev[16];
+		char dev[256];
 		char cap[8];
 		int full;
 	} table[256];
