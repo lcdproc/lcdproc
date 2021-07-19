@@ -168,10 +168,9 @@ Linux 2.2.x - 2.6.x, FreeBSD 6.x - 8.1, NetBSD 1.5 & 3.x, OpenBSD 3.0,
 Darwin, Solaris and MacOS.
 
 ## Server
-The server needs to talk to the LCD display. At this time, it works
-on very little more than on the Intel i386 (PC Compatible)
-architecture. It has been successfully tested on:
-Linux 2.2.x - 2.6.x, FreeBSD 6.x - 8.1, NetBSD 1.5 & 3.x, OpenBSD 3.0,
+The server needs to talk to the LCD display. It has been successfully
+tested on:
+Linux 2.2.x - 5.x, FreeBSD 6.x - 8.1, NetBSD 1.5 & 3.x, OpenBSD 3.0,
 Darwin, Solaris and MacOS.
 
 Here are some comments specific to each platform that LCDproc has been
