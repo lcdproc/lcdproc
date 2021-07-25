@@ -57,18 +57,10 @@ disk_screen(int rep, int display, int *flags_ptr)
 	mounts_type mnt[256];
 	int count = 0;
 
-	/* Holds info to display (avoid recalculating it) */
-	struct disp {
-		char dev[16];
-		char cap[8];
-		int full;
-	} table[256];
 	int i;
 	static int num_disks = 0;
 	static int dev_wid = 6;
 	static int gauge_wid = 6, gauge_scale, hbar_pos;
-
-	u_int64_t size;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -101,21 +93,6 @@ disk_screen(int rep, int display, int *flags_ptr)
 	/* Fill the display structure... */
 	sock_send_string(sock, "widget_set D err1 0 0 .\n");
 	sock_send_string(sock, "widget_set D err2 0 0 .\n");
-	for (i = 0; i < count; i++) {
-		if (strlen(mnt[i].mpoint) > dev_wid)
-			sprintf(table[i].dev, "-%s", (mnt[i].mpoint) + (strlen(mnt[i].mpoint) - (dev_wid - 1)));
-		else
-			sprintf(table[i].dev, "%s", mnt[i].mpoint);
-
-		table[i].full = !mnt[i].blocks ? gauge_scale :
-			gauge_scale * (u_int64_t) (mnt[i].blocks - mnt[i].bfree)
-			/ mnt[i].blocks;
-
-		size = (u_int64_t) mnt[i].bsize * mnt[i].blocks;
-		memset(table[i].cap, '\0', 8);
-
-		sprintf_memory(table[i].cap, (double) size, 1);
-	}
 
 	/*
 	 * Display stuff...  (show for two seconds, then scroll once per
@@ -124,23 +101,43 @@ disk_screen(int rep, int display, int *flags_ptr)
 	sock_printf(sock, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, count);
 	for (i = 0; i < count; i++) {
 		char tmp[lcd_wid + 1];	/* should be large enough */
+		char cap[8] = {'\0'};
+		char dev[dev_wid+1];
+		u_int64_t size = 0;
+		int full = 0;
 
-		if (table[i].dev[0] == '\0')
+		if (mnt[i].mpoint[0] == '\0')
 			continue;
+
+		// This dev sprintf could be condensed with the line formatting to tmp below
+		// but I'm inclined to leave it like this to keep the printf formatting more legible.
+
+		if (strlen(mnt[i].mpoint) > dev_wid)
+			sprintf(dev, "-%s", (mnt[i].mpoint) + (strlen(mnt[i].mpoint) - (dev_wid - 1)));
+		else
+			sprintf(dev, "%s", mnt[i].mpoint);
+
+		full = !mnt[i].blocks ? gauge_scale :
+			gauge_scale * (u_int64_t) (mnt[i].blocks - mnt[i].bfree)
+			/ mnt[i].blocks;
+
+		size = (u_int64_t) mnt[i].bsize * mnt[i].blocks;
+		sprintf_memory(cap, (double) size, 1);
+
+		// Actual display/server output
 
 		if (i >= num_disks) {	/* Make sure we have enough lines... */
 			sock_printf(sock, "widget_add D s%i string -in f\n", i);
 			sock_printf(sock, "widget_add D h%i hbar -in f\n", i);
 		}
 		if (lcd_wid >= 20) {	/* 20+x columns */
-			sprintf(tmp, "%-*s %6s E%*sF", dev_wid, table[i].dev, table[i].cap, gauge_wid, "");
-		}
-		else {		/* < 20 columns */
-			sprintf(tmp, "%-*s E%*sF", dev_wid, table[i].dev, gauge_wid, "");
+			sprintf(tmp, "%-*s %6s E%*sF", dev_wid, dev, cap, gauge_wid, "");
+		} else {		/* < 20 columns */
+			sprintf(tmp, "%-*s E%*sF", dev_wid, dev, gauge_wid, "");
 		}
 		sock_printf(sock, "widget_set D s%i 1 %i {%s}\n", i, i + 1, tmp);
 		sock_printf(sock, "widget_set D h%i %i %i %i\n",
-					i, hbar_pos, i + 1, table[i].full);
+					i, hbar_pos, i + 1, full);
 	}
 
 	/* Now remove extra widgets... */
