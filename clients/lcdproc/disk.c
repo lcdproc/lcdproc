@@ -43,11 +43,11 @@
 static bool 
 disk_is_ignored(const char *mount, char *ignore_list[DISK_IGNORE_MAX])
 {
-	for (int i=0; i<DISK_IGNORE_MAX; i++) {
+	for (int i = 0; i < DISK_IGNORE_MAX; i++) {
 		if (ignore_list[i] == NULL) { // End-of-list if < DISK_IGNORE_MAX
 			return false;
 		}
-		if (strcmp(mount, ignore_list[i])==0) {
+		if (strcmp(mount, ignore_list[i]) == 0) {
 			return true;
 		}
 	}
