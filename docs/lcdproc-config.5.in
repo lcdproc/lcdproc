@@ -423,6 +423,12 @@ Screen example (depending on screen size):
 .RS 4
 Show the screen [default: false; legal: true, false]
 .RE
+.PP
+\fIIgnore=\fR
+.RS 4
+Directs the Disk screen to ignore the specified mount point. [defaults: /boot/efi, /dev]
+You may have up to 10 Ignore lines under the Disk section.
+.RE
 
 .SH [MiniClock] SECTION OPTIONS
 Displays the current time
@@ -570,6 +576,14 @@ Active=false
 [Disk]
 # Show screen
 Active=false
+# You can add up to 10 "Ignore" entries to have lcdproc ignore
+# mounts that are not of interest. By default it attempts to filter
+# filesystem types like procfs but of course this doesn't prevent 
+# entries you wish to have mounted but don't need to monitor 
+# (like /boot/efi) from being listed. 
+Ignore=/boot/efi
+Ignore=/dev
+#Ignore=...
 
 [MiniClock]
 # Show screen

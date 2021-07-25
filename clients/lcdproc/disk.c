@@ -40,8 +40,8 @@
  * \param ignore_list	List of ignore entries from the configuration.
  * \return true if mount is present in ignore_list[], false otherwise.
  */
-bool 
-disk_is_ignored(const char* mount, char* ignore_list[DISK_IGNORE_MAX])
+static bool 
+disk_is_ignored(const char *mount, char *ignore_list[DISK_IGNORE_MAX])
 {
 	for (int i=0; i<DISK_IGNORE_MAX; i++) {
 		if (ignore_list[i] == NULL) { // End-of-list if < DISK_IGNORE_MAX
