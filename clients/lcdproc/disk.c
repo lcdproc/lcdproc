@@ -111,7 +111,6 @@ disk_screen(int rep, int display, int *flags_ptr)
 
 		// This dev sprintf could be condensed with the line formatting to tmp below
 		// but I'm inclined to leave it like this to keep the printf formatting more legible.
-
 		if (strlen(mnt[i].mpoint) > dev_wid)
 			sprintf(dev, "-%s", (mnt[i].mpoint) + (strlen(mnt[i].mpoint) - (dev_wid - 1)));
 		else
@@ -125,7 +124,6 @@ disk_screen(int rep, int display, int *flags_ptr)
 		sprintf_memory(cap, (double) size, 1);
 
 		// Actual display/server output
-
 		if (i >= num_disks) {	/* Make sure we have enough lines... */
 			sock_printf(sock, "widget_add D s%i string -in f\n", i);
 			sock_printf(sock, "widget_add D h%i hbar -in f\n", i);
