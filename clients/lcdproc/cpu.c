@@ -67,7 +67,7 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add C\n");
-		sock_printf(sock, "screen_set C -name {CPU Use: %s}\n", get_hostname());
+		sock_printf(sock, "screen_set C -name {CPU Use:%s}\n", get_hostname());
 		if (lcd_hgt >= 4) {
 			us_wid = ((lcd_wid + 1) / 2) - 7; /* Usr/Sys label width -7 for " xx.x% " */
 			ni_wid = lcd_wid / 2 - 6;       /* Nice/Idle label width -6 for " xx.x%" */
@@ -141,7 +141,7 @@ cpu_screen(int rep, int display, int *flags_ptr)
 
 	if (lcd_hgt >= 4) {	/* 4-line display */
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][4]);
-		sock_printf(sock, "widget_set C title {CPU %5s: %s}\n", tmp, get_hostname());
+		sock_printf(sock, "widget_set C title {CPU %5s:%s}\n", tmp, get_hostname());
 
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][0]);
 		sock_printf(sock, "widget_set C usr %i 2 {%5s}\n", ((lcd_wid + 1) / 2) - 5, tmp);
@@ -211,15 +211,15 @@ cpu_graph_screen(int rep, int display, int *flags_ptr)
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 
 		sock_send_string(sock, "screen_add G\n");
-		sock_printf(sock, "screen_set G -name {CPU Graph: %s}\n", get_hostname());
+		sock_printf(sock, "screen_set G -name {CPU Graph:%s}\n", get_hostname());
 
 		if (lcd_hgt >= 4) {
 			sock_send_string(sock, "widget_add G title title\n");
-			sock_printf(sock, "widget_set G title {CPU: %s}\n", get_hostname());
+			sock_printf(sock, "widget_set G title {CPU:%s}\n", get_hostname());
 		}
 		else {
 			sock_send_string(sock, "widget_add G title string\n");
-			sock_printf(sock, "widget_set G title 1 1 {CPU: %s}\n", get_hostname());
+			sock_printf(sock, "widget_set G title 1 1 {CPU:%s}\n", get_hostname());
 		}
 
 		for (i = 1; i <= lcd_wid; i++) {

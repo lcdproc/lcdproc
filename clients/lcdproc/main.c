@@ -129,12 +129,13 @@ char *configfile = NULL;
 char *pidfile = NULL;
 int pidfile_written = FALSE;
 char *displayname = NULL;	/**< display name for the main menu */
+char *hostname = "";
 
 /** Returns the network name of this machine */
 const char *
 get_hostname(void)
 {
-	return (unamebuf.nodename);
+	return hostname;
 }
 
 /** Returns the name of the client's OS */
@@ -288,6 +289,12 @@ main(int argc, char **argv)
 		fprintf(stderr, "Error reading config file\n");
 		exit(EXIT_FAILURE);
 	}
+	if (config_get_bool(progname, "ShowHostname", 0, TRUE))
+	{
+		hostname = malloc(strlen(unamebuf.nodename) + 2);
+		hostname[0] = ' ';
+		strcpy(hostname + 1, unamebuf.nodename);
+	}
 
 	/* Set default reporting options */
 	if (report_dest == UNSET_INT)
@@ -440,9 +447,9 @@ process_configfile(char *configfile)
 	if (islow < 0) {
 		islow = config_get_int(progname, "Delay", 0, -1);
 	}
-
-	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
+	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL) {
 		displayname = strdup(tmp);
+	}
 
 	/*
 	 * check for config file variables to override all the sequence

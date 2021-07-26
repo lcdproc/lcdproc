@@ -90,6 +90,11 @@ slow down initial announcement of modes (in 1/100s) [default: 2]
 .RS 4
 display name for the main menu [default: LCDproc HOST]
 .RE
+.PP
+\fIShowHostname=\fR
+.RS 4
+Show hostname in title of screen [default: true; legal: true, false]
+.RE
 
 .SH SCREEN SPECIFIC CONFIGURATION
 the following section of the \fI@SYSCONFDIR@/lcdproc.conf\fP contains screen specific configuration options. Each section refers to a screen which can be enabled and configured.

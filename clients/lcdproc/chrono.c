@@ -98,12 +98,12 @@ time_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_add T three string\n");
 
 			/* write title bar: OS name, OS version, hostname */
-			sock_printf(sock, "widget_set T title {%s %s: %s}\n",
+			sock_printf(sock, "widget_set T title {%s %s:%s}\n",
 				get_sysname(), get_sysrelease(), get_hostname());
 		}
 		else {
 			/* write title bar: hostname */
-			sock_printf(sock, "widget_set T title {TIME: %s}\n", get_hostname());
+			sock_printf(sock, "widget_set T title {TIME:%s}\n", get_hostname());
 		}
 	}
 
@@ -375,9 +375,9 @@ uptime_screen(int rep, int display, int *flags_ptr)
  * |                    |
  * +--------------------+
  *
- * Alternate version without seconds : 
+ * Alternate version without seconds :
  *
- * +--------------------+ 
+ * +--------------------+
  * |       _   _        |
  * |     ||_ . _||_|    |
  * |     ||_|. _|  |    |
@@ -540,4 +540,3 @@ tickTime(char *time, int heartbeat)
 	}
 	return (time);
 }
-
