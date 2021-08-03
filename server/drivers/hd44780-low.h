@@ -64,7 +64,7 @@
 #define HD44780_CT_SPI			24
 #define HD44780_CT_PIFACECAD		25
 #define HD44780_CT_LCM162		26
-#define HD44780_CT_GPIO			27
+#define HD44780_CT_UGPIO		27
 #define HD44780_CT_EZIO			28
 /**@}*/
 

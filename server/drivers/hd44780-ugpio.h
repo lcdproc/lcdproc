@@ -4,6 +4,6 @@
 #include "lcd.h"		/* for Driver */
 
 /* initialize this particular driver */
-int hd_init_gpio(Driver *drvthis);
+int hd_init_ugpio(Driver *drvthis);
 
 #endif

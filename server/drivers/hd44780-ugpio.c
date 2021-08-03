@@ -25,14 +25,14 @@
 #include <unistd.h>
 #include <ugpio/ugpio.h>
 
-#include "hd44780-gpio.h"
+#include "hd44780-ugpio.h"
 #include "hd44780-low.h"
 #include "shared/report.h"
 
-void gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
+void ugpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 			   unsigned char flags, unsigned char ch);
-void gpio_HD44780_backlight(PrivateData *p, unsigned char state);
-void gpio_HD44780_close(PrivateData *p);
+void ugpio_HD44780_backlight(PrivateData *p, unsigned char state);
+void ugpio_HD44780_close(PrivateData *p);
 
 typedef struct {
 	ugpio_t *en;
@@ -125,15 +125,10 @@ send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
  * \return          0 on success; -1 on error.
  */
 int
-hd_init_gpio(Driver *drvthis)
+hd_init_ugpio(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	gpio_pins *pins = malloc(sizeof(gpio_pins));
-
-	if (pins == NULL) {
-		report(RPT_ERR, "hd_init_gpio: unable to allocate memory");
-		return -1;
-	}
 
 	p->connection_data = pins;
 
@@ -143,21 +138,21 @@ hd_init_gpio(Driver *drvthis)
 	    init_gpio_pin(drvthis, &pins->d6, "D6") != 0 ||
 	    init_gpio_pin(drvthis, &pins->d5, "D5") != 0 ||
 	    init_gpio_pin(drvthis, &pins->d4, "D4") != 0) {
-		report(RPT_ERR, "hd_init_gpio: unable to initialize GPIO pins");
-		gpio_HD44780_close(p);
+		report(RPT_ERR, "hd_init_ugpio: unable to initialize GPIO pins");
+		ugpio_HD44780_close(p);
 		return -1;
 	}
 
 	if (p->numDisplays > 1) {       /* For displays with two controllers */
 		if (init_gpio_pin(drvthis, &pins->en2, "EN2") != 0) {
 			report(RPT_ERR, "hd_init_gpio: unable to initialize GPIO pins");
-			gpio_HD44780_close(p);
+			ugpio_HD44780_close(p);
 			return -1;
 		}
 	}
 
-	p->hd44780_functions->senddata = gpio_HD44780_senddata;
-	p->hd44780_functions->close = gpio_HD44780_close;
+	p->hd44780_functions->senddata = ugpio_HD44780_senddata;
+	p->hd44780_functions->close = ugpio_HD44780_close;
 
 	if (have_backlight_pin(p)) {
 		if (init_gpio_pin(drvthis, &pins->bl, "BL") != 0) {
@@ -166,7 +161,7 @@ hd_init_gpio(Driver *drvthis)
 			set_have_backlight_pin(p, 0);
 		}
 		else {
-			p->hd44780_functions->backlight = gpio_HD44780_backlight;
+			p->hd44780_functions->backlight = ugpio_HD44780_backlight;
 		}
 	}
 
@@ -197,7 +192,7 @@ hd_init_gpio(Driver *drvthis)
  * \param ch            The value to send.
  */
 void
-gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
+ugpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 		      unsigned char flags, unsigned char ch)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
@@ -216,7 +211,7 @@ gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
  * \param state     New backlight status.
  */
 void
-gpio_HD44780_backlight(PrivateData *p, unsigned char state)
+ugpio_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
@@ -228,7 +223,7 @@ gpio_HD44780_backlight(PrivateData *p, unsigned char state)
  *
  * \param pin     Pointer to gpio context.
  */
-void
+static void
 release_gpio_pin(ugpio_t **pin)
 {
 	ugpio_close(*pin);
@@ -242,7 +237,7 @@ release_gpio_pin(ugpio_t **pin)
  * \param p     Pointer to driver's PrivateData structure.
  */
 void
-gpio_HD44780_close(PrivateData *p)
+ugpio_HD44780_close(PrivateData *p)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
