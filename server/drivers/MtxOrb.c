@@ -375,16 +375,42 @@ MtxOrb_init (Driver *drvthis)
 		case 2400:
 			speed = B2400;
 			break;
+		case 4800:
+			speed = B4800;
+			break;
 		case 9600:
 			speed = B9600;
 			break;
 		case 19200:
 			speed = B19200;
 			break;
+#ifdef B28800
+		case 28800:
+			speed = B28800;
+			break;
+#endif
+		case 38400:
+			speed = B38400;
+			break;
+#ifdef B57600
+		case 57600:
+			speed = B57600;
+			break;
+#endif
+#ifdef B76800
+		case 76800:
+			speed = B76800;
+			break;
+#endif
+#ifdef B115200
+		case 115200:
+			speed = B115200;
+			break;
+#endif
 		default:
-			speed = B19200;
-			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600 or 19200; using default %d",
-					drvthis->name, tmp);
+			speed = DEFAULT_SPEED;
+			report(RPT_WARNING, "%s: Speed unsupported (%d); using default %d",
+					drvthis->name, tmp, DEFAULT_SPEED);
 	}
 
 	/* Get display type */

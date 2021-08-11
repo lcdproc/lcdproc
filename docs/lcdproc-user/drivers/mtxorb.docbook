@@ -312,13 +312,21 @@
     {
       <parameter><literal>1200</literal></parameter> |
       <parameter><literal>2400</literal></parameter> |
+      <parameter><literal>4800</literal></parameter> |
       <parameter><literal>9600</literal></parameter> |
-      <emphasis><parameter><literal>19200</literal></parameter></emphasis>
+      <emphasis><parameter><literal>19200</literal></parameter></emphasis> |
+      <parameter><literal>28800</literal></parameter> |
+      <parameter><literal>38400</literal></parameter> |
+      <parameter><literal>57600</literal></parameter> |
+      <parameter><literal>76800</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
     }
   </term>
   <listitem><para>
     Set the the baud rate to use when communicating with the LCD.
     If not specified, it defaults to <literal>19200</literal>.
+    The available baud rates vary with the operating system.
+    Some listed baud rates may not be available.
   </para></listitem>
 </varlistentry>
 
