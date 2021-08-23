@@ -403,6 +403,49 @@
 
 	<varlistentry>
 	  <term>
+	    <command>key_add
+	      <option><replaceable>screen_id</replaceable></option>
+	      <option><replaceable>key</replaceable></option>...
+	    </command>
+	    since protocol version 0.4
+	  </term>
+	  <listitem>
+	    <para>
+	      Reserves key(s) for interaction of the user with the screen.
+	      Reservations with this command always take precedence over
+	      reservations with <command>client_add_key</command>, but are
+	      only in effect while the screen is visible on the display.
+	      The server message on key events is appended with
+	      <replaceable>screen_id</replaceable> to distinguish it from
+	      client level key events.
+	    </para>
+
+	    <para>
+	      Only one success message is generated for all keys together.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <command>key_del
+	      <option><replaceable>screen_id</replaceable></option>
+	      <option><replaceable>key</replaceable></option>...
+	    </command>
+	    since protocol version 0.4
+	  </term>
+	  <listitem>
+	    <para>
+	      Lift reservation of key(s) by <command>key_add</command>.
+	      Arguments are processed sequentially, and for each one either
+	      a success message is generated, or an error message if the
+	      key was not found in the list of reserved keys.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
 	    <command>widget_add
 	      <option><replaceable>screen_id</replaceable></option>
 	      <option><replaceable>new_widget_id</replaceable></option>
@@ -760,14 +803,22 @@
 	      given key(s). If you reserve the key(s) in shared mode, other
 	      clients can still reserve these keys too. If you reserve the key(s)
 	      in exclusive mode no other client can reserve them again.
+	      Shared mode is the default.
+	    </para>
+	    <para>
 	      Key(s) reserved in shared mode will only be returned when a screen
 	      of the current client is active. These keys can be used for
-	      interaction with a visible screen (default).
+	      interaction with a visible screen.
 	      Key(s) reserved in exclusive mode will be returned regardless of
 	      which screen is active. They can be used to trigger a special
 	      feature or to make a screen come to foreground.
+	    </para>
+	    <para>
 	      Note that you cannot reserve a key in exclusive mode when an
-	      other client has reserved it in shared mode.
+	      other client has reserved it in shared mode. However a key
+	      can be reserved in exclusive mode and on a per screen basis
+	      (with <command>key_add</command>) just fine. In this case
+	      the per screen reservation wins.
 	    </para>
 	  </listitem>
 	</varlistentry>

@@ -78,7 +78,6 @@ void input_shutdown()
 }
 
 
-
 void handle_input(void)
 {
 	const char *key;
@@ -96,6 +95,13 @@ void handle_input(void)
 
 	/* Handle all keypresses */
 	while ((key = drivers_get_key()) != NULL) {
+
+		/* keys from key_add have highest priority */
+		if (current_screen && screen_find_key(current_screen, key)) {
+			sock_printf(current_client->sock, "key %s %s\n",
+				    key, current_screen->id);
+			continue;
+		}
 
 		/* Find what client wants the key */
 		kr = input_find_key(key, current_client);

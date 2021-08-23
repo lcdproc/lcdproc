@@ -33,6 +33,8 @@ static client_function commands[] = {
 	{ "screen_add",     screen_add_func     },
 	{ "screen_del",     screen_del_func     },
 	{ "screen_set",     screen_set_func     },
+	{ "key_add",        key_add_func	},
+	{ "key_del",        key_del_func	},
 	{ "widget_add",     widget_add_func     },
 	{ "widget_del",     widget_del_func     },
 	{ "widget_set",     widget_set_func     },
