@@ -291,6 +291,18 @@ static void report_backlight_type(int report_level, int backlight_type)
 	report(report_level, "HD44780: backlight: %s", text_value);
 }
 
+static int
+find_connectionMapping(const char *name)
+{
+	int i;
+
+	for (i = 0; (connectionMapping[i].name != NULL) &&
+		    (strcasecmp(name, connectionMapping[i].name) != 0); i++)
+		;
+	return i;
+}
+
+
 /**
  * Initialize the driver.
  * Initialize common part of drive & call sub-initialization
@@ -382,9 +394,12 @@ HD44780_init(Driver *drvthis)
 
 	/* Get and search for the connection type */
 	s = drvthis->config_get_string(drvthis->name, "ConnectionType", 0, "4bit");
-	for (i = 0; (connectionMapping[i].name != NULL) &&
-		    (strcasecmp(s, connectionMapping[i].name) != 0); i++)
-		;
+	if (!strcmp(s, "gpio")) {
+		report(RPT_WARNING, "'gpio' ConnectionType split into 'ugpio' and 'gpiod'. Please update your configuration");
+		i = find_connectionMapping("ugpio");
+	} else {
+		i = find_connectionMapping(s);
+	}
 	if (connectionMapping[i].name == NULL) {
 		report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
 		return -1;
