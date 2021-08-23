@@ -3270,13 +3270,26 @@ KeyMatrix_1_8=Right
 </sect3>
 
 <sect3 id="hd44780-gpio">
-<title>GPIO</title>
+<title>GPIO, UGPIO, GPIOD</title>
 
-<para>This connection type supports an LCD connected to GPIO lines that
-can be controlled via the linux sysfs interface. This is common for
+<para>This connection types support an LCD connected to GPIO lines that
+can be controlled via the linux kernel interface. This is common for
 System-On-Chip (SOC) processors and i2c port expanders.
 Currently it supports displays with one or two
 controllers.</para>
+
+<para>The UGPIO connection type uses the deprecated sysfs interface
+via libugpio.
+This is only kept around to support legacy systems, where the kernel
+can't be updated easily.</para>
+
+<para>The GPIOD connection type uses the official gpio-device API via
+libgpiod. Currently all GPIO lines must belong to the same chip.
+You should use this if possible.</para>
+
+<para>The GPIO connection type has been removed from the HD44780 driver.
+For backwards compatibility the driver tries to use UGPIO instead.
+Don't use this when writing new configuration files.</para>
 
 <para>A GPIO pin can be configured for backlight switch. Use the switch circuit
 as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
@@ -3293,7 +3306,7 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
 </warning>
 
 <note>
-  <para>The driver exports the configured GPIOs to sysfs automatically,
+  <para>The UGPIO driver exports the configured GPIOs to sysfs automatically,
   before using them. At exit it tries to unexport them again, but this
   only succeeds if the daemon is still running with root permissions.
   If the daemon was configured to drop root privileges after initialization,
@@ -3402,11 +3415,12 @@ option has to be configured as well (e.g. <literal>vspan=2,2</literal> for a
 40x4 display).</para>
 
 <example id="hd44780-gpio-config.example">
-<title>HD44780: Example configuration for Beaglebone Black GPIO pins</title>
+<title>HD44780: Example configuration for Beaglebone Black GPIO pins with
+libugpio</title>
 <screen>
 <![CDATA[
 [hd44780]
-ConnectionType=gpio
+ConnectionType=ugpio
 Backlight=yes
 Size=16x2
 

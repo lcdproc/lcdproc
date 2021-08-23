@@ -66,6 +66,7 @@
 #define HD44780_CT_LCM162		26
 #define HD44780_CT_UGPIO		27
 #define HD44780_CT_EZIO			28
+#define HD44780_CT_GPIOD		29
 /**@}*/
 
 /** \name Symbolic names for interface types

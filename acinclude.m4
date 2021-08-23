@@ -237,6 +237,13 @@ dnl			else
 			],[
 				AC_MSG_WARN([Could not find libugpio, not building hd44780-ugpio driver])
 			])
+			AC_CHECK_LIB(gpiod, main,[
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-gpiod.o"
+				LIBGPIOD="-lgpiod"
+				AC_DEFINE(HAVE_GPIOD, [1], [Define to 1 if you have libgpiod])
+			],[
+				AC_MSG_WARN([Could not find libgpiod, not building hd44780-gpiod driver])
+			])
 			if test "$ac_cv_port_have_lpt" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-4bit.o hd44780-hd44780-ext8bit.o hd44780-hd44780-winamp.o hd44780-hd44780-serialLpt.o hd44780-hd44780-lcm162.o"
 			fi
@@ -613,6 +620,7 @@ AC_SUBST(LIBXOSD)
 AC_SUBST(LIBPTHREAD_LIBS)
 AC_SUBST(LIBMX5000)
 AC_SUBST(LIBUGPIO)
+AC_SUBST(LIBGPIOD)
 ])
 
 

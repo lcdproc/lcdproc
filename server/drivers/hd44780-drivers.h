@@ -50,6 +50,10 @@
 #ifdef HAVE_UGPIO
 # include "hd44780-ugpio.h"
 #endif
+#ifdef HAVE_GPIOD
+# include "hd44780-gpiod.h"
+#endif
+
 /* add new connection type header files to the correct section above or here */
 
 
@@ -109,7 +113,10 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "raspberrypi",   HD44780_CT_RASPBERRYPI,   IF_TYPE_PARPORT,  hd_init_rpi      },
 #endif
 #ifdef HAVE_UGPIO
-	{ "ugpio",          HD44780_CT_UGPIO,          IF_TYPE_PARPORT, hd_init_ugpio      },
+	{ "ugpio",         HD44780_CT_UGPIO,          IF_TYPE_PARPORT, hd_init_ugpio     },
+#endif
+#ifdef HAVE_GPIOD
+	{ "gpiod",         HD44780_CT_GPIOD,         IF_TYPE_PARPORT,  hd_init_gpiod     },
 #endif
 	/* add new connection types in the correct section above or here */
 
