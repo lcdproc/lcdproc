@@ -32,6 +32,7 @@
 void gpiod_HD44780_senddata(PrivateData *p, unsigned char displayID,
 			   unsigned char flags, unsigned char ch);
 void gpiod_HD44780_backlight(PrivateData *p, unsigned char state);
+void gpiod_HD44780_reset(PrivateData *p);
 void gpiod_HD44780_close(PrivateData *p);
 
 typedef struct {
@@ -176,6 +177,7 @@ hd_init_gpiod(Driver *drvthis)
 
 	p->hd44780_functions->senddata = gpiod_HD44780_senddata;
 	p->hd44780_functions->close = gpiod_HD44780_close;
+	p->hd44780_functions->reset = gpiod_HD44780_reset;
 
 	if (have_backlight_pin(p)) {
 		if (init_gpio_pin(drvthis, &pins->bl, "BL") != 0) {
@@ -191,6 +193,21 @@ hd_init_gpiod(Driver *drvthis)
 	/* This is enough to set the RW pin to low, if it is available. */
 	init_gpio_pin(drvthis, &pins->rw, "RW");
 
+	gpiod_HD44780_reset(p);
+
+	return 0;
+}
+
+/**
+ * Reset the display to a known state.
+ *
+ * \param p             Pointer to driver's private data structure.
+ */
+void
+gpiod_HD44780_reset(PrivateData *p)
+{
+	gpio_pins *pins = (gpio_pins *) p->connection_data;
+
 	gpiod_line_set_value(pins->rs, 0);
 
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
@@ -201,8 +218,6 @@ hd_init_gpiod(Driver *drvthis)
 	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
 	common_init(p, IF_4BIT);
-
-	return 0;
 }
 
 

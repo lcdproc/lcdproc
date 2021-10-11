@@ -394,6 +394,12 @@ typedef struct hwDependentFns {
 	 */
 	void (*flush) (PrivateData *p);
 
+	/**
+	 * Reset display like on initialization. Sub-drivers vulnerable to
+	 * EMI can provide this as way into a known state.
+	 */
+	void (*reset) (PrivateData *p);
+
 	/** Switch the backlight on or off
 	 * \param p      pointer to private date structure
 	 * \param state  to be or not to be on

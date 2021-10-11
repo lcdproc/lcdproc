@@ -32,6 +32,7 @@
 void ugpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 			   unsigned char flags, unsigned char ch);
 void ugpio_HD44780_backlight(PrivateData *p, unsigned char state);
+void ugpio_HD44780_reset(PrivateData *p);
 void ugpio_HD44780_close(PrivateData *p);
 
 typedef struct {
@@ -153,6 +154,7 @@ hd_init_ugpio(Driver *drvthis)
 
 	p->hd44780_functions->senddata = ugpio_HD44780_senddata;
 	p->hd44780_functions->close = ugpio_HD44780_close;
+	p->hd44780_functions->reset = ugpio_HD44780_reset;
 
 	if (have_backlight_pin(p)) {
 		if (init_gpio_pin(drvthis, &pins->bl, "BL") != 0) {
@@ -168,6 +170,21 @@ hd_init_ugpio(Driver *drvthis)
 	/* This is enough to set the RW pin to low, if it is available. */
 	init_gpio_pin(drvthis, &pins->rw, "RW");
 
+	ugpio_HD44780_reset(p);
+
+	return 0;
+}
+
+/**
+ * Reset the display to a known state.
+ *
+ * \param p             Pointer to driver's private data structure.
+ */
+void
+ugpio_HD44780_reset(PrivateData *p)
+{
+	gpio_pins *pins = (gpio_pins *) p->connection_data;
+
 	ugpio_set_value(pins->rs, 0);
 
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
@@ -178,8 +195,6 @@ hd_init_ugpio(Driver *drvthis)
 	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
 	common_init(p, IF_4BIT);
-
-	return 0;
 }
 
 
@@ -188,7 +203,7 @@ hd_init_ugpio(Driver *drvthis)
  *
  * \param p             Pointer to driver's private data structure.
  * \param displayID     ID of the display (or 0 for all) to send data to.
- * \param flags         Defines whether to end a command or data.
+ * \param flags         Defines whether to send a command or data.
  * \param ch            The value to send.
  */
 void

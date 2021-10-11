@@ -597,6 +597,7 @@ HD44780_init(Driver *drvthis)
 	p->hd44780_functions->output = NULL;
 	p->hd44780_functions->close = NULL;
 	p->hd44780_functions->flush = NULL;
+	p->hd44780_functions->reset = NULL;
 
 	/* Do local (=connection type specific) display init */
 	if (init_fn(drvthis) != 0)
@@ -880,6 +881,8 @@ HD44780_flush(Driver *drvthis)
 	if ((p->refreshdisplay > 0) && (now > p->nextrefresh)) {
 		refreshNow = 1;
 		p->nextrefresh = now + p->refreshdisplay;
+		if (p->hd44780_functions->reset)
+			p->hd44780_functions->reset(p);
 	}
 	/* keepalive refresh of display */
 	if ((p->keepalivedisplay > 0) && (now > p->nextkeepalive)) {
