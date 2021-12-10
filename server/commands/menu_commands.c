@@ -121,7 +121,8 @@ menu_add_item_func(Client *c, int argc, char **argv)
 
 	item = menu_find_item(c->menu, item_id, true);
 	if (item != NULL) {
-		sock_send_error(c->sock, "Item id already in use\n");
+		sock_printf_error(c->sock,
+				  "Item id '%s' already in use\n", item_id);
 		return 0;
 	}
 
