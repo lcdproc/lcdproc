@@ -226,34 +226,46 @@ ethlcd_send_low(PrivateData *p, unsigned char *data, int length)
 {
 	int response_len, len;
 	unsigned char cmd;
+	int i, ok = 0;
 
-	/* Send data to device */
-	cmd = data[0];		/* store command byte for verification */
-	len = sock_send(p->sock, data, length);
-	if (len <= 0) {
-		p->hd44780_functions->drv_report(RPT_CRIT, "%s: Write to socket failed: %s. Exiting",
-					  ETHLCD_DRV_NAME, strerror(errno));
-		exit(-1);
+	for (i = 0; i <= ETHLCD_MAX_RETRIES; i++) {
+		/* Send data to device */
+		cmd = data[0];		/* store command byte for verification */
+		len = sock_send(p->sock, data, length);
+		if (len <= 0) {
+			p->hd44780_functions->drv_report(RPT_WARNING, "%s: Write to socket failed (attempt #%d): %s",
+						ETHLCD_DRV_NAME, i + 1, strerror(errno));
+			continue;
+		}
+
+		/* Check if this is a command with reply */
+		if (cmd == ETHLCD_GET_BUTTONS)
+			response_len = 2;
+		else
+			response_len = 1;
+
+		/* Wait for reply */
+		len = sock_recv(p->sock, data, response_len);
+		if (len <= 0) {
+			p->hd44780_functions->drv_report(RPT_WARNING, "%s: Read from socket failed (attempt #%d): %s",
+						ETHLCD_DRV_NAME, i + 1, strerror(errno));
+			continue;
+		}
+
+		/* Check reply */
+		if (data[0] != cmd) {
+			p->hd44780_functions->drv_report(RPT_WARNING, "%s: Invalid device response (attempt #%d): got 0x%02X, expected: 0x%02X",
+						ETHLCD_DRV_NAME, i + 1, data[0], cmd);
+			sleep(ETHLCD_TIMEOUT);
+		} else {
+			ok = 1;
+			break;
+		}
 	}
 
-	/* Check if this is a command with reply */
-	if (cmd == ETHLCD_GET_BUTTONS)
-		response_len = 2;
-	else
-		response_len = 1;
-
-	/* Wait for reply */
-	len = sock_recv(p->sock, data, response_len);
-	if (len <= 0) {
-		p->hd44780_functions->drv_report(RPT_CRIT, "%s: Read from socket failed: %s. Exiting",
-					  ETHLCD_DRV_NAME, strerror(errno));
-		exit(-1);
-	}
-
-	/* Check reply */
-	if (data[0] != cmd) {
-		p->hd44780_functions->drv_report(RPT_CRIT, "%s: Invalid device response (want 0x%02X, got 0x%02X). Exiting",
-					     ETHLCD_DRV_NAME, cmd, data[0]);
+	if (ok == 0) {
+		p->hd44780_functions->drv_report(RPT_CRIT, "%s: Device communication error. Exiting",
+					ETHLCD_DRV_NAME);
 		exit(-1);
 	}
 }
