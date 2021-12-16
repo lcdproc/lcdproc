@@ -164,21 +164,25 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([libg15daemon_client.h not found, the g15 driver will lack g15daemon support])
 			])
-			AC_CHECK_HEADERS([libg15render.h],[
-				AC_CHECK_LIB(g15render, g15r_initCanvas,[
-					LIBG15="$LIBG15 -lg15render"
-					DRIVERS="$DRIVERS g15${SO}"
-					actdrivers=["$actdrivers g15"]
+			if test "$enable_freetype" = "yes"; then
+				AC_CHECK_HEADERS([libg15render.h],[
+					AC_CHECK_LIB(g15render, g15r_initCanvas,[
+						LIBG15="$LIBG15 -lg15render"
+						DRIVERS="$DRIVERS g15${SO}"
+						actdrivers=["$actdrivers g15"]
+					],[
+dnl					else
+						AC_MSG_WARN([the g15 driver needs libg15render])
+					],
+					[-lg15render]
+					)
 				],[
 dnl				else
-					AC_MSG_WARN([the g15 driver needs libg15render])
-				],
-				[-lg15render]
-				)
-			],[
-dnl			else
-				AC_MSG_WARN([The g15driver needs libg15render.h])
-			])
+					AC_MSG_WARN([The g15driver needs libg15render.h])
+				])
+			else
+				AC_MSG_WARN([libg15render ist broken without freetype])
+			fi
 			;;
 		glcd)
 			GLCD_DRIVERS=""
