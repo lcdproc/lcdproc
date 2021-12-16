@@ -51,16 +51,14 @@ static inline int g15_send(int sock, char *buf, unsigned int len) { return -1; }
 #endif
 
 /*
- * If we have freetype2, assume libg15render is build with TTF support,
+ * Workaround for upstream bug: Assume libg15render is built with TTF support,
  * the TTF_SUPPORT define makes the size of the g15 struct bigger, if we do
- * not set this define while libg15render is build with TTF support we get
+ * not set this define while libg15render is built with TTF support we get
  * heap corruption. The other way around does not matter, then we just alloc
  * a little bit too much memory (the TTF related variables live at the end
  * of the struct).
  */
-#ifdef HAVE_FT2
 #define TTF_SUPPORT
-#endif
 #include <libg15render.h>
 
 #include "lcd.h"
