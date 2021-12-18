@@ -390,8 +390,8 @@ AC_ARG_ENABLE(freetype,
 AC_MSG_RESULT($enable_freetype)
 
 if test "$enable_freetype" = "yes"; then
-	ifdef([AC_CHECK_FT2],
-		[AC_CHECK_FT2([],
+	ifdef([PKG_CHECK_MODULES],
+		[PKG_CHECK_MODULES([FT2], freetype2,
 			[AC_DEFINE(HAVE_FT2, [1], [Define to 1 if you have freetype])],
 			[enable_freetype=no])],
 		[AC_MSG_WARN([freetype does not seem to be installed])])
