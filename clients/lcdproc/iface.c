@@ -516,3 +516,11 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 		}
 	}
 }
+
+void iface_shutdown(void)
+{
+	for (iface_count = 0; iface_count < MAX_INTERFACES; iface_count++) {
+		free(iface[iface_count].name);
+		free(iface[iface_count].alias);
+	}
+}

@@ -53,7 +53,8 @@ typedef struct _screen_mode
 	int show_invisible;	/**< Send stats while not visible? */
 	int timer;		/**< Time since last update */
 	int flags;		/**< See mode flags defines */
-	int (*func)(int,int,int *);	/**< Pointer to init / update function */
+	int (*update_function)(int,int,int *);	/**< Pointer to init / update function */
+	void (*shutdown_function)();	/**< Pointer to init / update function */
 } ScreenMode;
 
 /* mode flags */
