@@ -21,7 +21,7 @@
 
 #include "hd44780-ts7800.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include<stdio.h>
 #include<errno.h>
