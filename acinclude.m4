@@ -233,7 +233,7 @@ dnl			else
 			actdrivers=["$actdrivers glk"]
 			;;
 		hd44780)
-			HD44780_DRIVERS="hd44780-hd44780-serial.o hd44780-hd44780-lis2.o hd44780-hd44780-usblcd.o"
+			HD44780_DRIVERS="hd44780-hd44780-serial.o hd44780-hd44780-lis2.o hd44780-hd44780-usblcd.o hd44780-hd44780-ts7800.o"
 			AC_CHECK_LIB(ugpio, main,[
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-ugpio.o"
 				LIBUGPIO="-lugpio"
