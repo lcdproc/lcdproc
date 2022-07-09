@@ -67,6 +67,7 @@
 #define HD44780_CT_UGPIO		27
 #define HD44780_CT_EZIO			28
 #define HD44780_CT_GPIOD		29
+#define HD44780_CT_TS7800		30
 /**@}*/
 
 /** \name Symbolic names for interface types
@@ -78,6 +79,7 @@
 #define IF_TYPE_I2C		4
 #define IF_TYPE_TCP		5
 #define IF_TYPE_SPI		6
+#define IF_TYPE_TS7800		7
 /**@}*/
 
 /** \name Symbolic name for specific models
