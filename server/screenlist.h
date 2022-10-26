@@ -22,6 +22,7 @@
 #define AUTOROTATE_ON		1
 
 extern int autorotate;		/**< If enabled, screens will rotate */
+extern int screen_offset;		/* verticall scroller */
 
 int screenlist_init(void);
 	/* Initializes the screenlist. */
