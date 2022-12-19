@@ -297,6 +297,9 @@ process_command_line(int argc, char **argv)
 	/* Reset getopt */
 	opterr = 0; /* Prevent some messages to stderr */
 
+	/* Consecutive getopt (when reload is called) */
+	optind = 1; /* 1003.2 says this must be 1 before any call.  */
+
 	/* Analyze options here.. (please try to keep list of options the
 	 * same everywhere) */
 	while ((c = getopt(argc, argv, "hc:d:fa:p:u:w:s:r:i:")) > 0) {
