@@ -363,6 +363,9 @@ typedef struct hd44780_private_data {
 
 	/** Output buffer to collect command or data bytes */
 	tx_buffer tx_buf;
+
+	/* Sub private data specific to connection type */
+	void *connectionprivatedata;
 } PrivateData;
 
 

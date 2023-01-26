@@ -54,6 +54,16 @@ hd_init_lcd2usb(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
+	/* Allocate and store connection specific private data */
+	LCD2USBPrivateData *cp = (LCD2USBPrivateData *) calloc(1, sizeof(LCD2USBPrivateData));
+	if (cp == NULL)
+		return -1;
+
+	/* Read driver specific settings */
+	cp->disablebuffer = drvthis->config_get_bool(drvthis->name, "disablebuffer", 0, 0);
+
+	p->connectionprivatedata = cp;
+
 	struct usb_bus *bus;
 
 	p->hd44780_functions->senddata = lcd2usb_HD44780_senddata;
@@ -153,6 +163,7 @@ hd_init_lcd2usb(Driver *drvthis)
 void
 lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
+	LCD2USBPrivateData *cp = (LCD2USBPrivateData *) p->connectionprivatedata;
 	int type = (flags == RS_DATA) ? LCD2USB_DATA : LCD2USB_CMD;
 	int id = (displayID == 0) ? LCD2USB_CTRL_BOTH
 	: ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
@@ -165,8 +176,8 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 	p->tx_buf.type = (type | id);
 	p->tx_buf.buffer[p->tx_buf.use_count++] = ch;
 
-	/* flush buffer if it's full */
-	if (p->tx_buf.use_count == LCD2USB_MAX_CMD)
+	/* flush buffer if it's full, or DisableBuffer is specified in the configuration */
+	if (cp->disablebuffer || p->tx_buf.use_count == LCD2USB_MAX_CMD)
 		lcd2usb_HD44780_flush(p);
 }
 

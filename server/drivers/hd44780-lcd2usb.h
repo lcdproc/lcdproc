@@ -33,6 +33,11 @@
 #define LCD2USB_GET_CTRL	(LCD2USB_GET | (2<<3))
 #define LCD2USB_GET_RESERVED1	(LCD2USB_GET | (3<<3))
 
+/** private data for the \c lcd2usb driver */
+typedef struct LCD2USB_private_data {
+	char disablebuffer;
+} LCD2USBPrivateData;
+
 // initialise this particular driver
 int hd_init_lcd2usb(Driver *drvthis);
 
