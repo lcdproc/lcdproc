@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <usb.h>
+#include <libusb-1.0/libusb.h>
 
 #include "lcd.h"
 #include "shared/report.h"
@@ -35,7 +35,7 @@
 
 /** Data local to the glcd2usb connection type */
 typedef struct glcd_glcd2usb_data {
-	usb_dev_handle *device;
+	libusb_device_handle *device;
 	unsigned char *paged_buffer;	/**< frame buffer in paged format */
 	unsigned char *dirty_buffer;	/**< buffer indicating changed bytes */
 	union {
@@ -82,7 +82,7 @@ typedef struct glcd_glcd2usb_data {
  * \return  0 on success, USB_ERROR_IO otherwise
  */
 static int
-usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int len)
+usbSetReport(libusb_device_handle * device, int reportType, unsigned char *buffer, int len)
 {
 	int bytesSent;
 
@@ -104,9 +104,16 @@ usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int
 		buffer[0] = GLCD2USB_RID_WRITE + i;
 	}
 
-	bytesSent = usb_control_msg(device, USB_TYPE_CLASS | USB_RECIP_INTERFACE |
-				    USB_ENDPOINT_OUT, USBRQ_HID_SET_REPORT,
-				    reportType << 8 | buffer[0], 0, (char *)buffer, len, 1000);
+	bytesSent = libusb_control_transfer(
+		device,
+		LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_OUT,
+        USBRQ_HID_SET_REPORT,
+		reportType << 8 | buffer[0],
+		0,
+		(char *)buffer,
+		len,
+		1000
+	);
 
 	if (bytesSent != len) {
 		if (bytesSent < 0)
@@ -132,11 +139,18 @@ usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int
  * \return  0 on success, USB_ERROR_IO otherwise
  */
 static int
-usbGetReport(usb_dev_handle * device, int reportType, int reportNumber, unsigned char *buffer, int *len)
+usbGetReport(libusb_device_handle* device, int reportType, int reportNumber, unsigned char *buffer, int *len)
 {
-	*len = usb_control_msg(device, USB_TYPE_CLASS | USB_RECIP_INTERFACE |
-			       USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT,
-			       reportType << 8 | reportNumber, 0, (char *)buffer, *len, 1000);
+	*len = libusb_control_transfer(
+		device,
+		LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_IN,
+        USBRQ_HID_GET_REPORT,
+		reportType << 8 | reportNumber,
+		0,
+		(char *)buffer,
+		len,
+		1000
+	);
 
 	if (*len < 0) {
 		report(RPT_ERR, "Error sending message: %s", usb_strerror());
@@ -345,7 +359,7 @@ glcd2usb_init(Driver *drvthis)
 	static int didUsbInit = 0;
 	struct usb_bus *bus;
 	struct usb_device *dev;
-	usb_dev_handle *handle = NULL;
+	libusb_device_handle *handle = NULL;
 	int err = 0;
 	int rval, retries = 3;
 	int len;
@@ -369,23 +383,31 @@ glcd2usb_init(Driver *drvthis)
 	 * recognized.
 	 */
 	if (!didUsbInit) {
-		usb_init();
+		libusb_init(NULL);
 		didUsbInit = 1;
 	}
 
-	usb_find_busses();
-	usb_find_devices();
+	libusb_device **list;
+	ssize_t count = libusb_get_device_list(NULL, &list);
+	if (count < 0) {
+		report(RPT_WARNING, "%s/glcd2usb: list error %s", drvthis->name, libusb_strerror(count));
+		return -1;
+	}
 
-	for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
-		for (dev = bus->devices; dev != NULL; dev = dev->next) {
 
-			if (dev->descriptor.idVendor == GLCD2USB_VID
-			    && dev->descriptor.idProduct == GLCD2USB_PID) {
+	handle = NULL;
+	struct libusb_device_descriptor descriptor;
+	for(ssize_t i = 0; i<count; i++) {
+		libusb_device *device = list[i];
+		if (libusb_get_device_descriptor(device, &descriptor) == 0) {
+			// always succeeds after libusb-1.0.16
 
-				handle = usb_open(dev);
-				if (!handle) {
-					report(RPT_WARNING, "%s/glcd2usb: cannot open USB device: %s",
-					       drvthis->name, usb_strerror());
+			if ((descriptor.idVendor == GLCD2USB_VID) && (descriptor.idProduct == GLCD2USB_PID)) {
+				// device found
+
+				int rc = libusb_open(device, &handle);
+				if (rc != 0) {
+					report(RPT_WARNING, "%s/glcd2usb: cannot open USB device: %s", drvthis->name, libusb_strerror(rc));
 					continue;
 				}
 				else {
