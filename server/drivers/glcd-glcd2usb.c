@@ -436,12 +436,11 @@ found_dev:
 	 * Linux and other operating systems which support the call.
 	 */
 	while ((rval = libusb_claim_interface(handle, 0)) != 0 && retries-- > 0) {
-#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
-		if (libusb_detach_kernel_driver_np(handle, 0) < 0) {
+		err = libusb_detach_kernel_driver(handle, 0);
+		if (err < 0) {
 			report(RPT_WARNING, "%s/glcd2usb: could not detach kernel HID driver: %s",
-			       drvthis->name, usb_strerror());
+			       drvthis->name, libusb_strerror(err));
 		}
-#endif
 	}
 	if (rval != 0)
 		report(RPT_WARNING, "%s/glcd2usb: could not claim interface", drvthis->name);
