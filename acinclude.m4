@@ -192,8 +192,11 @@ dnl				else
 			if test "$enable_libpng" = yes ; then
 				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-png.o"
 			fi
+			if test "$enable_libusb_1_0" = yes ; then
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-glcd2usb.o"
+			fi
 			if test "$enable_libusb" = yes ; then
-				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-glcd2usb.o glcd-glcd-picolcdgfx.o"
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-picolcdgfx.o"
 			fi
 			AC_CHECK_HEADERS([serdisplib/serdisp.h],[
 				AC_CHECK_LIB(serdisp, serdisp_nextdisplaydescription,[
@@ -595,7 +598,7 @@ dnl			else
 		yard2LCD)
 			DRIVERS="$DRIVERS yard2LCD${SO}"
 			actdrivers=["$actdrivers yard2LCD"]
-			;;	
+			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
