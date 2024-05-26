@@ -11,7 +11,8 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,]
 	[                    EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,]
 	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
-	[                    joy,jw002,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,]
+	[                    joy,jw002,lb216,lcdm001,lcterm,linux_devlcd,]
+	[                    linux_input,lirc,lis,MD8800,mdm166a,]
 	[                    ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,]
 	[                    Olimex_MOD_LCD1x9,picolcd,pyramid,rawserial,]
 	[                    sdeclcd,sed1330,sed1520,serialPOS,serialVFD,]
@@ -23,7 +24,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,jw002,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,Olimex_MOD_LCD1x9,picolcd,pyramid,sdeclcd,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd,rawserial,yard2LCD]
+allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,jw002,lb216,lcdm001,lcterm,linux_devlcd,linux_input,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,Olimex_MOD_LCD1x9,picolcd,pyramid,sdeclcd,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd,rawserial,yard2LCD]
 if test "$debug" = yes; then
 	allDrivers=["${allDrivers},debug"]
 fi
@@ -358,6 +359,14 @@ dnl				else
 			*-*-linux*)
 				DRIVERS="$DRIVERS linux_input${SO}"
 				actdrivers=["$actdrivers linux_input"]
+				;;
+			esac
+			;;
+		linux_devlcd)
+			case $host in
+			*-*-linux*)
+				DRIVERS="$DRIVERS linux_devlcd${SO}"
+				actdrivers=["$actdrivers linux_devlcd"]
 				;;
 			esac
 			;;
