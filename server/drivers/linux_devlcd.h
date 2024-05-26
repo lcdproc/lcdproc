@@ -13,7 +13,7 @@ MODULE_EXPORT void linuxDevLcd_set_contrast (Driver *drvthis, int promille);
 MODULE_EXPORT void linuxDevLcd_backlight (Driver *drvthis, int on);
 MODULE_EXPORT const char * linuxDevLcd_get_info (Driver *drvthis);
 
-#define DEFAULT_DEVICE	"-"
+#define DEFAULT_DEVICE	"/dev/lcd"
 #define TEXTDRV_DEFAULT_SIZE "20x4"
 
 #endif
