@@ -36,17 +36,39 @@ void gpiod_HD44780_reset(PrivateData *p);
 void gpiod_HD44780_close(PrivateData *p);
 
 typedef struct {
+	uint offset;
+	struct gpiod_line_request *req;
+	struct gpiod_line_settings *settings;
+	struct gpiod_line_config *line_cfg;
+	struct gpiod_request_config *req_cfg;
+} gpio_pin;
+
+typedef struct {
 	struct gpiod_chip *chip;
-	struct gpiod_line *en;
-	struct gpiod_line *rs;
-	struct gpiod_line *d7;
-	struct gpiod_line *d6;
-	struct gpiod_line *d5;
-	struct gpiod_line *d4;
-	struct gpiod_line *en2;
-	struct gpiod_line *bl;
-	struct gpiod_line *rw;
+	gpio_pin *en;
+	gpio_pin *rs;
+	gpio_pin *d7;
+	gpio_pin *d6;
+	gpio_pin *d5;
+	gpio_pin *d4;
+	gpio_pin *en2;
+	gpio_pin *bl;
+	gpio_pin *rw;
 } gpio_pins;
+
+/**
+ * Set GPIO pin state.
+ *
+ * \param pin     Pointer to gpio_pin structure.
+ * \param value   The new PIN state to set.
+ */
+static int
+gpio_set_value(gpio_pin *pin, int value)
+{
+	enum gpiod_line_value new_val = value ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
+	return gpiod_line_request_set_value(pin->req, pin->offset, new_val);
+}
+
 
 /**
  * Initialize a struct gpiod_line context by reading the related configuration
@@ -58,11 +80,11 @@ typedef struct {
  * \return          0 on success; -1 on error.
  */
 static int
-init_gpio_pin(Driver *drvthis, struct gpiod_line **pin, const char *name)
+init_gpio_pin(Driver *drvthis, gpio_pin **gpin, const char *name)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
-	char config_key[8];
+	char config_key[10];
 	int number;
 
 	snprintf(config_key, sizeof(config_key), "pin_%s", name);
@@ -70,23 +92,55 @@ init_gpio_pin(Driver *drvthis, struct gpiod_line **pin, const char *name)
 	if (number == -1)
 		return -1;
 
-	*pin = gpiod_chip_get_line(pins->chip, number);
-	if (*pin == NULL) {
-		report(RPT_ERR, "init_gpio_pin: unable to request GPIO%d: %s",
-		       number, strerror(errno));
-		return -1;
-	}
+	*gpin = calloc(1, sizeof(gpio_pin));
+	(*gpin)->offset = number;
 
-	if (gpiod_line_request_output(*pin, "LCDd", 0) < 0) {
+	(*gpin)->settings = gpiod_line_settings_new();
+	gpiod_line_settings_set_direction((*gpin)->settings, GPIOD_LINE_DIRECTION_OUTPUT);
+	gpiod_line_settings_set_output_value((*gpin)->settings, GPIOD_LINE_VALUE_INACTIVE);
+
+	(*gpin)->line_cfg = gpiod_line_config_new();
+	gpiod_line_config_add_line_settings((*gpin)->line_cfg, &(*gpin)->offset, 1, (*gpin)->settings);
+
+	// generate and register a friendly consumer name with real PIN function
+	(*gpin)->req_cfg = gpiod_request_config_new();
+	snprintf(config_key, sizeof(config_key), "LCDd_%s", name);
+	gpiod_request_config_set_consumer((*gpin)->req_cfg, config_key);
+
+	(*gpin)->req = gpiod_chip_request_lines(pins->chip, (*gpin)->req_cfg, (*gpin)->line_cfg);
+
+	if (!(*gpin)->req) {
 		report(RPT_ERR, "init_gpio_pin: unable to open file descriptor for GPIO%d: %s",
 		       number, strerror(errno));
-		*pin = NULL;
 		return -1;
 	}
 
 	report(RPT_INFO, "init_gpio_pin: Pin %s mapped to GPIO%d", name, number);
 
 	return 0;
+}
+
+
+/**
+ * Free related pin resources which should be freed.
+ *
+ * \param pin     Pointer to gpio_pin structure.
+ */
+static void
+release_gpio_pin(gpio_pin *pin)
+{
+	if (!pin)
+		return;
+
+	if (pin->req_cfg)
+		gpiod_request_config_free(pin->req_cfg);
+	if (pin->line_cfg)
+		gpiod_line_config_free(pin->line_cfg);
+	if (pin->settings)
+		gpiod_line_settings_free(pin->settings);
+	if (pin->req)
+		gpiod_line_request_release(pin->req);
+	free(pin);
 }
 
 
@@ -101,22 +155,22 @@ send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	gpiod_line_set_value(pins->d7, ch & 0x08);
-	gpiod_line_set_value(pins->d6, ch & 0x04);
-	gpiod_line_set_value(pins->d5, ch & 0x02);
-	gpiod_line_set_value(pins->d4, ch & 0x01);
+	gpio_set_value(pins->d7, ch & 0x08);
+	gpio_set_value(pins->d6, ch & 0x04);
+	gpio_set_value(pins->d5, ch & 0x02);
+	gpio_set_value(pins->d4, ch & 0x01);
 
 	/* Data is clocked on the falling edge of EN */
 	if (displayID == 1 || displayID == 0)
-		gpiod_line_set_value(pins->en, 1);
+		gpio_set_value(pins->en, 1);
 	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		gpiod_line_set_value(pins->en2, 1);
+		gpio_set_value(pins->en2, 1);
         p->hd44780_functions->uPause(p, 50);
 
 	if (displayID == 1 || displayID == 0)
-		gpiod_line_set_value(pins->en, 0);
+		gpio_set_value(pins->en, 0);
 	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		gpiod_line_set_value(pins->en2, 0);
+		gpio_set_value(pins->en2, 0);
 	p->hd44780_functions->uPause(p, 50);
 }
 
@@ -145,9 +199,9 @@ hd_init_gpiod(Driver *drvthis)
 		return -1;
 	}
 
-	pins = malloc(sizeof(gpio_pins));
+	pins = calloc(1, sizeof(gpio_pins));
 
-	pins->chip = gpiod_chip_open_lookup(chip);
+	pins->chip = gpiod_chip_open(chip);
 	if (!pins->chip) {
 		report(RPT_ERR, "%s: can't open gpio chip '%s'", drvthis->name, chip);
 		free(pins);
@@ -208,7 +262,7 @@ gpiod_HD44780_reset(PrivateData *p)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	gpiod_line_set_value(pins->rs, 0);
+	gpio_set_value(pins->rs, 0);
 
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	p->hd44780_functions->uPause(p, 4100);
@@ -235,7 +289,7 @@ gpiod_HD44780_senddata(PrivateData *p, unsigned char displayID,
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	gpiod_line_set_value(pins->rs, (flags == RS_INSTR) ? 0 : 1);
+	gpio_set_value(pins->rs, (flags == RS_INSTR) ? 0 : 1);
 
 	send_nibble(p, ch >> 4, displayID);
 	send_nibble(p, ch, displayID);
@@ -253,7 +307,7 @@ gpiod_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	gpiod_line_set_value(pins->bl, (state == BACKLIGHT_ON) ? 1 : 0);
+	gpio_set_value(pins->bl, (state == BACKLIGHT_ON) ? 1 : 0);
 }
 
 
@@ -266,6 +320,16 @@ void
 gpiod_HD44780_close(PrivateData *p)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
+
+	release_gpio_pin(pins->en);
+	release_gpio_pin(pins->rs);
+	release_gpio_pin(pins->d7);
+	release_gpio_pin(pins->d6);
+	release_gpio_pin(pins->d5);
+	release_gpio_pin(pins->d4);
+	release_gpio_pin(pins->en2);
+	release_gpio_pin(pins->bl);
+	release_gpio_pin(pins->rw);
 
 	gpiod_chip_close(pins->chip);
 
