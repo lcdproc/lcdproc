@@ -3284,7 +3284,7 @@ This is only kept around to support legacy systems, where the kernel
 can't be updated easily.</para>
 
 <para>The GPIOD connection type uses the official gpio-device API via
-libgpiod. Currently all GPIO lines must belong to the same chip.
+libgpiod2. Currently all GPIO lines must belong to the same chip.
 You should use this if possible.</para>
 
 <para>The GPIO connection type has been removed from the HD44780 driver.
@@ -3444,7 +3444,7 @@ libgpiod</title>
 [hd44780]
 ConnectionType=gpio
 
-gpiochip=0
+gpiochip=/dev/gpiochip0
 pin_D4=25
 pin_D5=24
 pin_D6=23
