@@ -404,16 +404,11 @@ big_clock_screen(int rep, int display, int *flags_ptr)
 	int digits = (lcd_wid >= 20) ? 6 : 4;
 	int xoffs = 0;
 
-	// shared/configfile.h describes the arguments for config_get_bool
-	// TwentyFourHour used to be a static int, but I was tired of changing
-	// the value on every software update, so I changed it.
 	int TwentyFourHour = config_get_bool("BigClock", "TwentyFourHour", 0, 1);
 	if (!TwentyFourHour) {
 		TwentyFourHour = 0;
 	}
 
-	// I don't know why I didn't think to check this. Am I finally learning
-	// how to read and write C?? *GASP*
 	int showSecs = config_get_bool("BigClock", "showSecs", 0, 1);
 	if (!showSecs) {
 		digits = 4;
