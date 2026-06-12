@@ -8,7 +8,7 @@ AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
-	[                    bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,]
+	[                    ax93304,bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,]
 	[                    EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,]
 	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
 	[                    joy,jw002,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,]
@@ -23,7 +23,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,jw002,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,Olimex_MOD_LCD1x9,picolcd,pyramid,sdeclcd,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd,rawserial,yard2LCD]
+allDrivers=[ax93304,bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,jw002,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,Olimex_MOD_LCD1x9,picolcd,pyramid,sdeclcd,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd,rawserial,yard2LCD]
 if test "$debug" = yes; then
 	allDrivers=["${allDrivers},debug"]
 fi
@@ -51,6 +51,10 @@ done
 dnl check for wanted drivers and their dependencies
 for driver in $selectdrivers ; do
 	case "$driver" in
+		ax93304)
+			DRIVERS="$DRIVERS ax93304${SO}"
+			actdrivers=["$actdrivers ax93304"]
+			;;
 		bayrad)
 			DRIVERS="$DRIVERS bayrad${SO}"
 			actdrivers=["$actdrivers bayrad"]
