@@ -751,6 +751,10 @@ ax93304_icon(Driver *drvthis, int x, int y, int icon)
 			ax93304_set_char(drvthis, 5, checkbox_gray);
 			ax93304_chr(drvthis, x, y, 5);
 			break;
+		case ICON_BLOCK_FILLED:
+			ax93304_set_char(drvthis, 6, block_filled);
+			ax93304_chr(drvthis, x, y, 6);
+			break;
 		default:
 			return -1;	/* Let the core do other icons */
 	}
