@@ -60,16 +60,21 @@
 
 #define AX93304_DEFAULT_DEVICE	"/dev/lcd"
 
-#define AX93304_WIDTH           16
-#define AX93304_HEIGHT          2
-#define AX93304_CELLWIDTH       5
-#define AX93304_CELLHEIGHT      8
+#define AX93304_WIDTH               16
+#define AX93304_HEIGHT              2
+#define AX93304_CELLWIDTH           5
+#define AX93304_CELLHEIGHT          8
 
-#define AX93304_CMD             0xFE
-#define AX93304_BACKLIGHT_ON    0xFB
-#define AX93304_BACKLIGHT_OFF   0xFC
-#define AX93304_READ_KEY        0xFD
-#define AX93304_ESCAPE          0xFF
+#define AX93304_CMD                 0xFE
+#define AX93304_BACKLIGHT_ON        0xFB
+#define AX93304_BACKLIGHT_OFF       0xFC
+#define AX93304_READ_KEY            0xFD
+#define AX93304_ESCAPE              0xFF
+
+#define AX93304_CHAR_ARROW_RIGHT    0x1A
+#define AX93304_CHAR_ARROW_LEFT     0x1B
+#define AX93304_CHAR_BLOCK_FILLED   0xFF /* Data byte; ax93304_write_data() prefixes AX93304_ESCAPE */
+
 /* Key input is enabled once during init, then handled passively.
  * Some AX93304 firmware appears to require a single 0xFD key-listen command,
  * but continuously sending 0xFD from get_key() can slow display updates.
@@ -615,6 +620,47 @@ ax93304_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
 
 /**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
+MODULE_EXPORT void
+ax93304_num(Driver *drvthis, int x, int num)
+{
+        PrivateData *p = drvthis->private_data;
+        static int do_init = 1;
+
+        if (p->ccmode != bignum) {
+                if (p->ccmode != standard) {
+                        report(RPT_WARNING,
+                               "%s: num: cannot combine two modes using user-defined characters",
+                               drvthis->name);
+                        return;
+                }
+
+                p->ccmode = bignum;
+                do_init = 1;
+        }
+
+        lib_adv_bignum(drvthis, x, num, 0, do_init);
+        do_init = 0;
+}
+
+
+/**
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters (always NUM_CCs).
+ */
+MODULE_EXPORT int
+ax93304_get_free_chars(Driver *drvthis)
+{
+        return NUM_CCs;
+}
+
+
+/**
  * Place an icon on the screen.
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
@@ -691,24 +737,18 @@ ax93304_icon(Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char block_filled[] =
-		{ b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX };
 
 	/* Icons from CGROM will always work */
 	switch (icon) {
 	    case ICON_ARROW_LEFT:
-		ax93304_chr(drvthis, x, y, 0x1B);
-		return 0;
+			ax93304_chr(drvthis, x, y, AX93304_CHAR_ARROW_LEFT);
+			return 0;
 	    case ICON_ARROW_RIGHT:
-		ax93304_chr(drvthis, x, y, 0x1A);
-		return 0;
+			ax93304_chr(drvthis, x, y, AX93304_CHAR_ARROW_RIGHT);
+			return 0;
+		case ICON_BLOCK_FILLED:
+			ax93304_chr(drvthis, x, y, AX93304_CHAR_BLOCK_FILLED);
+			return 0;
 	}
 
 	/* The heartbeat icons do not work in bignum and vbar mode */
@@ -716,13 +756,13 @@ ax93304_icon(Driver *drvthis, int x, int y, int icon)
 		if ((p->ccmode != bignum) && (p->ccmode != vbar)) {
 			switch (icon) {
 			    case ICON_HEART_FILLED:
-				ax93304_set_char(drvthis, 7, heart_filled);
-				ax93304_chr(drvthis, x, y, 7);
-				return 0;
+					ax93304_set_char(drvthis, 7, heart_filled);
+					ax93304_chr(drvthis, x, y, 7);
+					return 0;
 			    case ICON_HEART_OPEN:
-				ax93304_set_char(drvthis, 7, heart_open);
-				ax93304_chr(drvthis, x, y, 7);
-				return 0;
+					ax93304_set_char(drvthis, 7, heart_open);
+					ax93304_chr(drvthis, x, y, 7);
+					return 0;
 			}
 		}
 		else {
@@ -750,10 +790,6 @@ ax93304_icon(Driver *drvthis, int x, int y, int icon)
 		case ICON_CHECKBOX_GRAY:
 			ax93304_set_char(drvthis, 5, checkbox_gray);
 			ax93304_chr(drvthis, x, y, 5);
-			break;
-		case ICON_BLOCK_FILLED:
-			ax93304_set_char(drvthis, 6, block_filled);
-			ax93304_chr(drvthis, x, y, 6);
 			break;
 		default:
 			return -1;	/* Let the core do other icons */
@@ -809,4 +845,3 @@ ax93304_get_key(Driver *drvthis)
     default:  return NULL;
   }
 }
-
