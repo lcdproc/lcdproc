@@ -37,9 +37,11 @@ MODULE_EXPORT void ax93304_chr(Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void ax93304_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void ax93304_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void ax93304_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT int  ax93304_icon(Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void ax93304_set_char(Driver *drvthis, int n, unsigned char *dat);
+MODULE_EXPORT int  ax93304_get_free_chars(Driver *drvthis);
 
 MODULE_EXPORT void ax93304_backlight(Driver *drvthis, int promille);
 
