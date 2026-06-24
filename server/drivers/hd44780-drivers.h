@@ -53,6 +53,7 @@
 #ifdef HAVE_GPIOD
 # include "hd44780-gpiod.h"
 #endif
+#include "hd44780-ts7800.h"
 
 /* add new connection type header files to the correct section above or here */
 
@@ -119,6 +120,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "gpiod",         HD44780_CT_GPIOD,         IF_TYPE_PARPORT,  hd_init_gpiod     },
 #endif
 	/* add new connection types in the correct section above or here */
+	{ "ts7800",        HD44780_CT_TS7800,        IF_TYPE_TS7800,   hd_init_ts7800    },
 
 	/* default, end of structure element (do not delete) */
 	{ NULL, HD44780_CT_UNKNOWN, IF_TYPE_UNKNOWN, NULL }
