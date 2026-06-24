@@ -1,0 +1,42 @@
+<sect1 id="linux_devlcd-howto">
+<title>The linux_devlcd Driver</title>
+
+<para>
+The linux_devlcd driver outputs the content of the internal framebuffer to
+the the linux kernel /dev/lcd character device.
+</para>
+
+<!-- ## Text driver ## -->
+<sect2 id="linux_devlcd-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="linux_devlcd-config-section">
+<title>[linux_devlcd]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Size</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Set the display size [default: <literal>20x4</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+  Linux kernel device to use. Default: <filename>/dev/lcd</filename>
+  </para></listitem>
+</varlistentry>
+
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
