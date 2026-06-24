@@ -562,6 +562,17 @@ machine_get_uptime(double *up, double *idle)
 	return (TRUE);
 }
 
+int 
+machine_skip_header(char *buffer, FILE *file)
+{
+	if(fgets(buffer, sizeof(buffer), file) == NULL
+		&& fgets(buffer, sizeof(buffer), file) == NULL)
+	{
+		perror("Error: Could not open DEVFILE");
+		return (FALSE);
+	}
+	return (TRUE);
+}
 
 int
 machine_get_iface_stats(IfaceInfo * interface)
@@ -576,8 +587,10 @@ machine_get_iface_stats(IfaceInfo * interface)
 	/* Open the file in read-only mode and parse */
 	if ((file = fopen("/proc/net/dev", "r")) != NULL) {
 		/* Skip first 2 header lines of file */
-		fgets(buffer, sizeof(buffer), file);
-		fgets(buffer, sizeof(buffer), file);
+		if (machine_skip_header(buffer,file) == FALSE)
+		{
+			return (FALSE);
+		}
 
 		/* By default, treat interface as down */
 		interface->status = down;
