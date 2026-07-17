@@ -1,10 +1,19 @@
-[![Build Status](https://travis-ci.org/lcdproc/lcdproc.svg?branch=master)](https://travis-ci.org/lcdproc/lcdproc)
 
-This is the official repository for the LCDproc project.
+# This is NOT the official repository for the LCDproc project.
+You can find the official project [here.](https://github.com/lcdproc/lcdproc)
 
-_Note: this project is currently being migrated from Sourceforge. Documentation
-is still being updated to reflect this and we're still getting our bearings here
-on GitHub, so please excuse the dust while we set up shop._
+This is a version that modifies the clients/lcdproc/chrono.c file
+so that the Big Number widget will display in 12 Hour format instead of the
+default 24 Hour format.
+
+Now has the option to set 12/24 hour format in lcdproc.conf!
+
+I have a pretty specific use case for this, but if you find it useful, then
+awesome!
+
+Also, please be aware that I am not a master C dev, so expect bugs.
+
+--------------------------------------------------------------------------------
 
 # Introduction
 
