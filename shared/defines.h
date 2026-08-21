@@ -12,19 +12,15 @@
 #ifndef SHARED_DEFINES_H
 #define SHARED_DEFINES_H
 
-/* Define min() and max() */
+#ifndef bool
+# include <stdbool.h>
+#endif
+
 #ifndef min
 # define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 #ifndef max
 # define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-
-/* Our own way of saying yes/no */
-#ifndef bool
-# define bool short
-# define true 1
-# define false 0
 #endif
 
 #endif

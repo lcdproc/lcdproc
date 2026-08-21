@@ -125,7 +125,7 @@
  * \return  0 if successful, -1 on error.
  */
 static inline int
-timing_init()
+timing_init(void)
 {
 #if defined DELAY_NANOSLEEP
 # if defined HAVE_SCHED_SETSCHEDULER

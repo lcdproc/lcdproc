@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/param.h>
+#include <stdbool.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

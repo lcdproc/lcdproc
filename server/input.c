@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "shared/sockets.h"
 #include "shared/report.h"
@@ -61,7 +62,7 @@ int input_init(void)
 }
 
 
-void input_shutdown()
+void input_shutdown(void)
 {
 	if (!keylist) {
 		/* Program shutdown before completed startup */

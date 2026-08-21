@@ -4,8 +4,6 @@
 
 /*-
  * This file is part of LCDproc.
- *
- * Feel free to use this in your own clients... :)
  */
 
 #include <unistd.h>
@@ -14,6 +12,8 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <inttypes.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -43,19 +43,26 @@ typedef struct sockaddr_in sockaddr_in;
  * \return  0 on success, -1 on error.
  */
 static int
-sock_init_sockaddr (sockaddr_in *name, const char *hostname, unsigned short int port)
+sock_init_sockaddr (sockaddr_in *name, const char *hostname, uint16_t port)
 {
-	struct hostent *hostinfo;
+	struct addrinfo hints, *res;
+	int status;
+	char port_str[6];	/* 5 digits fits any uint16_t value ("65535"), plus NUL */
 
-	memset (name, '\0', sizeof (*name));
-	name->sin_family = AF_INET;
-	name->sin_port = htons (port);
-	hostinfo = gethostbyname (hostname);
-	if (hostinfo == NULL) {
-		report (RPT_ERR, "sock_init_sockaddr: Unknown host %s.", hostname);
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET; 
+	hints.ai_socktype = SOCK_STREAM;
+
+	snprintf(port_str, sizeof(port_str), "%" PRIu16, port);
+
+	status = getaddrinfo(hostname, port_str, &hints, &res);
+	if (status != 0) {
+		report (RPT_ERR, "sock_init_sockaddr: Resolve error for %s: %s", hostname, gai_strerror(status));
 		return -1;
 	}
-	name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
+
+	memcpy(name, res->ai_addr, sizeof(struct sockaddr_in));
+	freeaddrinfo(res);
 
 	return 0;
 }
@@ -67,7 +74,7 @@ sock_init_sockaddr (sockaddr_in *name, const char *hostname, unsigned short int 
  * \return  socket file descriptor on success, -1 on error
  */
 int
-sock_connect (char *host, unsigned short int port)
+sock_connect (char *host, uint16_t port)
 {
 	struct sockaddr_in servername;
 	int sock;

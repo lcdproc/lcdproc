@@ -78,8 +78,8 @@ server_screen_init(void)
 
 	/* Create all the widgets...*/
 	for (i = 0; i < display_props->height; i++) {
-		char id[8];
-		sprintf(id, "line%d", i+1);
+		char id[20]; /* "line" + int (up to 19 chars) fits */
+		snprintf(id, sizeof(id), "line%d", i+1);
 
 		w = widget_create(id, WID_STRING, server_screen);
 		if (w == NULL) {
@@ -101,9 +101,9 @@ server_screen_init(void)
 
 		for (i = 0; i < display_props->height; i++) {
 	 		const char *line = config_get_string("Server", "Hello", i, "");
-			char id[8];
+			char id[20]; /* "line" + int (up to 19 chars) fits */
 
-			sprintf(id, "line%d", i+1);
+			snprintf(id, sizeof(id), "line%d", i+1);
 			w = screen_find_widget(server_screen, id);
 			if ((w != NULL) && (w->text != NULL)) {
 				strncpy(w->text, line, LCD_MAX_WIDTH);
@@ -276,10 +276,10 @@ reset_server_screen(int rotate, int heartbeat, int title)
 					? PRI_INFO : PRI_BACKGROUND;
 
 	for (i = 0; i < display_props->height; i++) {
-		char id[8];
+		char id[20]; /* "line" + int (up to 19 chars) fits */
 		Widget *w;
 
-		sprintf(id, "line%d", i+1);
+		snprintf(id, sizeof(id), "line%d", i+1);
 		w = screen_find_widget(server_screen, id);
 		if (w != NULL) {
 			w->x = 1;

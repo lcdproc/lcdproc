@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "shared/report.h"
 #include "shared/defines.h"

@@ -27,6 +27,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -150,7 +151,7 @@ fill_labeled_value(char *string, int len, const char *text, const char *value, i
 		if ((value != NULL) &&
 		    (textlen + strlen(value) < len - 1)) {
 			memset(string, ' ', len);
-			strncpy(string, text, textlen);
+			memcpy(string, text, (size_t)textlen);
 			strcpy(string + len - strlen(value), value);
 		}
 		else {
@@ -393,12 +394,11 @@ void menu_build_screen(MenuItem *menu, Screen *s)
 	     subitem != NULL;
 	     subitem = LL_GetNext(menu->data.menu.contents), itemnr ++)
 	{
-		char buf[10];
+		char buf[16];
 
 		if (subitem->is_hidden)
 			continue;
-		snprintf(buf, sizeof(buf)-1, "text%d", itemnr);
-		buf[sizeof(buf)-1] = '\0';
+		snprintf(buf, sizeof buf, "text%d", itemnr);
 		w = widget_create(buf, WID_STRING, s);
 					/* (buf will be copied) */
 		if (w != NULL) {
@@ -414,10 +414,9 @@ void menu_build_screen(MenuItem *menu, Screen *s)
 					w->text[display_props->width-2] = '\0';
 
 				/* Add icon for checkbox */
-				snprintf(buf, sizeof(buf)-1, "icon%d", itemnr);
-				buf[sizeof(buf)-1] = '\0';
+				snprintf(buf, sizeof buf, "icon%d", itemnr);
 				w = widget_create(buf, WID_ICON, s);
-						/* (buf will be copied) */
+							/* (buf will be copied) */
 				screen_add_widget(s, w);
 				w->x = display_props->width - 1;
 				w->length = ICON_CHECKBOX_OFF;
@@ -534,8 +533,7 @@ void menu_update_screen(MenuItem *menu, Screen *s)
 		switch (subitem->type) {
 		  case MENUITEM_CHECKBOX:
 			/* Update icon value for checkbox */
-			snprintf(buf, sizeof(buf)-1, "icon%d", itemnr);
-			buf[sizeof(buf)-1] = '\0';
+			snprintf(buf, sizeof buf, "icon%d", itemnr);
 			w = screen_find_widget(s, buf);
 			if (w == NULL)
 				report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);

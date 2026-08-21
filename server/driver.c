@@ -225,9 +225,9 @@ driver_bind_module(Driver *driver)
 
 	/* And locate the symbols */
 	for (i = 0; driver_symbols[i].name != NULL; i++) {
-		void (**p)();
+		void (**p)(void);
 
-		p = (void(**)()) ((size_t)driver + (driver_symbols[i].offset));
+		p = (void(**)(void)) ((size_t)driver + (driver_symbols[i].offset));
 		*p = NULL;
 
 		/* 1) try to retrieve the symbol with the driver's symbol_prefix added */

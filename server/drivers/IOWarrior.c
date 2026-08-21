@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <stdint.h>
 #include <usb.h>
 
 #ifdef HAVE_CONFIG_H
@@ -207,12 +208,13 @@ static int iowlcd_load_chars(PrivateData *p, int offset, int num, unsigned char 
 
 /* ------------------- IOWarrior LED routines ------------------------------ */
 
-static int iowled_on_off(PrivateData *p, unsigned int pattern)
+static int iowled_on_off(PrivateData *p, uint32_t pattern)
 {
-  unsigned char led_cmd[4] = { 0x00, 0x00, 0x00, 0x00 };
+  unsigned char led_cmd[4] = {0, 0, 0, 0};
   int i;
 
-  pattern ^= 0xFFFFFFFFU;	/* invert pattern */
+  /* invert pattern. IOWarrior LED state is inverted on the wire: */
+  pattern ^= 0xFFFFFFFFU;
 
   /* map pattern to bytes */
   for (i = 0; i < ((p->productID == iowProd40) ? 4 : 2); i++) {

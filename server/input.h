@@ -20,6 +20,7 @@
 # include <stdbool.h>
 #endif
 #include "shared/defines.h"
+#include <stdbool.h>
 
 /* Accepts and uses keypad input while displaying screens... */
 void handle_input(void);

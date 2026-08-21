@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #include "shared/report.h"
 #include "shared/sockets.h"

@@ -209,8 +209,8 @@ typedef struct lcd_logical_driver {
 	int (*config_has_key)		(const char *sectionname, const char *keyname);
 
 	/* Display properties functions (for drivers that adapt to other loaded drivers) */
-	int (*request_display_width) ();
-	int (*request_display_height) ();
+	int (*request_display_width)	(void);
+	int (*request_display_height)	(void);
 
 	/* Added in driver API 0.6, after the others, so that the layout of
 	 * the members above is unchanged. See configfile.h. */

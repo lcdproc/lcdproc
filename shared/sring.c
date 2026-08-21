@@ -39,7 +39,10 @@ sring_create(int iSize)
 		return NULL;
 
 	if ((buf->data = malloc(iSize + 1)) == NULL)
+	{
+		free(buf);
 		return NULL;
+	}
 
 	buf->size = iSize + 1;
 	buf->w = 0;
@@ -236,6 +239,8 @@ sring_read_string(sring_buffer *buf)
 		return NULL;
 
 	dst_len = sring_getMaxRead(buf) - n;
+	if (dst_len <= 0)
+		return NULL;
 	if ((dst = malloc(dst_len)) == NULL)
 		return NULL;
 

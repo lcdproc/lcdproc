@@ -201,7 +201,7 @@ _sdec_control_wait(unsigned char register_select, unsigned char backlight,
  * programming guide. Note the required execution times.
  */
 static void
-sdec_init()
+sdec_init(void)
 {
 	/* Mandatory reset sequence */
 	sdec_exec_wait(SDEC_FN_FUNCTION_SET | SDEC_OPT_8_BIT, 15000);

@@ -13,6 +13,7 @@
 #define MAIN_H
 
 #include "shared/defines.h"
+#include <stdbool.h>
 
 #ifndef TRUE
 # define TRUE    1

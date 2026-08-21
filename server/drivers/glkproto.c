@@ -453,7 +453,7 @@ glkputl(GLKDisplay *fd, ...)
 int
 glkputs(GLKDisplay *fd, char *str)
 {
-   register char *p = str;
+   char *p = str;
    int retval;
 
    retval = 0;  /* Success */
@@ -471,7 +471,7 @@ glkputs(GLKDisplay *fd, char *str)
 int
 glkputa(GLKDisplay *fd, int len, unsigned char *str)
 {
-   register unsigned char *p = str;
+   unsigned char *p = str;
    int i;
    int retval;
 

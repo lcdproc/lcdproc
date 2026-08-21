@@ -409,11 +409,13 @@ process_configfile(char *configfile)
 	if (bind_port == UNSET_INT)
 		bind_port = config_get_int("Server", "Port", 0, UNSET_INT);
 
-	if (strcmp(bind_addr, UNSET_STR) == 0)
-		strncpy(bind_addr, config_get_string("Server", "Bind", 0, UNSET_STR), sizeof(bind_addr));
+	if (strcmp(bind_addr, UNSET_STR) == 0) {
+		snprintf(bind_addr, sizeof bind_addr, "%s", config_get_string("Server", "Bind", 0, UNSET_STR));
+	}
 
-	if (strcmp(user, UNSET_STR) == 0)
-		strncpy(user, config_get_string("Server", "User", 0, UNSET_STR), sizeof(user));
+	if (strcmp(user, UNSET_STR) == 0) {
+		snprintf(user, sizeof user, "%s", config_get_string("Server", "User", 0, UNSET_STR));
+	}
 
 	if (default_duration == UNSET_INT) {
 		default_duration = (config_get_float("Server", "WaitTime", 0, 0) * 1e6 / frame_interval);
