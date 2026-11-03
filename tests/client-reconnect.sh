@@ -69,10 +69,10 @@ stop_lcdd() {
 
 # start_client RECONNECTDELAY
 start_client() {
-	printf '[lcdproc]\nServer=127.0.0.1\nReconnectDelay=%s\n' "$1" > "$work/lcdproc.conf"
-	# -p as well: the client doesn't read Port= from its config file.
+	printf '[lcdproc]\nServer=127.0.0.1\nPort=%s\nReconnectDelay=%s\n' "$port" "$1" \
+		> "$work/lcdproc.conf"
 	# Turn the default screens off, then the one under test on.
-	"$client" -c "$work/lcdproc.conf" -p "$port" -f '!C' '!M' '!L' '!T' '!A' "$screen" \
+	"$client" -c "$work/lcdproc.conf" -f '!C' '!M' '!L' '!T' '!A' "$screen" \
 		2> "$work/client.log" &
 	client_pid=$!
 	sleep 3
