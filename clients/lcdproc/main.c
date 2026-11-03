@@ -627,6 +627,8 @@ server_reconnect(void)
 		sequence[k].flags &= ~(INITIALIZED | VISIBLE);
 		sequence[k].timer = 0xffff;
 	}
+	/* ... and with the backlight on, so send its state again too */
+	update_screen_reset();
 
 	while (!Quit) {
 		sleep(reconnect_delay);
