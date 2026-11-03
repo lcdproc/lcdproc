@@ -95,6 +95,11 @@ display name for the main menu [default: LCDproc HOST]
 .RS 4
 Show hostname in title of screen [default: true; legal: true, false]
 .RE
+.PP
+\fIReconnectDelay=\fR
+.RS 4
+seconds to wait between attempts to reconnect when LCDd drops the connection, e.g. because it was restarted; 0 exits instead [default: 5; legal: 0 - ]
+.RE
 
 .SH SCREEN SPECIFIC CONFIGURATION
 the following section of the \fI@SYSCONFDIR@/lcdproc.conf\fP contains screen specific configuration options. Each section refers to a screen which can be enabled and configured.

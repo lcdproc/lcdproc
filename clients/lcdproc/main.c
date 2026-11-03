@@ -74,6 +74,7 @@ static void HelpScreen(int exit_state);
 static void exit_program(int val);
 static void main_loop(void);
 static int process_configfile(char *cfgfile);
+static void server_reconnect(void);
 
 
 #define TIME_UNIT	125000	/**< 1/8th second is a single time unit. */
@@ -92,6 +93,7 @@ static int process_configfile(char *cfgfile);
 #define DEFAULT_PIDFILE		PIDFILEDIR "/lcdproc.pid"
 #define DEFAULT_REPORTDEST	RPT_DEST_STDERR
 #define DEFAULT_REPORTLEVEL	RPT_WARNING
+#define DEFAULT_RECONNECTDELAY	5
 
 /** list of screen modes to run */
 ScreenMode sequence[] =
@@ -125,6 +127,7 @@ int port = LCDPORT;
 int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
+static int reconnect_delay = UNSET_INT;	/**< seconds between reconnect attempts, 0 to exit instead */
 char *configfile = NULL;
 char *pidfile = NULL;
 int pidfile_written = FALSE;
@@ -305,6 +308,16 @@ main(int argc, char **argv)
 	/* Set reporting settings */
 	set_reporting("lcdproc", report_level, report_dest);
 
+	if (reconnect_delay == UNSET_INT)
+		reconnect_delay = DEFAULT_RECONNECTDELAY;
+	/*
+	 * When reconnecting, a write to a connection LCDd has dropped must
+	 * not end the program: main_loop() notices the closed connection
+	 * and reconnects.
+	 */
+	if (reconnect_delay > 0)
+		signal(SIGPIPE, SIG_IGN);
+
 	/* parse non-option arguments: modes to add/delete */
 	if (argc > max(optind, 1)) {
 		int i;
@@ -447,6 +460,11 @@ process_configfile(char *configfile)
 	if (islow < 0) {
 		islow = config_get_int(progname, "Delay", 0, -1);
 	}
+	if (reconnect_delay == UNSET_INT) {
+		reconnect_delay = config_get_int(progname, "ReconnectDelay", 0, DEFAULT_RECONNECTDELAY);
+		if (reconnect_delay < 0)
+			reconnect_delay = 0;
+	}
 	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL) {
 		displayname = strdup(tmp);
 	}
@@ -586,6 +604,42 @@ menus_init()
 #endif				/* LCDPROC_MENUS */
 
 
+/**
+ * Reconnect to LCDd after it has dropped the connection, for instance
+ * because it was restarted. Screens are set up again once the server
+ * answers the new hello.
+ */
+static void
+server_reconnect(void)
+{
+	int k;
+
+	report(RPT_WARNING, "Lost connection to LCDd, reconnecting every %d seconds",
+	       reconnect_delay);
+	sock_close(sock);
+	sock = -1;
+
+	/*
+	 * The new connection starts with no screens: set each one up again
+	 * on the first pass, as at startup.
+	 */
+	for (k = 0; sequence[k].which != 0; k++) {
+		sequence[k].flags &= ~(INITIALIZED | VISIBLE);
+		sequence[k].timer = 0xffff;
+	}
+
+	while (!Quit) {
+		sleep(reconnect_delay);
+		sock = sock_connect(server, port);
+		if (sock >= 0)
+			break;
+	}
+
+	report(RPT_NOTICE, "Reconnected to LCDd at %s:%d", server, port);
+	sock_send_string(sock, "hello\n");
+}
+
+
 /** Main program loop... */
 void
 main_loop(void)
@@ -600,6 +654,21 @@ main_loop(void)
 	while (!Quit) {
 		/* Check for server input... */
 		len = sock_recv(sock, buf, 8000);
+
+		/*
+		 * Has LCDd dropped the connection? Without this check, a client
+		 * whose screens weren't being written would read end-of-file
+		 * from the dead connection forever.
+		 */
+		if ((len == 0) || ((len < 0) && (errno != EAGAIN) && (errno != EWOULDBLOCK))) {
+			if (reconnect_delay <= 0) {
+				report(RPT_ERR, "Lost connection to LCDd, exiting");
+				exit_program(EXIT_FAILURE);
+			}
+			connected = 0;
+			server_reconnect();
+			continue;
+		}
 
 		/* Handle server input... */
 		while (len > 0) {
