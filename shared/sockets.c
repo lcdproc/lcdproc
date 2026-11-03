@@ -81,13 +81,15 @@ sock_connect (char *host, unsigned short int port)
 	}
 	debug (RPT_DEBUG, "sock_connect: Created socket (%i)", sock);
 
-	if (sock_init_sockaddr (&servername, host, port) < 0)
+	if (sock_init_sockaddr (&servername, host, port) < 0) {
+		close (sock);
 		return -1;
+	}
 
 	err = connect (sock, (struct sockaddr *) &servername, sizeof (servername));
 	if (err < 0) {
 		report (RPT_ERR, "sock_connect: connect failed");
-		shutdown (sock, SHUT_RDWR);
+		close (sock);
 		return -1;
 	}
 
@@ -106,9 +108,12 @@ sock_close (int fd)
 {
 	int err;
 
+	/*
+	 * shutdown() fails on a connection the peer has already dropped, but
+	 * the descriptor still has to be closed.
+	 */
 	err = shutdown (fd, SHUT_RDWR);
-	if (!err)
-		close (fd);
+	close (fd);
 
 	return err;
 }

@@ -1,4 +1,6 @@
 v0.5dev (ongoing development)
+  - [added] lcdproc client: reconnect when LCDd drops the connection (ReconnectDelay)
+  - [fixed] sockets: close descriptors on connect errors and on dropped connections
   - [added] WINSTAR WEH001602A font bank 1 charmap and font bank selector
   - [fixed] HD44780: turn off display during initialization to not show garbage
   - [added] HD44780: support almost compatible WINSTAR OLED displays
