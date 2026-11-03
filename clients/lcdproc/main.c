@@ -123,7 +123,7 @@ ScreenMode sequence[] =
 static int islow = -1;		/**< pause after mode update (in 1/100s) */
 char *progname = "lcdproc";
 char *server = NULL;
-int port = LCDPORT;
+int port = UNSET_INT;
 int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
@@ -345,6 +345,8 @@ main(int argc, char **argv)
 
 	if (server == NULL)
 		server = DEFAULT_SERVER;
+	if (port == UNSET_INT)
+		port = LCDPORT;
 
 	/* Connect to the server... */
 	sock = sock_connect(server, port);
