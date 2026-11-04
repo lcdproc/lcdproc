@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Check that the lcdproc client survives LCDd restarts.
+# Check that the bundled clients (lcdproc, lcdexec) survive LCDd restarts.
 #
 # Runs against a built source tree, with LCDd's text driver standing in for
 # a display, so no display hardware is needed:
@@ -8,8 +8,8 @@
 #   ./configure --enable-drivers=text && make
 #   sh tests/client-reconnect.sh
 #
-# Each case starts LCDd, starts the lcdproc client showing just one screen,
-# restarts LCDd under it and checks what the new LCDd displays.
+# Each case starts LCDd, starts a client, restarts LCDd under it and checks
+# what the new LCDd displays or logs.
 #
 # Set LCDPROC_TEST_PORT to use a port other than 13667.
 
@@ -18,12 +18,13 @@ set -u
 top=$(cd "$(dirname "$0")/.." && pwd)
 lcdd=$top/server/LCDd
 client=$top/clients/lcdproc/lcdproc
+lcdexec=$top/clients/lcdexec/lcdexec
 port=${LCDPROC_TEST_PORT:-13667}
 # The screen the client shows, and text that identifies it on the display
 screen=C
 marker="CPU LOAD"
 
-for f in "$lcdd" "$client" "$top/server/drivers/text.so"; do
+for f in "$lcdd" "$client" "$lcdexec" "$top/server/drivers/text.so"; do
 	if [ ! -x "$f" ] && [ ! -f "$f" ]; then
 		echo "missing $f: build first (./configure --enable-drivers=text && make)" >&2
 		exit 2
@@ -55,8 +56,9 @@ ServerScreen=no
 Size=20x4
 EOF
 
+# start_lcdd OUTPUT: the display goes to OUTPUT, the log to OUTPUT.log
 start_lcdd() {
-	"$lcdd" -c "$work/LCDd.conf" -f -s 0 -r 1 > "$work/$1" 2>/dev/null &
+	"$lcdd" -c "$work/LCDd.conf" -f -s 0 -r 4 > "$work/$1" 2> "$work/$1.log" &
 	lcdd_pid=$!
 	sleep 1
 }
@@ -192,5 +194,66 @@ else
 	result ok "ReconnectDelay=0: client exits when LCDd goes away"
 fi
 stop_client
+
+# lcdexec has no screens of its own, only menu entries in LCDd's menu, which
+# LCDd logs at level 4 as "Client [N] is using the menu".
+
+# start_lcdexec RECONNECTDELAY
+start_lcdexec() {
+	cat > "$work/lcdexec.conf" <<EOF
+[lcdexec]
+Address=127.0.0.1
+Port=$port
+Foreground=true
+Shell=/bin/sh
+ReconnectDelay=$1
+[MainMenu]
+Entry=Hello
+[Hello]
+DisplayName=Hello
+Exec="true"
+EOF
+	"$lcdexec" -c "$work/lcdexec.conf" 2> "$work/client.log" &
+	client_pid=$!
+	sleep 2
+}
+
+has_menu() {
+	grep -q "is using the menu" "$work/$1.log"
+}
+
+# 5. lcdexec reconnects and sets its menu up again.
+start_lcdd first.out
+start_lcdexec 1
+stop_lcdd
+start_lcdd second.out
+sleep 3
+alive=no
+client_alive && alive=yes
+stop_lcdd
+if [ $alive = yes ] && has_menu first.out && has_menu second.out; then
+	result ok "lcdexec reconnects and sets its menu up again"
+else
+	result fail "lcdexec reconnects and sets its menu up again"
+fi
+stop_client
+
+# 6. lcdexec with ReconnectDelay=0 exits with an error when LCDd goes away.
+start_lcdd first.out
+start_lcdexec 0
+stop_lcdd
+sleep 2
+if client_alive; then
+	result fail "lcdexec ReconnectDelay=0: exits with an error when LCDd goes away"
+else
+	wait "$client_pid"
+	status=$?
+	if [ $status -ne 0 ]; then
+		result ok "lcdexec ReconnectDelay=0: exits with an error when LCDd goes away"
+	else
+		result fail "lcdexec ReconnectDelay=0: exits with an error when LCDd goes away (status 0)"
+	fi
+fi
+client_pid=
 
 exit $failed
