@@ -1,4 +1,5 @@
 v0.5dev (ongoing development)
+  - [added] lcdvc: reconnect when LCDd drops the connection (ReconnectDelay)
   - [added] lcdexec: reconnect when LCDd drops the connection (ReconnectDelay)
   - [fixed] lcdproc client: read Port= from the configuration file
   - [added] lcdproc client: reconnect when LCDd drops the connection (ReconnectDelay)
