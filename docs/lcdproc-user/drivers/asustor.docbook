@@ -1,0 +1,179 @@
+<sect1 id="asustor">
+<title>The ASUSTOR NAS LCD driver</title>
+
+<para>
+The <code>asustor</code> driver supports the 16x2 front-panel LCD module
+found in ASUSTOR NAS systems.  The display is controlled by an embedded
+microcontroller exposed through a serial port, usually
+<filename>/dev/ttyS1</filename>, using a packet-based protocol rather than
+plain text writes.
+</para>
+
+<para>
+The protocol implementation is based on behavior documented by the
+<code>openlcmd</code> implementation from
+<ulink url="https://github.com/mafredri/lcm">github.com/mafredri/lcm</ulink>.
+Each command is acknowledged by the display controller.  Button events share
+the same serial stream as command acknowledgements, so the driver routes all
+incoming packets through a common receive path.
+</para>
+
+<sect2 id="asustor-features">
+<title>Features</title>
+
+<itemizedlist>
+<listitem><para>16x2 character display output.</para></listitem>
+<listitem><para>Display wake and initialization during LCDd startup.</para></listitem>
+<listitem><para>Front-panel navigation buttons mapped to LCDproc key names.</para></listitem>
+<listitem><para>Serial communication at the ASUSTOR controller's fixed 115200 baud rate.</para></listitem>
+</itemizedlist>
+
+<para>
+LCDd backlight-off requests are ignored by default because ASUSTOR uses the
+same command to blank the whole front-panel LCD.  This keeps the display
+readable during normal LCDproc screen rotation.
+</para>
+</sect2>
+
+<sect2 id="asustor-requirements">
+<title>Requirements</title>
+
+<para>
+The ASUSTOR LCD controller must be exposed as a serial TTY.  On tested
+systems this is <filename>/dev/ttyS1</filename>.  No USB HID, libusb, or
+kernel LCD driver is required for the display protocol.
+</para>
+</sect2>
+
+<sect2 id="asustor-buttons">
+<title>Buttons</title>
+
+<para>
+The ASUSTOR controller reports four front-panel buttons.  The driver maps
+them to LCDproc key names as follows:
+</para>
+
+<informaltable>
+<tgroup cols="2">
+<thead>
+<row><entry>ASUSTOR button</entry><entry>LCDproc key</entry></row>
+</thead>
+<tbody>
+<row><entry>Up</entry><entry><literal>Up</literal></entry></row>
+<row><entry>Down</entry><entry><literal>Down</literal></entry></row>
+<row><entry>Back</entry><entry><literal>Escape</literal></entry></row>
+<row><entry>Enter</entry><entry><literal>Enter</literal></entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+</sect2>
+
+<sect2 id="asustor-config">
+<title>Configuration in LCDd.conf</title>
+
+<programlisting>
+[server]
+Driver=asustor
+DriverPath=/lib/lcdproc/
+WaitTime=10
+TitleSpeed=4
+Heartbeat=off
+Backlight=open
+ToggleRotateKey=Menu
+PrevScreenKey=Escape
+NextScreenKey=Enter
+ScrollUpKey=Up
+ScrollDownKey=Down
+
+[asustor]
+Device=/dev/ttyS1
+Speed=115200
+Size=16x2
+</programlisting>
+
+<para>
+The ASUSTOR front panel is only 16 columns wide.  A longer
+<property>WaitTime</property> keeps each lcdproc screen visible long enough
+to read, and a lower <property>TitleSpeed</property> slows horizontal title
+scrolling.  Values around <literal>WaitTime=10</literal> and
+<literal>TitleSpeed=4</literal> are a practical starting point for the stock
+16x2 display.
+</para>
+
+<para>
+The example maps the front-panel Back and Enter buttons to previous and next
+screen navigation.  It deliberately does not assign a
+<property>MenuKey</property>, because LCDproc reserves that key exclusively
+for the built-in menu and would otherwise prevent Back from acting as previous
+screen navigation.
+</para>
+
+<sect3 id="asustor-config-section">
+<title>[asustor]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Serial port connected to the ASUSTOR LCD controller.  Default:
+    <filename>/dev/ttyS1</filename>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Speed</property> =
+    <parameter><replaceable>NUMBER</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Documented for clarity.  The ASUSTOR controller protocol uses
+    <literal>115200</literal> baud.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Size</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Documented for clarity.  The supported ASUSTOR front panel is treated as
+    a fixed <literal>16x2</literal> display.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+</sect3>
+
+</sect2>
+
+<sect2 id="asustor-testing">
+<title>Testing</title>
+
+<para>
+A new ASUSTOR installation should be tested with LCDd in the foreground before
+enabling it at boot.  The driver should initialize the panel, keep the display
+readable, rotate normal lcdproc screens, and report front-panel button events.
+</para>
+
+<programlisting>
+LCDd -f -r 4 -c /path/to/LCDd.conf
+lcdproc T U M
+</programlisting>
+
+<para>
+Confirm the following behavior:
+</para>
+
+<itemizedlist>
+<listitem><para>The display wakes and shows LCDproc output instead of the vendor boot message.</para></listitem>
+<listitem><para>Both 16-character rows update without visible packet corruption.</para></listitem>
+<listitem><para>Back and Enter can move between screens when mapped as previous and next screen keys.</para></listitem>
+<listitem><para>Up and Down can scroll LCDproc menu entries when the LCDproc menu is active.</para></listitem>
+<listitem><para>Restarting LCDd recovers cleanly if stale bytes remain on the serial line.</para></listitem>
+</itemizedlist>
+
+</sect2>
+
+</sect1>
