@@ -23,8 +23,6 @@
 #include <sys/socket.h>
 #include <stdlib.h>
 
-#include "getopt.h"
-
 #include "shared/str.h"
 #include "shared/report.h"
 #include "shared/configfile.h"

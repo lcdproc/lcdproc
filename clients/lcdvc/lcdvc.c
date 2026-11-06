@@ -22,8 +22,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "getopt.h"
-
 #include "shared/report.h"
 #include "shared/configfile.h"
 #include "shared/sockets.h"
