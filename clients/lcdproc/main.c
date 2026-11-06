@@ -37,7 +37,6 @@
 #include "shared/sockets.h"
 #include "shared/report.h"
 #include "shared/configfile.h"
-#include "getopt.h"		/* This is our local getopt.h! */
 
 /* Import screens */
 #include "batt.h"
