@@ -1,0 +1,68 @@
+<sect1 id="ax93304-howto">
+<title>The Axiomtek ax93304 Driver</title>
+
+<para>
+This section describes how to use LCDproc with the Axiomtek ax93304 LCD modules.
+</para>
+
+<sect2 id="ax93304-features">
+<title>Features</title>
+
+<para>
+The ax93304 LCD modules are integrated into several Axiomtek networking devices,
+such as the NA361R, NA510, and NA590.
+They feature a 16x2 character LCD display and four surrounding buttons.
+</para>
+
+<para>
+The ax93304 modules are connected to the mainboard via an internal RS-232 serial interface.
+</para>
+
+<para>
+For more information, see the <ulink url="https://www.axiomtek.com/">Axiomtek website</ulink>
+</para>
+
+</sect2>
+
+
+<!-- ## Axiomtek ax93304 driver ## -->
+<sect2 id="ax93304-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="ax93304-config-section">
+<title>[ax93304]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Specifies the serial device used to communicate with the LCD.
+    If not specified, the default is <filename>/dev/lcd</filename>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
+      <parameter><literal>19200</literal></parameter>
+    }
+  </term>
+  <listitem><para>
+    Sets the baud rate used for communication with the LCD.
+    If not specified, the default is <literal>9600</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
