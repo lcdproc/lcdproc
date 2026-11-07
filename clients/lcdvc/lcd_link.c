@@ -17,6 +17,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -32,7 +33,7 @@ char *address = UNSET_STR;
 int port = UNSET_INT;
 short autoscroll = 1;
 
-int sock;
+int sock = -1;
 short listening = 0;
 short scroll_x = 0, scroll_y = 0;
 short lcd_cursor_x, lcd_cursor_y;
@@ -80,7 +81,10 @@ int setup_connection(void)
 	}
 	/* Add menu items */
 	CHAIN(e, sock_send_string(sock, "menu_add_item \"\" autoscroll checkbox \"Auto scroll\"\n"));
-	CHAIN(e, sock_send_string(sock, "menu_set_item \"\" autoscroll -value on\n"));
+	/* the current setting, which may have been changed before a reconnect */
+	CHAIN(e, sock_send_string(sock, (autoscroll)
+					? "menu_set_item \"\" autoscroll -value on\n"
+					: "menu_set_item \"\" autoscroll -value off\n"));
 
 	/* Reserve keys */
 
@@ -98,11 +102,39 @@ int setup_connection(void)
 }
 
 
+/**
+ * Close the connection to LCDd and forget what was on its display, so a
+ * new connection (which may report a different display size) starts
+ * afresh.
+ */
 int teardown_connection(void)
 {
-	sock_close(sock);
+	if (sock >= 0)
+		sock_close(sock);
+	sock = -1;
+
+	listening = 0;
+	free(lcd_buf);
+	lcd_buf = NULL;
+	last_lcd_cursor_x = 0;
+	last_lcd_cursor_y = 0;
 
 	return 0;
+}
+
+
+/**
+ * Check whether LCDd has closed the connection. sock_recv_string() returns
+ * 0 both when nothing is waiting and at end-of-file, so look without
+ * reading.
+ * \return  1 if the connection is closed or broken, 0 otherwise.
+ */
+int connection_closed(void)
+{
+	char c;
+	ssize_t n = recv(sock, &c, 1, MSG_PEEK);
+
+	return (n == 0) || ((n < 0) && (errno != EAGAIN) && (errno != EWOULDBLOCK));
 }
 
 

@@ -52,6 +52,11 @@ Set reporting level (0\-5, default: 2)
 .TP
 \fB\-s\fR \fIbool\fR
 Report to syslog (1) or stderr (0, default).
+.LP
+If LCDd drops the connection, for instance because it was restarted,
+\fBlcdvc\fR reconnects and sets its screen up again, trying every
+\fBReconnectDelay\fR seconds (default 5) as set in the configuration file.
+With \fBReconnectDelay=0\fR it exits with an error instead.
 .SH "FILES"
 .LP
 \fI@SYSCONFDIR@/lcdvc.conf\fP

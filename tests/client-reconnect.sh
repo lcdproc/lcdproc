@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# Check that the bundled clients (lcdproc, lcdexec) survive LCDd restarts.
+# Check that the bundled clients (lcdproc, lcdexec, lcdvc) survive LCDd
+# restarts.
 #
 # Runs against a built source tree, with LCDd's text driver standing in for
 # a display, so no display hardware is needed:
@@ -19,12 +20,13 @@ top=$(cd "$(dirname "$0")/.." && pwd)
 lcdd=$top/server/LCDd
 client=$top/clients/lcdproc/lcdproc
 lcdexec=$top/clients/lcdexec/lcdexec
+lcdvc=$top/clients/lcdvc/lcdvc
 port=${LCDPROC_TEST_PORT:-13667}
 # The screen the client shows, and text that identifies it on the display
 screen=C
 marker="CPU LOAD"
 
-for f in "$lcdd" "$client" "$lcdexec" "$top/server/drivers/text.so"; do
+for f in "$lcdd" "$client" "$lcdexec" "$lcdvc" "$top/server/drivers/text.so"; do
 	if [ ! -x "$f" ] && [ ! -f "$f" ]; then
 		echo "missing $f: build first (./configure --enable-drivers=text && make)" >&2
 		exit 2
@@ -252,6 +254,63 @@ else
 		result ok "lcdexec ReconnectDelay=0: exits with an error when LCDd goes away"
 	else
 		result fail "lcdexec ReconnectDelay=0: exits with an error when LCDd goes away (status 0)"
+	fi
+fi
+client_pid=
+
+# lcdvc copies a virtual console to the display. Regular files stand in for
+# /dev/vcs and /dev/vcsa: the vcsa header gives the console size (4 lines
+# of 20) and cursor position, and the vcs file its text.
+
+# start_lcdvc RECONNECTDELAY
+start_lcdvc() {
+	printf '\004\024\000\000' > "$work/vcsa"
+	printf '%-20s%-60s' 'lcdvc console text' '' > "$work/vcs"
+	cat > "$work/lcdvc.conf" <<EOF
+[lcdvc]
+Address=127.0.0.1
+Port=$port
+Foreground=true
+ReconnectDelay=$1
+vcsDevice=$work/vcs
+vcsaDevice=$work/vcsa
+EOF
+	"$lcdvc" -c "$work/lcdvc.conf" 2> "$work/client.log" &
+	client_pid=$!
+	sleep 3
+}
+
+# 7. lcdvc reconnects and shows the console again.
+marker="lcdvc console text"
+start_lcdd first.out
+start_lcdvc 1
+stop_lcdd
+start_lcdd second.out
+sleep 3
+alive=no
+client_alive && alive=yes
+stop_lcdd
+if [ $alive = yes ] && shows_client first.out && shows_client second.out; then
+	result ok "lcdvc reconnects and shows the console again"
+else
+	result fail "lcdvc reconnects and shows the console again"
+fi
+stop_client
+
+# 8. lcdvc with ReconnectDelay=0 exits with an error when LCDd goes away.
+start_lcdd first.out
+start_lcdvc 0
+stop_lcdd
+sleep 2
+if client_alive; then
+	result fail "lcdvc ReconnectDelay=0: exits with an error when LCDd goes away"
+else
+	wait "$client_pid"
+	status=$?
+	if [ $status -ne 0 ]; then
+		result ok "lcdvc ReconnectDelay=0: exits with an error when LCDd goes away"
+	else
+		result fail "lcdvc ReconnectDelay=0: exits with an error when LCDd goes away (status 0)"
 	fi
 fi
 client_pid=
