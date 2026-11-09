@@ -62,7 +62,7 @@ screen_create(char *id, Client *client)
 	}
 	/* Client can be NULL for serverscreens and other client-less screens */
 
-	s = malloc(sizeof(Screen));
+	s = calloc(sizeof(Screen), 1);
 	if (s == NULL) {
 		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
@@ -75,15 +75,12 @@ screen_create(char *id, Client *client)
 		return NULL;
 	}
 
-	s->name = NULL;
 	s->priority = PRI_INFO;
 	s->duration = default_duration;
 	s->heartbeat = HEARTBEAT_OPEN;
 	s->width = display_props->width;
 	s->height = display_props->height;
-	s->keys = NULL;
 	s->client = client;
-	s->widgetlist = NULL;
 	s->timeout = default_timeout; 	/*ignored unless greater than 0.*/
 	s->backlight = BACKLIGHT_OPEN;		/*Lets the screen do it's own*/
 						/*or do what the client says.*/
@@ -107,10 +104,8 @@ screen_create(char *id, Client *client)
 
 /** Destroy a screen.
  * \param s    Screen to destroy.
- * \retval <0  Error; no screen given.
- * \retval  0  Success.
  */
-int
+void
 screen_destroy(Screen *s)
 {
 	Widget *w;
@@ -126,21 +121,17 @@ screen_destroy(Screen *s)
 		widget_destroy(w);
 	}
 	LL_Destroy(s->widgetlist);
-	s->widgetlist = NULL;
 
-	if (s->id != NULL) {
+	if (s->id != NULL)
 		free(s->id);
-		s->id = NULL;
-	}
-	if (s->name != NULL) {
+
+	if (s->name != NULL)
 		free(s->name);
-		s->name = NULL;
-	}
+
+	if (s->keys != NULL)
+		free(s->keys);
 
 	free(s);
-	s = NULL;
-
-	return 0;
 }
 
 
@@ -208,6 +199,37 @@ screen_find_widget(Screen *s, char *id)
 		}
 	}
 	debug(RPT_DEBUG, "%s: Not found", __FUNCTION__);
+	return NULL;
+}
+
+/** Test if a key is used by a screen.
+ * \param s   Screen
+ * \param key Name of the key
+ * \return    Pointer to the entry in the key list; \c NULL if key is not used.
+ */
+char *
+screen_find_key(Screen *s, const char *key)
+{
+	char *start = s->keys, *end;
+	int len = strlen(key);
+
+	if (!start)
+		return NULL;
+
+	end = start + s->keys_size - len;
+	while (start < end) {
+		if (start[len] == 0) {
+			if (strcmp(start, key) == 0)
+				return start;
+			else
+				start += len;
+		}
+
+		while (*start)  /* Get to start of next string */
+			++start;
+		++start;
+	}
+
 	return NULL;
 }
 

@@ -94,7 +94,7 @@ static inline int port_deny_multiple(unsigned short port, unsigned short count);
 /*  ---------------------------- Linux ------------------------------------ */
 /*  Use ioperm, inb and outb in <sys/io.h> (Linux) */
 /*  And iopl for higher addresses of PCI LPT cards */
-#if defined HAVE_IOPERM
+#if defined HAVE_IOPERM && (defined(__x86__) || defined(__x86_64__))
 
 /* Glibc2 and Glibc1 */
 # ifdef HAVE_SYS_IO_H
@@ -333,7 +333,7 @@ static inline int port_deny_multiple (unsigned short port, unsigned short count)
 	return i386_set_ioperm(port, count, 0);
 }
 
-#else
+#elif (defined(__x86__) || defined(__x86_64__))
 
 /*  ------------------------- Everything else ----------------------------- */
 /*  Last chance! Use /dev/io and i386 ASM code (BSD4.3 ?) */
@@ -383,6 +383,10 @@ static inline int port_deny_multiple (unsigned short port, unsigned short count)
 	/* Can't close /dev/io... */
 	return 0;
 }
+
+#else
+
+#error No low level lpt port access supported on this platform.
 
 #endif
 

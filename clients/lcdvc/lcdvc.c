@@ -22,8 +22,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "getopt.h"
-
 #include "shared/report.h"
 #include "shared/configfile.h"
 #include "shared/sockets.h"
@@ -62,6 +60,7 @@ char *help_text =
 int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
+static int reconnect_delay = UNSET_INT;	/**< seconds between reconnect attempts, 0 to exit instead */
 char *vcsa_device = UNSET_STR;
 char *vcs_device = UNSET_STR;
 char *keys[4];
@@ -79,6 +78,7 @@ static void exit_program(int val);
 static int process_command_line(int argc, char **argv);
 static int process_configfile(char *configfile);
 static int main_loop(void);
+static int connection_loop(void);
 
 
 int main(int argc, char **argv)
@@ -133,9 +133,16 @@ int main(int argc, char **argv)
 	sigaction(SIGPIPE, &sa, NULL);	// write to closed socket
 	sigaction(SIGKILL, &sa, NULL);	// kill -9 [cannot be trapped; but ...]
 
-	main_loop();
+	/*
+	 * When reconnecting, a write to a connection LCDd has dropped must
+	 * not end the program: main_loop() notices it and reconnects.
+	 */
+	if (reconnect_delay > 0) {
+		sa.sa_handler = SIG_IGN;
+		sigaction(SIGPIPE, &sa, NULL);
+	}
 
-	exit_program(EXIT_SUCCESS);
+	exit_program((main_loop() < 0) ? EXIT_FAILURE : EXIT_SUCCESS);
 
 	/* NOTREACHED */
 	return EXIT_SUCCESS;
@@ -253,6 +260,11 @@ static int process_configfile(char *configfile)
 	if (pidfile == NULL) {
 		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
 	}
+	if (reconnect_delay == UNSET_INT) {
+		reconnect_delay = config_get_int(progname, "ReconnectDelay", 0, 5);
+		if (reconnect_delay < 0)
+			reconnect_delay = 0;
+	}
 
 	vcs_device = strdup(config_get_string(progname, "vcsDevice", 0, "/dev/vcs"));
 	vcsa_device = strdup(config_get_string(progname, "vcsaDevice", 0, "/dev/vcsa"));
@@ -266,7 +278,12 @@ static int process_configfile(char *configfile)
 }
 
 
-static int main_loop(void)
+/**
+ * Copy the console to LCDd and handle its responses, until told to quit or
+ * the connection is lost.
+ * \return  0 when told to quit, -1 when the connection was lost.
+ */
+static int connection_loop(void)
 {
 	int num_bytes;
 	char buf[80];
@@ -279,6 +296,9 @@ static int main_loop(void)
 			process_response(buf);
 		}
 		else {
+			if (connection_closed())
+				break;
+
 			read_vcdata();
 			update_display();
 
@@ -295,6 +315,35 @@ static int main_loop(void)
 
 	if (!Quit)
 		report(RPT_WARNING, "Server disconnected %d", num_bytes);
+	return (Quit) ? 0 : -1;
+}
+
+
+/**
+ * Main loop: run connection_loop(), and when LCDd drops the connection,
+ * reconnect every reconnect_delay seconds, setting the screen and menu up
+ * again; or give up if reconnect_delay is 0.
+ * \return  0 when told to quit, -1 when the connection was lost for good.
+ */
+static int main_loop(void)
+{
+	while (connection_loop() < 0) {
+		if (reconnect_delay <= 0)
+			return -1;
+
+		report(RPT_WARNING, "Reconnecting to LCDd every %d seconds", reconnect_delay);
+		teardown_connection();
+		while (!Quit) {
+			sleep(reconnect_delay);
+			if (setup_connection() == 0)
+				break;
+			teardown_connection();
+		}
+		if (Quit)
+			return 0;
+		report(RPT_NOTICE, "Reconnected to LCDd at %s:%d", address, port);
+	}
+
 	return 0;
 }
 

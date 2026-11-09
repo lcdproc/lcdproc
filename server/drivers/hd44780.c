@@ -291,6 +291,18 @@ static void report_backlight_type(int report_level, int backlight_type)
 	report(report_level, "HD44780: backlight: %s", text_value);
 }
 
+static int
+find_connectionMapping(const char *name)
+{
+	int i;
+
+	for (i = 0; (connectionMapping[i].name != NULL) &&
+		    (strcasecmp(name, connectionMapping[i].name) != 0); i++)
+		;
+	return i;
+}
+
+
 /**
  * Initialize the driver.
  * Initialize common part of drive & call sub-initialization
@@ -382,9 +394,12 @@ HD44780_init(Driver *drvthis)
 
 	/* Get and search for the connection type */
 	s = drvthis->config_get_string(drvthis->name, "ConnectionType", 0, "4bit");
-	for (i = 0; (connectionMapping[i].name != NULL) &&
-		    (strcasecmp(s, connectionMapping[i].name) != 0); i++)
-		;
+	if (!strcmp(s, "gpio")) {
+		report(RPT_WARNING, "'gpio' ConnectionType split into 'ugpio' and 'gpiod'. Please update your configuration");
+		i = find_connectionMapping("ugpio");
+	} else {
+		i = find_connectionMapping(s);
+	}
 	if (connectionMapping[i].name == NULL) {
 		report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
 		return -1;
@@ -582,6 +597,7 @@ HD44780_init(Driver *drvthis)
 	p->hd44780_functions->output = NULL;
 	p->hd44780_functions->close = NULL;
 	p->hd44780_functions->flush = NULL;
+	p->hd44780_functions->reset = NULL;
 
 	/* Do local (=connection type specific) display init */
 	if (init_fn(drvthis) != 0)
@@ -865,6 +881,8 @@ HD44780_flush(Driver *drvthis)
 	if ((p->refreshdisplay > 0) && (now > p->nextrefresh)) {
 		refreshNow = 1;
 		p->nextrefresh = now + p->refreshdisplay;
+		if (p->hd44780_functions->reset)
+			p->hd44780_functions->reset(p);
 	}
 	/* keepalive refresh of display */
 	if ((p->keepalivedisplay > 0) && (now > p->nextkeepalive)) {

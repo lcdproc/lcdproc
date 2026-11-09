@@ -2,7 +2,7 @@ This document describes the driver API of v0.4 of LCDproc.
 
 The API consists of several functions to tell the driver that
 certains actions should be performed, and some data. I consider
-the data part of the API, because this data is transfered
+the data part of the API, because this data is transferred
 between core and driver.
 
 OVERVIEW OF OPERATION

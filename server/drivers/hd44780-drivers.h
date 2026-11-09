@@ -22,10 +22,12 @@
 #include "hd44780-lis2.h"
 #ifdef HAVE_LIBUSB
 # include "hd44780-bwct-usb.h"
-# include "hd44780-lcd2usb.h"
 # include "hd44780-usbtiny.h"
 # include "hd44780-uss720.h"
 # include "hd44780-usb4all.h"
+#endif
+#ifdef HAVE_LIBUSB_1_0
+# include "hd44780-lcd2usb.h"
 #endif
 #ifdef HAVE_LIBFTDI
 # include "hd44780-ftdi.h"
@@ -46,8 +48,12 @@
 # include "hd44780-rpi.h"
 #endif
 #ifdef HAVE_UGPIO
-# include "hd44780-gpio.h"
+# include "hd44780-ugpio.h"
 #endif
+#ifdef HAVE_GPIOD
+# include "hd44780-gpiod.h"
+#endif
+
 /* add new connection type header files to the correct section above or here */
 
 
@@ -80,10 +86,12 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "usblcd",        HD44780_CT_USBLCD,        IF_TYPE_USB,     hd_init_usblcd    },
 #ifdef HAVE_LIBUSB
 	{ "bwctusb",       HD44780_CT_BWCTUSB,       IF_TYPE_USB,     hd_init_bwct_usb  },
-	{ "lcd2usb",       HD44780_CT_LCD2USB,       IF_TYPE_USB,     hd_init_lcd2usb   },
 	{ "usbtiny",       HD44780_CT_USBTINY,       IF_TYPE_USB,     hd_init_usbtiny   },
 	{ "uss720",        HD44780_CT_USS720,        IF_TYPE_USB,     hd_init_uss720    },
 	{ "usb4all",       HD44780_CT_USB4ALL,       IF_TYPE_USB,     hd_init_usb4all   },
+#endif
+#ifdef HAVE_LIBUSB_1_0
+    { "lcd2usb",       HD44780_CT_LCD2USB,       IF_TYPE_USB,     hd_init_lcd2usb   },
 #endif
 #ifdef HAVE_LIBFTDI
 	{ "ftdi",          HD44780_CT_FTDI,          IF_TYPE_USB,     hd_init_ftdi      },
@@ -105,7 +113,10 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "raspberrypi",   HD44780_CT_RASPBERRYPI,   IF_TYPE_PARPORT,  hd_init_rpi      },
 #endif
 #ifdef HAVE_UGPIO
-	{ "gpio",          HD44780_CT_GPIO,          IF_TYPE_PARPORT, hd_init_gpio      },
+	{ "ugpio",         HD44780_CT_UGPIO,          IF_TYPE_PARPORT, hd_init_ugpio     },
+#endif
+#ifdef HAVE_GPIOD
+	{ "gpiod",         HD44780_CT_GPIOD,         IF_TYPE_PARPORT,  hd_init_gpiod     },
 #endif
 	/* add new connection types in the correct section above or here */
 

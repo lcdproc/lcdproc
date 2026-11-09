@@ -121,7 +121,8 @@ menu_add_item_func(Client *c, int argc, char **argv)
 
 	item = menu_find_item(c->menu, item_id, true);
 	if (item != NULL) {
-		sock_send_error(c->sock, "Item id already in use\n");
+		sock_printf_error(c->sock,
+				  "Item id '%s' already in use\n", item_id);
 		return 0;
 	}
 
@@ -707,17 +708,22 @@ menu_goto_func(Client * c, int argc, char **argv)
 
 	menu_id = argv[1];
 
-	/* use either the given menu or the client's main menu if none was specified */
-	menu = (menu_id[0] != '\0')
-	       ? menuitem_search(menu_id, c)
-	       : c->menu;
-	if (menu == NULL) {
-		sock_send_error(c->sock, "Cannot find menu id\n");
-		return 0;
-	}
+	if (strcmp("_quit_", menu_id) == 0) {
+		/* quit client menu */
+		menu = NULL;
+	} else {
+		/* use either the given menu or the client's main menu if none was specified */
+		menu = (menu_id[0] != '\0')
+			? menuitem_search(menu_id, c)
+			: c->menu;
+		if (menu == NULL) {
+			sock_send_error(c->sock, "Cannot find menu id\n");
+			return 0;
+		}
 
-	if (argc > 2)
-		set_predecessor(menu, argv[2], c);
+		if (argc > 2)
+			set_predecessor(menu, argv[2], c);
+	}
 
 	menuscreen_goto(menu);
 	/* Failure is not returned (Robijn) */

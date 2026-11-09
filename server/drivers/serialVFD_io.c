@@ -41,8 +41,14 @@
 
 #include "lcd.h"
 #include "shared/report.h"
+
+#ifdef HAVE_PCSTYLE_LPT_CONTROL
+
 #include "lpt-port.h"
 #include "port.h"
+
+#endif
+
 #include "serialVFD_io.h"
 #include "serialVFD.h"
 

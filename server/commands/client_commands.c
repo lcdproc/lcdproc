@@ -194,12 +194,11 @@ client_add_key_func(Client *c, int argc, char **argv)
 		}
 		argnr++;
 	}
-	for ( ; argnr < argc; argnr++) {
-		if (input_reserve_key(argv[argnr], exclusively, c) < 0) {
+	for ( ; argnr < argc; argnr++)
+		if (input_reserve_key(argv[argnr], exclusively, c) < 0)
 			sock_printf_error(c->sock, "Could not reserve key \"%s\"\n", argv[argnr]);
-		}
-	}
-	sock_send_string(c->sock, "success\n");
+		else
+			sock_send_string(c->sock, "success\n");
 
 	return 0;
 }

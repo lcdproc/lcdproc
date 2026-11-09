@@ -6,7 +6,8 @@ int hd_init_ethlcd(Driver *drvthis);
 
 #define ETHLCD_DRV_NAME      "ethlcd"
 #define DEFAULT_ETHLCD_PORT  2425
-#define ETHLCD_TIMEOUT       5
+#define ETHLCD_TIMEOUT       1
+#define ETHLCD_MAX_RETRIES   3
 
 /* ethlcd protocol constants: */
 #define ETHLCD_SEND_INSTR               0x01

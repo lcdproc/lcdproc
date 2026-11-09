@@ -2,10 +2,6 @@
 
 This is the official repository for the LCDproc project.
 
-_Note: this project is currently being migrated from Sourceforge. Documentation
-is still being updated to reflect this and we're still getting our bearings here
-on GitHub, so please excuse the dust while we set up shop._
-
 # Introduction
 
 LCDproc is a client/server suite including drivers for all kinds of nifty LCD
@@ -68,7 +64,7 @@ will need to have JavaScript enabled in your browser.
 ## Code of Merit
 
 This project adopts the Code of Merit, version 1.0, originally published at
-http://code-of-merit.org/. Refer to [CODE_OF_MERIT.md](CODE_OF_MERIT.md) for
+[codeofmerit.org](https://codeofmerit.org/). Refer to [CODE_OF_MERIT.md](CODE_OF_MERIT.md) for
 details, but in short, we focus on writing software and leave politics out of
 it.
 

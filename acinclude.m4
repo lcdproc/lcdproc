@@ -164,21 +164,25 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([libg15daemon_client.h not found, the g15 driver will lack g15daemon support])
 			])
-			AC_CHECK_HEADERS([libg15render.h],[
-				AC_CHECK_LIB(g15render, g15r_initCanvas,[
-					LIBG15="$LIBG15 -lg15render"
-					DRIVERS="$DRIVERS g15${SO}"
-					actdrivers=["$actdrivers g15"]
+			if test "$enable_freetype" = "yes"; then
+				AC_CHECK_HEADERS([libg15render.h],[
+					AC_CHECK_LIB(g15render, g15r_initCanvas,[
+						LIBG15="$LIBG15 -lg15render"
+						DRIVERS="$DRIVERS g15${SO}"
+						actdrivers=["$actdrivers g15"]
+					],[
+dnl					else
+						AC_MSG_WARN([the g15 driver needs libg15render])
+					],
+					[-lg15render]
+					)
 				],[
 dnl				else
-					AC_MSG_WARN([the g15 driver needs libg15render])
-				],
-				[-lg15render]
-				)
-			],[
-dnl			else
-				AC_MSG_WARN([The g15driver needs libg15render.h])
-			])
+					AC_MSG_WARN([The g15driver needs libg15render.h])
+				])
+			else
+				AC_MSG_WARN([libg15render is broken without freetype])
+			fi
 			;;
 		glcd)
 			GLCD_DRIVERS=""
@@ -231,17 +235,26 @@ dnl			else
 		hd44780)
 			HD44780_DRIVERS="hd44780-hd44780-serial.o hd44780-hd44780-lis2.o hd44780-hd44780-usblcd.o"
 			AC_CHECK_LIB(ugpio, main,[
-				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-gpio.o"
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-ugpio.o"
 				LIBUGPIO="-lugpio"
 				AC_DEFINE(HAVE_UGPIO, [1], [Define to 1 if you have libugpio])
 			],[
-				AC_MSG_WARN([Could not find libugpio, not building hd44780-gpio driver])
+				AC_MSG_WARN([Could not find libugpio, not building hd44780-ugpio driver])
 			])
+			ifdef([PKG_CHECK_MODULES],
+				[PKG_CHECK_MODULES(LIBGPIOD, libgpiod,
+					[HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-gpiod.o"
+					 AC_DEFINE(HAVE_GPIOD, [1], [Define to 1 if you have libgpiod])],
+					[AC_MSG_WARN([Could not find libgpiod, not building hd44780-gpiod driver])])],
+				[AC_MSG_WARN([pkg-config not (fully) installed; hd44780-gpiod driver may not be built])])
 			if test "$ac_cv_port_have_lpt" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-4bit.o hd44780-hd44780-ext8bit.o hd44780-hd44780-winamp.o hd44780-hd44780-serialLpt.o hd44780-hd44780-lcm162.o"
 			fi
 			if test "$enable_libusb" = yes ; then
-				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o hd44780-hd44780-lcd2usb.o hd44780-hd44780-uss720.o hd44780-hd44780-usbtiny.o hd44780-hd44780-usb4all.o"
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o hd44780-hd44780-uss720.o hd44780-hd44780-usbtiny.o hd44780-hd44780-usb4all.o"
+			fi
+			if test "$enable_libusb_1_0" = yes ; then
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-lcd2usb.o"
 			fi
 			if test "$enable_libftdi" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-ftdi.o"
@@ -610,6 +623,7 @@ AC_SUBST(LIBXOSD)
 AC_SUBST(LIBPTHREAD_LIBS)
 AC_SUBST(LIBMX5000)
 AC_SUBST(LIBUGPIO)
+AC_SUBST(LIBGPIOD)
 ])
 
 

@@ -90,6 +90,16 @@ slow down initial announcement of modes (in 1/100s) [default: 2]
 .RS 4
 display name for the main menu [default: LCDproc HOST]
 .RE
+.PP
+\fIShowHostname=\fR
+.RS 4
+Show hostname in title of screen [default: true; legal: true, false]
+.RE
+.PP
+\fIReconnectDelay=\fR
+.RS 4
+seconds to wait between attempts to reconnect when LCDd drops the connection, e.g. because it was restarted; 0 exits instead [default: 5; legal: 0 - ]
+.RE
 
 .SH SCREEN SPECIFIC CONFIGURATION
 the following section of the \fI@SYSCONFDIR@/lcdproc.conf\fP contains screen specific configuration options. Each section refers to a screen which can be enabled and configured.
@@ -423,6 +433,12 @@ Screen example (depending on screen size):
 .RS 4
 Show the screen [default: false; legal: true, false]
 .RE
+.PP
+\fIIgnore=\fR
+.RS 4
+Directs the Disk screen to ignore the specified mount point.
+You may have up to 10 Ignore lines under the Disk section.
+.RE
 
 .SH [MiniClock] SECTION OPTIONS
 Displays the current time
@@ -570,6 +586,14 @@ Active=false
 [Disk]
 # Show screen
 Active=false
+# You can add up to 10 "Ignore" entries to have lcdproc ignore
+# mounts that are not of interest. By default it attempts to filter
+# filesystem types like procfs but of course this doesn't prevent 
+# entries you wish to have mounted but don't need to monitor 
+# (like /boot/efi) from being listed. 
+Ignore=/boot/efi
+Ignore=/dev
+#Ignore=...
 
 [MiniClock]
 # Show screen

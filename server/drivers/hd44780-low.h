@@ -14,6 +14,10 @@
 # include <usb.h>
 #endif
 
+#ifdef HAVE_LIBUSB_1_0
+# include <libusb-1.0/libusb.h>
+#endif
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -60,8 +64,9 @@
 #define HD44780_CT_SPI			24
 #define HD44780_CT_PIFACECAD		25
 #define HD44780_CT_LCM162		26
-#define HD44780_CT_GPIO			27
+#define HD44780_CT_UGPIO		27
 #define HD44780_CT_EZIO			28
+#define HD44780_CT_GPIOD		29
 /**@}*/
 
 /** \name Symbolic names for interface types
@@ -198,6 +203,10 @@ typedef struct hd44780_private_data {
 	int usbEpOut;		/**< USB Endpoint Out */
 	int usbEpIn;		/**< USB Endpoint In */
 	tx_buffer rx_buf;	/**< Input buffer */
+#endif
+
+#ifdef HAVE_LIBUSB_1_0
+	libusb_device_handle *libusbHandle;
 #endif
 
 #ifdef HAVE_LIBFTDI
@@ -384,6 +393,12 @@ typedef struct hwDependentFns {
 	 * senddata internally.
 	 */
 	void (*flush) (PrivateData *p);
+
+	/**
+	 * Reset display like on initialization. Sub-drivers vulnerable to
+	 * EMI can provide this as way into a known state.
+	 */
+	void (*reset) (PrivateData *p);
 
 	/** Switch the backlight on or off
 	 * \param p      pointer to private date structure

@@ -218,7 +218,10 @@ TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/e
 .B raspberrypi
 LCD driven by the GPIO pins of a Raspberry Pi
 .TP
-.B gpio
+.B gpiod
+LCD connection via GPIO pins controlled by the linux libgpiod interface
+.TP
+.B ugpio
 LCD connection via GPIO pins controlled by the linux sysfs interface
 .RE
 .TP
@@ -377,7 +380,9 @@ of display available.
 
 .SS CLIENT COMMANDS
 There are many commands for the client to send to the LCDd server, here is
-the list of commands for versions \fI0.3\fP - \fI0.4\fP of the protocol:
+a list of the most important commands for versions \fI0.3\fP - \fI0.4\fP
+of the protocol. For a full command reference see the
+\fILCDProc Developers Guide\fP:
 .TP
 .B hello
 This starts a client-server session with the LCDd server; the server will

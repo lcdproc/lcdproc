@@ -51,16 +51,14 @@ static inline int g15_send(int sock, char *buf, unsigned int len) { return -1; }
 #endif
 
 /*
- * If we have freetype2, assume libg15render is build with TTF support,
+ * Workaround for upstream bug: Assume libg15render is built with TTF support,
  * the TTF_SUPPORT define makes the size of the g15 struct bigger, if we do
- * not set this define while libg15render is build with TTF support we get
+ * not set this define while libg15render is built with TTF support we get
  * heap corruption. The other way around does not matter, then we just alloc
  * a little bit too much memory (the TTF related variables live at the end
  * of the struct).
  */
-#ifdef HAVE_FT2
 #define TTF_SUPPORT
-#endif
 #include <libg15render.h>
 
 #include "lcd.h"
@@ -90,6 +88,10 @@ static const struct lib_hidraw_id hidraw_ids[] = {
 	{ { BUS_USB, 0x046d, 0xc22e },
 	  { 0x05, 0x0c, 0x09, 0x01, 0xa1, 0x01, 0x85, 0x02,
 	    0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x07 } },
+	/* Z-10 */
+	{ { BUS_USB, 0x046d, 0x0a07 },
+	  { 0x06, 0x00, 0xff, 0x09, 0x00, 0xa1, 0x01, 0x15,
+	    0x00, 0x26, 0xff, 0x00, 0x75, 0x08, 0x95, 0x08 } },
 	/* Terminator */
 	{}
 };

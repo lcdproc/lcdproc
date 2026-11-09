@@ -1,6 +1,4 @@
 This document describes the driver API of v0.5 of LCDproc.
-At time of this writing, this version is not released and some things might
-be changed.
 
 The API consists of several functions to tell the driver that
 certains actions should be performed, some data, and several functions
@@ -333,7 +331,7 @@ void (*set_contrast)	(Driver *drvthis, int contrast);
 int (*get_brightness)	(Driver *drvthis, int state);
 // Get the brightness for the given backlight state.
 // The return value is an integer in the range from 0 to 1000.
-// Many displays do not support software setting of contrast.
+// Many displays do not support software setting of brightness.
 
 void (*set_brightness)	(Driver *drvthis, int state, int int brightness);
 // Set the brightness for the given backlight state to the value given.
@@ -388,7 +386,7 @@ const char *(*config_get_string) (char * sectionname, char * keyname,
 // next call.
 
 int config_has_section	(const char *sectionname);
-// Returns wether a section exists. Does not need to be called prior
+// Returns whether a section exists. Does not need to be called prior
 // to a call to a config_get_* function.
 
 int config_has_key	(const char *sectionname, const char *keyname);
@@ -399,3 +397,4 @@ int config_has_key	(const char *sectionname, const char *keyname);
 First version, Joris Robijn, 20011016
 Corrected and expanded, Peter Marschall 20060411
 Sync'd with lcd.h, Markus Dolze, 20090322
+Minor edits, Ethan Dicks, 20210706

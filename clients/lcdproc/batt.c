@@ -110,7 +110,7 @@ battery_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add B\n");
-		sock_printf(sock, "screen_set B -name {APM stats: %s}\n", get_hostname());
+		sock_printf(sock, "screen_set B -name {APM stats:%s}\n", get_hostname());
 		sock_send_string(sock, "widget_add B title title\n");
 		sock_printf(sock, "widget_set B title {LCDPROC %s}\n", version);
 		sock_send_string(sock, "widget_add B one string\n");
@@ -135,7 +135,7 @@ battery_screen(int rep, int display, int *flags_ptr)
 			sprintf(tmp, "%d%%", percent);
 		else
 			sprintf(tmp, "??%%");
-		sock_printf(sock, "widget_set B title {%s: %s: %s}\n",
+		sock_printf(sock, "widget_set B title {%s: %s:%s}\n",
 				(acstat == LCDP_AC_ON && battstat == LCDP_BATT_ABSENT) ? "AC" : "Batt",
 				tmp, get_hostname());
 
@@ -155,4 +155,3 @@ battery_screen(int rep, int display, int *flags_ptr)
 
 	return 0;
 }
-

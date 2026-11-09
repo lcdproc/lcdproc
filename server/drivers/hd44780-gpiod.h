@@ -1,9 +1,9 @@
-#ifndef HD_GPIO_H
-#define HD_GPIO_H
+#ifndef HD_GPIOD_H
+#define HD_GPIOD_H
 
 #include "lcd.h"		/* for Driver */
 
 /* initialize this particular driver */
-int hd_init_gpio(Driver *drvthis);
+int hd_init_gpiod(Driver *drvthis);
 
 #endif

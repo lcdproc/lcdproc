@@ -44,8 +44,6 @@
 #include <sys/types.h>
 #include <limits.h>
 
-#include "getopt.h"
-
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
@@ -296,6 +294,9 @@ process_command_line(int argc, char **argv)
 
 	/* Reset getopt */
 	opterr = 0; /* Prevent some messages to stderr */
+
+	/* Consecutive getopt (when reload is called) */
+	optind = 1; /* 1003.2 says this must be 1 before any call.  */
 
 	/* Analyze options here.. (please try to keep list of options the
 	 * same everywhere) */
@@ -907,7 +908,6 @@ output_GPL_notice(void)
 	 * So, directly output to stderr
 	 */
 	fprintf(stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
-	fprintf(stderr, "Part of the LCDproc suite\n");
 	fprintf(stderr, "Copyright (C) 1998-2017 William Ferrell, Selene Scriven\n"
 	                "                        and many other contributors\n\n");
 
@@ -915,15 +915,6 @@ output_GPL_notice(void)
 	                "modify it under the terms of the GNU General Public License\n"
 	                "as published by the Free Software Foundation; either version 2\n"
 	                "of the License, or (at your option) any later version.\n\n");
-
-	fprintf(stderr, "This program is distributed in the hope that it will be useful,\n"
-	                "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-	                "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-	                "GNU General Public License for more details.\n\n");
-
-	fprintf(stderr, "You should have received a copy of the GNU General Public License\n"
-	                "along with this program; if not, write to the Free Software Foundation,\n"
-	                "Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\n");
 }
 
 

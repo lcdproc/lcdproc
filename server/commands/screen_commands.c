@@ -414,3 +414,81 @@ screen_set_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
+
+/**
+ * Tells the server which keys the screen uses for interaction
+ *
+ *\verbatim
+ * Usage: key_add screen_id {<key>}+
+ *\endverbatim
+ */
+int
+key_add_func(Client *c, int argc, char **argv)
+{
+	Screen *s;
+	int len;
+
+	if (argc < 3) {
+		sock_send_error(c->sock, "Usage: key_add screen_id {<key>}+\n");
+		return 0;
+	}
+
+	s = client_find_screen(c, argv[1]);
+	if (s == NULL) {
+		sock_send_error(c->sock, "Unknown screen id\n");
+		return 0;
+	}
+
+	len = argv[argc - 1] - argv[2] + strlen(argv[argc - 1]) + 1;
+
+	s->keys = realloc(s->keys, len + s->keys_size);
+	memcpy(&s->keys[s->keys_size], argv[2], len);
+	s->keys_size += len;
+
+	sock_send_string(c->sock, "success\n");
+
+	return 0;
+}
+
+
+/**
+ * Tells the server the screen is no longer interested in some keys
+ *
+ *\verbatim
+ * Usage: key_del screen_id {<key>}+
+ *\endverbatim
+ */
+int
+key_del_func(Client *c, int argc, char **argv)
+{
+	Screen *s;
+	int i, len;
+	char *key, *p;
+
+	if (argc < 3) {
+		sock_send_error(c->sock, "Usage: key_del screen_id {<key>}+\n");
+		return 0;
+	}
+
+	s = client_find_screen(c, argv[1]);
+	if (s == NULL) {
+		sock_send_error(c->sock, "Unknown screen id\n");
+		return 0;
+	}
+
+	for (i = 2; argv[i]; ++i) {
+		key = argv[i];
+		p = screen_find_key(s, key);
+		if (p) {
+			len = strlen(key) + 1;
+			memmove(p, p + len, s->keys_size - (p - s->keys));
+			s->keys_size -= len;
+
+			sock_send_string(c->sock, "success\n");
+		}
+		else
+			sock_send_error(c->sock, "Key not requested\n");
+	}
+
+	return 0;
+}

@@ -312,7 +312,7 @@ get_time_string(char *buff, time_t last_online)
 	act_time = time(NULL);
 
 	if (last_online == 0) {	/* never was online */
-		sprintf(buff, "never");
+		strcpy(buff, "never");
 		return;
 	}
 
@@ -322,13 +322,11 @@ get_time_string(char *buff, time_t last_online)
 	/* 86400 = 24 * 60 * 60. Is it more than 24 hours? */
 	if ((act_time - last_online) > 86400 ) {
 		timebuff[10] = '\0';
-		sprintf(buff, "%s", &timebuff[4]);
-		return;
+		strcpy(buff, &timebuff[4]);
 	}
 	else {
 		timebuff[19] = '\0';
-		sprintf(buff, "%s", &timebuff[11]);
-		return;
+		strcpy(buff, &timebuff[11]);
 	}
 }
 

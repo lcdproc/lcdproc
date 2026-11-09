@@ -122,7 +122,7 @@ xload_screen(int rep, int display, int *flags_ptr)
 
 	/* And now the title... */
 	if (lcd_hgt > 2)
-		sock_printf(sock, "widget_set L title {LOAD %2.2f: %s}\n", loads[lcd_wid - 2], get_hostname());
+		sock_printf(sock, "widget_set L title {LOAD %2.2f:%s}\n", loads[lcd_wid - 2], get_hostname());
 	else
 		sock_printf(sock, "widget_set L title 1 1 {%s %2.2f}\n", get_hostname(), loads[lcd_wid - 2]);
 
