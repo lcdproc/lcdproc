@@ -222,18 +222,23 @@ render_frame(LinkedList *list,
 	if ((list == NULL) || (fhgt <= 0))
 		return;
 
-	if (fscroll == 'v') {		/* vertical scrolling */
-		// only set offset !=0 when fspeed is != 0 and there is something to scroll
-		if ((fspeed != 0) && (fhgt > bottom - top)) {
-			int fy_max = fhgt - (bottom - top) + 1;
+	if ((fscroll == 'v') && (fhgt > bottom - top)) {		/* vertical scrolling */
+		// we have to scrool vertical if fhgt > display height (bottom - top)
+		int fy_max = fhgt - (bottom - top) ;
 
+		if (fspeed != 0)  {
 			fy = (fspeed > 0)
-			     ? (timer / fspeed) % fy_max
-			     : (-fspeed * timer) % fy_max;
+			     ? (timer / fspeed) % (fy_max + 1)
+			     : (-fspeed * timer) % (fy_max + 1);
 
 			fy = max(fy, 0);	// safeguard against negative values
 
 			debug(RPT_DEBUG, "%s: fy=%d", __FUNCTION__, fy);
+		} else {
+			if (screen_offset > fy_max)
+				screen_offset = fy_max;
+
+			fy=screen_offset;		
 		}
 	}
 	else if (fscroll == 'h') {	/* horizontal scrolling */
