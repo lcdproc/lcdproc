@@ -22,8 +22,10 @@ int glcd_png_init(Driver *drvthis);
 #ifdef HAVE_SERDISPLIB
 int glcd_serdisp_init(Driver *drvthis);
 #endif
-#ifdef HAVE_LIBUSB
+#ifdef HAVE_LIBUSB_1_0
 int glcd2usb_init(Driver *drvthis);
+#endif
+#ifdef HAVE_LIBUSB
 int glcd_picolcdgfx_init(Driver *drvthis);
 #endif
 #ifdef HAVE_LIBX11
@@ -62,8 +64,10 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_SERDISPLIB
 	{"serdisplib", GLCD_CT_SERDISP, glcd_serdisp_init},
 #endif
-#ifdef HAVE_LIBUSB
+#ifdef HAVE_LIBUSB_1_0
 	{"glcd2usb", GLCD_CT_GLCD2USB, glcd2usb_init},
+#endif
+#ifdef HAVE_LIBUSB
 	{"picolcdgfx", GLCD_CT_PICOLCDGFX, glcd_picolcdgfx_init},
 #endif
 #ifdef HAVE_LIBX11
