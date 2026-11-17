@@ -9,9 +9,14 @@
  *   MESSAGE_TYPE DATA_LENGTH FUNCTION DATA... CHECKSUM
  *
  * MESSAGE_TYPE is 0xf0 for commands sent by the host and 0xf1 for replies from
- * the LCD controller.  DATA_LENGTH includes FUNCTION and DATA but not
- * MESSAGE_TYPE, DATA_LENGTH, or CHECKSUM.  CHECKSUM is the low byte of the sum
- * of all preceding bytes in the packet.
+ * the LCD controller.  DATA_LENGTH is the number of DATA bytes; it does not
+ * count MESSAGE_TYPE, DATA_LENGTH, FUNCTION or CHECKSUM.  CHECKSUM is the low
+ * byte of the sum of all preceding bytes in the packet.
+ *
+ * Only one command is outstanding at a time: every command waits for its
+ * acknowledgement (or gives up) before the next one is sent.  If the controller
+ * stops answering, the driver backs off instead of retrying on every frame, so
+ * LCDd is never blocked for long and the controller is not flooded.
  *
  * This driver is based on the protocol behavior documented by the openlcmd
  * implementation from github.com/mafredri/lcm.
@@ -42,13 +47,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/select.h>
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
 
 #include "lcd.h"
 #include "asustor.h"
@@ -64,8 +67,19 @@
 #define ASUSTOR_FBUTTON 0x80
 #define ASUSTOR_FFLUSH 0x00
 
-#define ASUSTOR_REPLY_TIMEOUT_MS 100
+/*
+ * Timing follows openlcmd: the controller normally acknowledges in under
+ * 10 ms, but now and then it stalls until it receives another command.  A
+ * short reply timeout with many retries, sending two flush commands between
+ * attempts, gets it going again quickly.  Worst case per command is about one
+ * second, after which the back-off below takes over.
+ */
+#define ASUSTOR_REPLY_TIMEOUT_MS 15
 #define ASUSTOR_RETRY_LIMIT 50
+/* After a command fails, wait this long before talking to the controller
+ * again; the wait doubles on each further failure up to the maximum. */
+#define ASUSTOR_BACKOFF_MIN_MS 1000
+#define ASUSTOR_BACKOFF_MAX_MS 30000
 #define ASUSTOR_WRITE_DELAY_US 250
 #define ASUSTOR_KEY_QUEUE_SIZE 8
 #define ASUSTOR_REPLY_QUEUE_SIZE 8
@@ -90,6 +104,9 @@ typedef struct asustor_private_data {
 	Reply reply_queue[ASUSTOR_REPLY_QUEUE_SIZE];
 	int reply_head;
 	int reply_tail;
+	/* Consecutive failed commands, and when to try the controller again. */
+	int failures;
+	uint64_t retry_at_ms;
 	char info[255];
 } PrivateData;
 
@@ -111,7 +128,7 @@ static void asustor_enqueue_reply(PrivateData *p, unsigned char function, unsign
 static const char *asustor_dequeue_key(PrivateData *p);
 static void asustor_enqueue_key(PrivateData *p, const char *key);
 static const char *asustor_key_name(unsigned char value);
-static unsigned int asustor_elapsed_ms(const struct timeval *start);
+static uint64_t asustor_now_ms(void);
 static void asustor_force_flush(PrivateData *p);
 static int asustor_send_simple(Driver *drvthis, unsigned char function, unsigned char value);
 static int asustor_send_text(Driver *drvthis, int line, const char *text);
@@ -131,8 +148,11 @@ asustor_init(Driver *drvthis)
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
 		return -1;
-	if (drvthis->store_private_ptr(drvthis, p) != 0)
+	p->fd = -1;
+	if (drvthis->store_private_ptr(drvthis, p) != 0) {
+		free(p);
 		return -1;
+	}
 
 	device = drvthis->config_get_string(drvthis->name, "Device", 0, ASUSTOR_DEFAULT_DEVICE);
 	strncpy(p->device, device, sizeof(p->device));
@@ -145,11 +165,16 @@ asustor_init(Driver *drvthis)
 	if (asustor_open_serial(p) < 0)
 		goto err_out;
 
-	/* Wake and initialize the controller before LCDd starts drawing. */
-	(void) asustor_send_simple(drvthis, ASUSTOR_FON, 1);
-	(void) asustor_send_simple(drvthis, ASUSTOR_FSTATUS, 0);
-	(void) asustor_send_simple(drvthis, ASUSTOR_FCLEAR, 1);
-	p->display_on = 1;
+	/*
+	 * Wake and initialize the controller before LCDd starts drawing.  If the
+	 * controller does not answer, LCDd still starts: flush() and backlight()
+	 * keep retrying (with back-off) until it responds.
+	 */
+	if (asustor_send_simple(drvthis, ASUSTOR_FON, 1) == 0) {
+		p->display_on = 1;
+		(void) asustor_send_simple(drvthis, ASUSTOR_FSTATUS, 0);
+		(void) asustor_send_simple(drvthis, ASUSTOR_FCLEAR, 1);
+	}
 	p->changed = 1;
 
 	report(RPT_INFO, "%s: initialized ASUSTOR LCD on %s", drvthis->name, p->device);
@@ -243,8 +268,20 @@ asustor_flush(Driver *drvthis)
 	memcpy(bottom, p->framebuf + ASUSTOR_WIDTH, ASUSTOR_WIDTH);
 	bottom[ASUSTOR_WIDTH] = '\0';
 
-	(void) asustor_send_text(drvthis, 0, top);
-	(void) asustor_send_text(drvthis, 1, bottom);
+	/* If the wake command at init was not acknowledged, retry it here. */
+	if (!p->display_on) {
+		if (asustor_send_simple(drvthis, ASUSTOR_FON, 1) < 0)
+			return;
+		(void) asustor_send_simple(drvthis, ASUSTOR_FSTATUS, 0);
+		p->display_on = 1;
+	}
+
+	/*
+	 * Only remember what the panel shows once both rows were acknowledged;
+	 * otherwise leave changed set so a later flush tries again.
+	 */
+	if (asustor_send_text(drvthis, 0, top) < 0 || asustor_send_text(drvthis, 1, bottom) < 0)
+		return;
 
 	memcpy(p->lastbuf, p->framebuf, sizeof(p->framebuf));
 	p->changed = 0;
@@ -350,7 +387,8 @@ asustor_backlight(Driver *drvthis, int on)
 	if (!target || p->display_on == target)
 		return;
 
-	(void) asustor_send_simple(drvthis, ASUSTOR_FON, target);
+	if (asustor_send_simple(drvthis, ASUSTOR_FON, target) < 0)
+		return;		/* not acknowledged: try again on the next call */
 	(void) asustor_send_simple(drvthis, ASUSTOR_FSTATUS, 0);
 	p->display_on = target;
 }
@@ -423,18 +461,28 @@ asustor_checksum(const unsigned char *packet, size_t len)
 /*
  * Send a packet and wait for the matching command acknowledgement.
  *
- * Replies can arrive before the caller that needs them is waiting, because
- * get_key() also drains the serial port.  asustor_wait_reply() therefore
- * checks the reply queue before reading from the device.
+ * Only one command is ever outstanding, so any acknowledgement still queued
+ * when a new command is sent is stale (for example a late reply to an attempt
+ * that already timed out).  The reply queue is emptied before each write so a
+ * stale ACK can never be taken as the answer to the new command.
+ *
+ * If the controller does not answer, the driver backs off: further commands
+ * fail immediately until the back-off time has passed.  This bounds how long
+ * LCDd can be blocked and avoids flooding a controller that is not responding.
+ * Only the first failure and the recovery are logged.
  */
 static int
 asustor_send_packet(Driver *drvthis, const unsigned char *packet, size_t len)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char buf[32];
+	uint64_t backoff;
 	int retry;
 
-	if (p == NULL || len + 1 > sizeof(buf))
+	if (p == NULL || p->fd < 0 || len + 1 > sizeof(buf))
+		return -1;
+
+	if (p->failures > 0 && asustor_now_ms() < p->retry_at_ms)
 		return -1;
 
 	memcpy(buf, packet, len);
@@ -443,17 +491,34 @@ asustor_send_packet(Driver *drvthis, const unsigned char *packet, size_t len)
 	for (retry = 0; retry < ASUSTOR_RETRY_LIMIT; retry++) {
 		ssize_t written;
 
+		p->reply_head = p->reply_tail;	/* drop stale ACKs */
 		written = write(p->fd, buf, len + 1);
 		if (written == (ssize_t)(len + 1)
 		    && asustor_wait_reply(p, packet[2], ASUSTOR_REPLY_TIMEOUT_MS) == 0) {
 			usleep(ASUSTOR_WRITE_DELAY_US);
+			if (p->failures > 0)
+				report(RPT_NOTICE, "%s: controller is responding again", drvthis->name);
+			p->failures = 0;
 			return 0;
 		}
 
 		asustor_force_flush(p);
 	}
 
-	report(RPT_WARNING, "%s: no acknowledgement for function 0x%02x", drvthis->name, packet[2]);
+	p->failures++;
+	backoff = ASUSTOR_BACKOFF_MIN_MS;
+	for (retry = 1; retry < p->failures && backoff < ASUSTOR_BACKOFF_MAX_MS; retry++)
+		backoff *= 2;
+	if (backoff > ASUSTOR_BACKOFF_MAX_MS)
+		backoff = ASUSTOR_BACKOFF_MAX_MS;
+	p->retry_at_ms = asustor_now_ms() + backoff;
+
+	if (p->failures == 1)
+		report(RPT_WARNING, "%s: no acknowledgement for function 0x%02x; retrying with back-off",
+		       drvthis->name, packet[2]);
+	else
+		report(RPT_DEBUG, "%s: no acknowledgement for function 0x%02x (%d failures in a row)",
+		       drvthis->name, packet[2], p->failures);
 	return -1;
 }
 
@@ -470,16 +535,14 @@ asustor_read_packet(PrivateData *p, unsigned char *packet, size_t packet_size, i
 	unsigned char checksum;
 	unsigned char b;
 	size_t total;
-	struct timeval start;
-
-	gettimeofday(&start, NULL);
+	uint64_t start = asustor_now_ms();
 
 	for (;;) {
 		if (asustor_read_exact(p, &b, 1, timeout_ms) < 0)
 			return -1;
 		if (b == ASUSTOR_COMMAND || b == ASUSTOR_REPLY)
 			break;
-		if (timeout_ms > 0 && asustor_elapsed_ms(&start) >= (unsigned int) timeout_ms)
+		if (timeout_ms > 0 && asustor_now_ms() - start >= (uint64_t) timeout_ms)
 			return -1;
 	}
 
@@ -510,9 +573,8 @@ static int
 asustor_read_exact(PrivateData *p, unsigned char *buf, size_t len, int timeout_ms)
 {
 	size_t pos = 0;
-	struct timeval start;
+	uint64_t start = asustor_now_ms();
 
-	gettimeofday(&start, NULL);
 	while (pos < len) {
 		ssize_t n;
 
@@ -527,7 +589,7 @@ asustor_read_exact(PrivateData *p, unsigned char *buf, size_t len, int timeout_m
 		if (timeout_ms == 0)
 			return -1;
 
-		if (asustor_elapsed_ms(&start) >= (unsigned int) timeout_ms)
+		if (asustor_now_ms() - start >= (uint64_t) timeout_ms)
 			return -1;
 
 		usleep(1000);
@@ -563,16 +625,17 @@ static int
 asustor_wait_reply(PrivateData *p, unsigned char function, int timeout_ms)
 {
 	unsigned char packet[24];
-	struct timeval start;
+	uint64_t start, elapsed;
 	int len;
 
 	if (asustor_dequeue_reply(p, function) == 0)
 		return 0;
 
-	gettimeofday(&start, NULL);
+	start = asustor_now_ms();
 
-	while (asustor_elapsed_ms(&start) < (unsigned int) timeout_ms) {
-		len = asustor_read_packet(p, packet, sizeof(packet), timeout_ms);
+	while ((elapsed = asustor_now_ms() - start) < (uint64_t) timeout_ms) {
+		/* never wait past the caller's overall timeout */
+		len = asustor_read_packet(p, packet, sizeof(packet), timeout_ms - (int) elapsed);
 		if (len < 5)
 			continue;
 		if (packet[0] == ASUSTOR_REPLY && packet[2] == function && packet[3] == 0)
@@ -689,14 +752,14 @@ asustor_key_name(unsigned char value)
 	}
 }
 
-static unsigned int
-asustor_elapsed_ms(const struct timeval *start)
+/* Monotonic milliseconds: unaffected when the wall clock is stepped (NTP). */
+static uint64_t
+asustor_now_ms(void)
 {
-	struct timeval now;
+	struct timespec ts;
 
-	gettimeofday(&now, NULL);
-	return (unsigned int) ((now.tv_sec - start->tv_sec) * 1000
-			       + (now.tv_usec - start->tv_usec) / 1000);
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint64_t) ts.tv_sec * 1000 + (uint64_t) ts.tv_nsec / 1000000;
 }
 
 /*

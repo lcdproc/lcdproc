@@ -18,6 +18,18 @@ the same serial stream as command acknowledgements, so the driver routes all
 incoming packets through a common receive path.
 </para>
 
+<para>
+The controller normally acknowledges a command within a few milliseconds, but
+it occasionally stalls until it receives another command.  The driver
+therefore uses the same short reply timeout and retry count as
+<code>openlcmd</code>, nudging the controller between attempts.  If a command
+is still not acknowledged after about one second, the driver stops talking to
+the controller for a while (starting at one second and doubling up to 30
+seconds) instead of retrying on every frame, so LCDd keeps running and the
+controller is not flooded.  The screen is redrawn once the controller answers
+again.  Only the first failure and the recovery are logged.
+</para>
+
 <sect2 id="asustor-features">
 <title>Features</title>
 
@@ -172,6 +184,7 @@ Confirm the following behavior:
 <listitem><para>Back and Enter can move between screens when mapped as previous and next screen keys.</para></listitem>
 <listitem><para>Up and Down can scroll LCDproc menu entries when the LCDproc menu is active.</para></listitem>
 <listitem><para>Restarting LCDd recovers cleanly if stale bytes remain on the serial line.</para></listitem>
+<listitem><para>If the controller stops answering, LCDd keeps serving clients and the display is redrawn once the controller responds again.</para></listitem>
 </itemizedlist>
 
 </sect2>
