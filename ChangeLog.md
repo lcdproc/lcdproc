@@ -1,4 +1,5 @@
 v0.5dev (ongoing development)
+  - [added] asustor: driver for ASUSTOR NAS front-panel LCD modules
   - [added] lcdvc: reconnect when LCDd drops the connection (ReconnectDelay)
   - [added] lcdexec: reconnect when LCDd drops the connection (ReconnectDelay)
   - [fixed] lcdproc client: read Port= from the configuration file
