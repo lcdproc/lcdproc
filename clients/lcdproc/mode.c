@@ -34,6 +34,9 @@
 # include "eyebox.h"
 #endif
 
+/** Backlight state last sent to LCDd, -1 if none yet */
+static int backlight_status = -1;
+
 /** Initialize mode specific things. */
 int
 mode_init(void)
@@ -63,8 +66,8 @@ mode_close(void)
 int
 update_screen(ScreenMode *m, int display)
 {
-	static int status = -1;
-	int old_status = status;
+	int status = backlight_status;
+	int old_status = backlight_status;
 
 	if (m && m->func) {
 #ifdef LCDPROC_EYEBOXONE
@@ -89,8 +92,21 @@ update_screen(ScreenMode *m, int display)
 		if (status == BLINK_ON)
 			sock_send_string(sock, "backlight blink\n");
 	}
+	backlight_status = status;
 
 	return (status);
+}
+
+
+/**
+ * Forget the backlight state last sent, so the next update_screen() sends
+ * the current one. Used after reconnecting: a new LCDd session starts with
+ * the backlight on, whatever state the client had set before.
+ */
+void
+update_screen_reset(void)
+{
+	backlight_status = -1;
 }
 
 

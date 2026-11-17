@@ -30,13 +30,24 @@ and displays them via LCDproc (http://lcdproc.omnipotent.net/)
 The METAR code related of the city you want weather observations.
 
 For fun, here are some example METAR codes:
- LA     : KLAX
- Dallas : KDFW
- Detroit: KDTW
- Chicago: KMDW
- Graz/Austria (Thalerhof) : LOWG
- Quebec City: CYQB
- Amundsen-Scott South Pole Station: NZSP
+
+=over
+
+=item * LA     : KLAX
+
+=item * Dallas : KDFW
+
+=item * Detroit: KDTW
+
+=item * Chicago: KMDW
+
+=item * Graz/Austria (Thalerhof) : LOWG
+
+=item * Quebec City: CYQB
+
+=item * Amundsen-Scott South Pole Station: NZSP
+
+=back
 
 More informations about METAR codes is available at:
 https://www.weather.gov/media/wrh/mesowest/metar_decode_key.pdf
@@ -181,10 +192,11 @@ print $remote "widget_add metar cloud string\n" if ($lcdheight > 4);
 
 while (1) {
 	# fetch weather information
-	print "Fetching weather information\n" if ($verbose >= 5);
 	# NOAA decomissioned weather.noaa.gov on 15-Jun-2016.
 	#my $data = get("http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code");
-	my $data = get("http://tgftp.nws.noaa.gov/data/observations/metar/stations/${site_code}.TXT");
+	my $wx_url = "https://tgftp.nws.noaa.gov/data/observations/metar/stations/${site_code}.TXT";
+	print "Fetching weather information from\n  '${wx_url}'\n" if ($verbose >= 5);
+	my $data = get($wx_url);
 
 	if (not $data) {
 	    warn "Can't connect to METAR source." if ($verbose >= 1);
@@ -208,6 +220,7 @@ while (1) {
 	    # ask for the temperature(s)
 	    my $temp; my $temp_u; my $dew; my $dew_u; my $wind; my $wind_u; my $wind_dir;
 
+	    # Set temp, dewpoint, and wind values based on requested output measurement type
 	    if ($datasystem eq "nautical") {
 	    	$temp = $m->C_TEMP;
 	    	$temp_u = "C";
@@ -235,14 +248,50 @@ while (1) {
 	    	$wind_dir = $m->WIND_DIR_ENG;
 	    }
 
+	    # Get forecast time
 	    my $metartime = $m->TIME;
+
+	    # Get sky conditions and visibility
 	    my $sky = $m->SKY;
 	    my $visibility = $m->VISIBILITY;
 
-	    print $remote sprintf("widget_set metar title {Weather %s %s}\n", $site_code, $metartime);
-	    print $remote sprintf("widget_set metar temp 1 2 {Temp %i%s (%i%s Dew)}\n", $temp, $temp_u, $dew, $dew_u) if ($temp and $dew);
-	    print $remote sprintf("widget_set metar wind 1 3 {Wind %i%s, %s}\n", $wind, $wind_u, $wind_dir) if ($wind_dir and $wind);
-	    print $remote sprintf("widget_set metar visib 1 %i %i %i h 3 {Visibility %s}\n", $lcdheight, $lcdwidth, $lcdheight, $visibility ) if ($visibility);
+	    # print out temp, dewpoint and wind values if verbosity high enough
+	    print "Converted Temp is '${temp}${temp_u}', Dewpoint is '${dew}${dew_u}', Winds are '${wind}${wind_u} ${wind_dir}'\n" if ($verbose >= 5);
+
+	    # Define formatted strings for all widgets
+	    my $w_title, my $w_temp, my $w_wind, my $w_vis, my $w_cloud;
+
+	    # Build formatted title string for title widget
+	    $w_title = sprintf("%s%s %s", ($lcdwidth < 28 ? "" : "Weather "), $site_code, $metartime);
+
+	    # Build formatted temp/dewpoint string for temp widget
+	    $w_temp  = sprintf("Temp %i%s", $temp, $temp_u);
+	    $w_temp .= sprintf(" (%i%s Dew)", $dew, $dew_u) if ($dew and $dew_u);
+
+	    # Build formatted wind string for wind widget
+	    $w_wind  = sprintf("Wind %i%s, %s", $wind, $wind_u, $wind_dir) if ($wind_dir and $wind);
+
+	    # Build formatted visibility string for visib widget
+	    # (this one is more elaborate due to the numerous ways Geo::METAR formats visibility)
+	    $w_vis   = sprintf("Visibility %s", $visibility);
+	    $w_vis   =~ s/Visibility/Vis/        if (length($w_vis) > $lcdwidth); # try to make it fit
+	    $w_vis   =~ s/\s*meters/m/             if (length($w_vis) > $lcdwidth); # try to make it fit
+	    $w_vis   =~ s/\s*Statute\s+Miles/sm/ if (length($w_vis) > $lcdwidth); # try to make it fit
+
+	    # Display widget values if verbosity high enough
+	    if ($verbose >= 5) {
+	        print "Sending to LCDd:\n";
+	        print " '$w_title'\n";
+	        print " '$w_temp'\n";
+	        print " '$w_wind'\n";
+	        print " '$w_cloud\n" if ($w_cloud and $lcdheight > 4);
+		print " '$w_vis'\n" if ($w_vis);
+	    }
+
+	    print $remote sprintf("widget_set metar title {%s}\n", $w_title);
+	    print $remote sprintf("widget_set metar temp 1 2 {%s}\n", $w_temp) if ($w_temp);
+	    print $remote sprintf("widget_set metar wind 1 3 {%s}\n", $w_wind) if ($w_wind);
+	    print $remote sprintf("widget_set metar visib 1 %i %i %i h 3 {%s}\n", $lcdheight, $lcdwidth, $lcdheight, $w_vis ) if ($w_vis);
 	    print $remote sprintf("widget_set metar cloud 1 4 {Sky %s}\n", join(',', @{$m->{sky}}) ) if ($m->{sky} and ($lcdheight>4));
 	} # end else
 

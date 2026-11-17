@@ -6,6 +6,7 @@ extern int port;
 
 int setup_connection(void);
 int teardown_connection(void);
+int connection_closed(void);
 int read_response(char *str, int maxsize);
 int process_response(char *str);
 int update_display(void);

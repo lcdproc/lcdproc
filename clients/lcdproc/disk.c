@@ -89,10 +89,12 @@ disk_screen(int rep, int display, int *flags_ptr)
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
+		num_disks = 0;	/* a new screen has no disk widgets yet */
 
 		const char* cfg_val = NULL;
 		while ( (count < DISK_IGNORE_MAX) && 
 			(cfg_val = config_get_string("Disk", "Ignore", count, NULL))) {
+			free(disk_ignore[count]);	/* set up again after a reconnect */
 			disk_ignore[count] = strdup(cfg_val);
 			count++;
 		};

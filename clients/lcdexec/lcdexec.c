@@ -20,9 +20,8 @@
 #include <signal.h>
 #include <time.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
 #include <stdlib.h>
-
-#include "getopt.h"
 
 #include "shared/str.h"
 #include "shared/report.h"
@@ -83,6 +82,7 @@ int port = UNSET_INT;
 int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
+static int reconnect_delay = UNSET_INT;	/**< seconds between reconnect attempts, 0 to exit instead */
 char *pidfile = NULL;
 int pidfile_written = FALSE;
 char *displayname = NULL;
@@ -110,6 +110,8 @@ static int process_response(char *str);
 static int exec_command(MenuEntry *cmd);
 static int show_procinfo_msg(ProcInfo *p);
 static int main_loop(void);
+static int connection_loop(void);
+static int server_closed(void);
 
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
@@ -168,15 +170,22 @@ int main(int argc, char **argv)
 	sigaction(SIGPIPE, &sa, NULL);	// write to closed socket
 	sigaction(SIGKILL, &sa, NULL);	// kill -9 [cannot be trapped; but ...]
 
+	/*
+	 * When reconnecting, a write to a connection LCDd has dropped must
+	 * not end the program: main_loop() notices it and reconnects.
+	 */
+	if (reconnect_delay > 0) {
+		sa.sa_handler = SIG_IGN;
+		sigaction(SIGPIPE, &sa, NULL);
+	}
+
 	/* setup signal handler for children to avoid zombies */
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
 	sa.sa_handler = sigchld_handler;
 	sigaction(SIGCHLD, &sa, NULL);
 
-	main_loop();
-
-	exit_program(EXIT_SUCCESS);
+	exit_program((main_loop() < 0) ? EXIT_FAILURE : EXIT_SUCCESS);
 
 	/* NOTREACHED */
 	return EXIT_SUCCESS;
@@ -314,6 +323,11 @@ static int process_configfile(char *configfile)
 	}
 	if (pidfile == NULL) {
 		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
+	}
+	if (reconnect_delay == UNSET_INT) {
+		reconnect_delay = config_get_int(progname, "ReconnectDelay", 0, 5);
+		if (reconnect_delay < 0)
+			reconnect_delay = 0;
 	}
 
 	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
@@ -680,7 +694,27 @@ static int show_procinfo_msg(ProcInfo *p)
 }
 
 
-static int main_loop(void)
+/**
+ * Check whether LCDd has closed the connection. sock_recv_string() returns
+ * 0 both when nothing is waiting and at end-of-file, so look without
+ * reading.
+ * \return  1 if the connection is closed or broken, 0 otherwise.
+ */
+static int server_closed(void)
+{
+	char c;
+	ssize_t n = recv(sock, &c, 1, MSG_PEEK);
+
+	return (n == 0) || ((n < 0) && (errno != EAGAIN) && (errno != EWOULDBLOCK));
+}
+
+
+/**
+ * Handle LCDd's responses, keep the connection alive and show the results
+ * of finished commands, until told to quit or the connection is lost.
+ * \return  0 when told to quit, -1 when the connection was lost.
+ */
+static int connection_loop(void)
 {
 	int num_bytes;
 	char buf[100];
@@ -691,6 +725,9 @@ static int main_loop(void)
 	while (!Quit && ((num_bytes = sock_recv_string(sock, buf, sizeof(buf)-1)) >= 0)) {
 		if (num_bytes == 0) {
 			ProcInfo *p;
+
+			if (server_closed())
+				break;
 
 			/* wait for 1/10th of a second */
 			usleep(100000);
@@ -736,6 +773,39 @@ static int main_loop(void)
 
 	if (!Quit)
 		report(RPT_ERR, "Server disconnected (or connection error)");
+	return (Quit) ? 0 : -1;
+}
+
+
+/**
+ * Main loop: run connection_loop(), and when LCDd drops the connection,
+ * reconnect every reconnect_delay seconds, sending the hello and the menu
+ * again; or give up if reconnect_delay is 0.
+ * \return  0 when told to quit, -1 when the connection was lost for good.
+ */
+static int main_loop(void)
+{
+	while (connection_loop() < 0) {
+		if (reconnect_delay <= 0)
+			return -1;
+
+		report(RPT_WARNING, "Reconnecting to LCDd every %d seconds", reconnect_delay);
+		sock_close(sock);
+		sock = -1;
+		while (!Quit) {
+			sleep(reconnect_delay);
+			if (connect_and_setup() == 0)
+				break;
+			if (sock >= 0) {
+				sock_close(sock);
+				sock = -1;
+			}
+		}
+		if (Quit)
+			return 0;
+		report(RPT_NOTICE, "Reconnected to LCDd at %s:%d", address, port);
+	}
+
 	return 0;
 }
 
