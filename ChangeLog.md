@@ -1,4 +1,5 @@
 v0.5dev (ongoing development)
+  - [added] asustor: driver for ASUSTOR NAS front-panel LCD modules
   - [added] WINSTAR WEH001602A font bank 1 charmap and font bank selector
   - [fixed] HD44780: turn off display during initialization to not show garbage
   - [added] HD44780: support almost compatible WINSTAR OLED displays
