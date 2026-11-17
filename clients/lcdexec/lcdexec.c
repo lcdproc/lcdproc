@@ -151,8 +151,8 @@ int main(int argc, char **argv)
 				fclose(pidf);
 				pidfile_written = TRUE;
 			} else {
-				fprintf(stderr, "Error creating pidfile %s: %s\n",
-					pidfile, strerror(errno));
+				report(RPT_ERR, "Error creating pidfile %s: %s",
+				       pidfile, strerror(errno));
 				return(EXIT_FAILURE);
 			}
 		}
