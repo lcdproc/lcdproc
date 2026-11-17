@@ -367,7 +367,7 @@ main(int argc, char **argv)
 
 	if (foreground != TRUE) {
 		if (daemon(1, 0) != 0) {
-			fprintf(stderr, "Error: daemonize failed\n");
+			report(RPT_ERR, "Error: daemonize failed: %s", strerror(errno));
 			return (EXIT_FAILURE);
 		}
 
@@ -380,8 +380,8 @@ main(int argc, char **argv)
 				pidfile_written = TRUE;
 			}
 			else {
-				fprintf(stderr, "Error creating pidfile %s: %s\n",
-					pidfile, strerror(errno));
+				report(RPT_ERR, "Error creating pidfile %s: %s",
+				       pidfile, strerror(errno));
 				return (EXIT_FAILURE);
 			}
 		}

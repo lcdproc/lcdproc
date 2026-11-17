@@ -1,4 +1,7 @@
 v0.5dev (ongoing development)
+  - [fixed] lcdproc, lcdexec, lcdvc: report pidfile errors (and lcdproc's
+    daemonize errors) through the configured report destination, so they
+    reach syslog and aren't lost once lcdproc has detached from stderr
   - [fixed] lcdproc client: find the mounted filesystem table at run time, not
     by checking the build host (fixes sandboxed and container builds)
   - [added] asustor: driver for ASUSTOR NAS front-panel LCD modules
