@@ -1,4 +1,6 @@
 v0.5dev (ongoing development)
+  - [fixed] lcdproc client: find the mounted filesystem table at run time, not
+    by checking the build host (fixes sandboxed and container builds)
   - [added] asustor: driver for ASUSTOR NAS front-panel LCD modules
   - [added] lcdvc: reconnect when LCDd drops the connection (ReconnectDelay)
   - [added] lcdexec: reconnect when LCDd drops the connection (ReconnectDelay)

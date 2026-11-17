@@ -258,12 +258,24 @@ machine_get_fs(mounts_type fs[], int *cnt)
 #endif
 	char line[256];
 	int x = 0, err;
+	static int warned = 0;
 
-#ifdef MTAB_FILE
-	mtab_fd = fopen(MTAB_FILE, "r");
-#else
-#error "Can't find your mounted filesystem table file."
-#endif
+	/*
+	 * The kernel's list of mounts. /etc/mtab is normally a link to it,
+	 * but isn't always there, e.g. in containers.
+	 */
+	mtab_fd = fopen("/proc/self/mounts", "r");
+	if (mtab_fd == NULL)
+		mtab_fd = fopen("/etc/mtab", "r");
+	if (mtab_fd == NULL) {
+		if (!warned) {
+			report(RPT_ERR, "Can't read the mounted filesystem table: %s",
+			       strerror(errno));
+			warned = 1;
+		}
+		*cnt = 0;
+		return (FALSE);
+	}
 
 	/* Get rid of old, unmounted filesystems... */
 	memset(fs, 0, sizeof(mounts_type) * 256);

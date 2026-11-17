@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <strings.h>
 #include <fcntl.h>
 #include <dirent.h>
@@ -37,6 +38,7 @@
 #include "main.h"
 #include "config.h"
 #include "shared/LL.h"
+#include "shared/report.h"
 
 
 static kstat_ctl_t *kc;
@@ -82,6 +84,7 @@ machine_get_fs(mounts_type fs[], int *cnt)
 	FILE *mtab_fd;
 	char line[256];
 	int x = 0, y;
+	static int warned = 0;
 
 #ifdef STAT_STATVFS
 	struct statvfs fsinfo;
@@ -89,11 +92,17 @@ machine_get_fs(mounts_type fs[], int *cnt)
 	struct statfs fsinfo;
 #endif
 
-#ifdef MTAB_FILE
-	mtab_fd = fopen(MTAB_FILE, "r");
-#else
-#error "Can't find your mounted filesystem table file."
-#endif
+	/* Provided by the kernel's mntfs since Solaris 8 */
+	mtab_fd = fopen("/etc/mnttab", "r");
+	if (mtab_fd == NULL) {
+		if (!warned) {
+			report(RPT_ERR, "Can't read the mounted filesystem table: %s",
+			       strerror(errno));
+			warned = 1;
+		}
+		*cnt = 0;
+		return (FALSE);
+	}
 
 	/* Get rid of old, unmounted filesystems... */
 	memset(fs, 0, sizeof(mounts_type) * 256);

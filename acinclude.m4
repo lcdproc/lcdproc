@@ -656,32 +656,6 @@ AC_DEFUN([AC_CURSES_ACS_ARRAY], [
 
 
 dnl
-dnl Find out where is the mounted filesystem table
-dnl
-AC_DEFUN([AC_FIND_MTAB_FILE], [
-	AC_CACHE_CHECK([for your mounted filesystem table], ac_cv_mtab_file, [
-		dnl Linux
-		if test -f "/etc/mtab"; then
-			ac_cv_mtab_file=/etc/mtab
-		else
-			dnl Solaris
-			if test -f "/etc/mnttab"; then
-				ac_cv_mtab_file=/etc/mnttab
-			else
-				dnl BSD
-				if test -f "/etc/fstab"; then
-					ac_cv_mtab_file=/etc/fstab
-				fi
-			fi
-		fi
-	])
-	if test ! -z "$ac_cv_mtab_file"; then
-		AC_DEFINE_UNQUOTED([MTAB_FILE], ["$ac_cv_mtab_file"], [Location of your mounted filesystem table file])
-	fi
-])
-
-
-dnl
 dnl Filesystem information detection
 dnl
 dnl To get information about the disk, mount points, etc.
