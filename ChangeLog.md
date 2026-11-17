@@ -1,4 +1,5 @@
 v0.5dev (ongoing development)
+  - [fixed] lcdproc client: build on OpenBSD platforms without apm(4)
   - [fixed] configure: only use HP-UX's .sl module extension and compiler
     flags on HP-UX, not on every host whose name starts with "hp" (hppa)
   - [fixed] configure: find pkg-config even when the first pkg-config check is

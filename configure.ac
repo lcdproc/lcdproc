@@ -184,6 +184,8 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/time.h unistd.h sys/io.h errno.h)
 AC_CHECK_HEADERS(limits.h kvm.h sys/param.h sys/dkstat.h stdbool.h)
+dnl apm(4) battery status, not on every OpenBSD platform
+AC_CHECK_HEADERS(machine/apmvar.h)
 
 dnl check sys/sysctl.h seperately, as it requires other headers on at least OpenBSD
 AC_CHECK_HEADERS([sys/sysctl.h], [], [],
