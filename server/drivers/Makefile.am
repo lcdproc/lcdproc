@@ -40,7 +40,7 @@ ula200_CFLAGS =      @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 xosd_CFLAGS =        @LIBXOSD_CFLAGS@ $(AM_CFLAGS)
 
 bayrad_LDADD =       libLCD.a
-asustor_LDADD =
+asustor_LDADD =      libLCD.a
 CFontz_LDADD =       libLCD.a libbignum.a
 CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
