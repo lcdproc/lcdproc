@@ -234,8 +234,7 @@ AC_CHECK_FUNC(getopt,
   ])
 
 
-dnl Check how to find the mtab file and how to get filesystem staticstics
-AC_FIND_MTAB_FILE
+dnl Check how to get filesystem statistics
 AC_GET_FS_INFO
 
 
