@@ -1,4 +1,7 @@
 v0.5dev (ongoing development)
+  - [fixed] configure: find pkg-config even when the first pkg-config check is
+    disabled (--disable-libusb no longer hides libusb-1.0, libftdi, ...), and
+    accept libusb-0.1 as the pkg-config name of libusb (FreeBSD)
   - [fixed] lcdproc, lcdexec, lcdvc: report pidfile errors (and lcdproc's
     daemonize errors) through the configured report destination, so they
     reach syslog and aren't lost once lcdproc has detached from stderr

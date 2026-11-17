@@ -75,6 +75,10 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 AM_PROG_AR
 AM_PROG_CC_C_O
+dnl Find pkg-config here, unconditionally: otherwise PKG_CHECK_MODULES
+dnl looks for it at its first use, which is inside "if" blocks below, and
+dnl disabling the first of those (e.g. --disable-libusb) loses it for the rest.
+ifdef([PKG_PROG_PKG_CONFIG], [PKG_PROG_PKG_CONFIG])
 AC_PATH_PROG([XMLTO], [xmlto], [no])
 
 dnl Avoid unused static function warnings
@@ -271,7 +275,10 @@ if test "$enable_libusb" = "yes"; then
 	ifdef([PKG_CHECK_MODULES],
 		[PKG_CHECK_MODULES(LIBUSB, libusb,
 			[AC_DEFINE(HAVE_LIBUSB, [1], [Define to 1 if you have libusb])],
-			[ enable_libusb=no ])],
+			dnl FreeBSD's base system names it libusb-0.1
+			[PKG_CHECK_MODULES(LIBUSB, libusb-0.1,
+				[AC_DEFINE(HAVE_LIBUSB, [1], [Define to 1 if you have libusb])],
+				[ enable_libusb=no ])])],
 		[AC_MSG_WARN([pkg-config not (fully) installed; drivers requiring libusb may not be built])])
 fi
 AC_SUBST(LIBUSB_LIBS)
