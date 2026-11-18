@@ -36,6 +36,10 @@
 
 #ifdef __OpenBSD__
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <stdlib.h>
@@ -50,13 +54,14 @@
 #include <sys/mount.h>
 #include <sys/time.h>
 #include <sys/user.h>
+#ifdef HAVE_MACHINE_APMVAR_H
 #include <machine/apmvar.h>
+#endif
 #include <kvm.h>
 #include <errno.h>
 
 #include "main.h"
 #include "machine.h"
-#include "config.h"
 #include "shared/LL.h"
 
 static int pageshift;
@@ -97,13 +102,16 @@ machine_close(void)
 int
 machine_get_battstat(int *acstat, int *battflag, int *percent)
 {
+#ifdef HAVE_MACHINE_APMVAR_H
 	int apmd;
 	struct apm_power_info api;
+#endif
 
 	*acstat = LCDP_AC_ON;
 	*battflag = LCDP_BATT_ABSENT;
 	*percent = 100;
 
+#ifdef HAVE_MACHINE_APMVAR_H
 	if ((apmd = open("/dev/apm", O_RDONLY)) == -1) {
 		perror("get_battstat_open");
 		return (TRUE);
@@ -150,6 +158,7 @@ machine_get_battstat(int *acstat, int *battflag, int *percent)
 	*percent = api.battery_life;
 
 	close(apmd);
+#endif	/* HAVE_MACHINE_APMVAR_H: without apm(4), report AC power, no battery */
 
 	return (TRUE);
 }
