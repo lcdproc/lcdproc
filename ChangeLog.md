@@ -1,4 +1,6 @@
 v0.5dev (ongoing development)
+  - [added] configfile: config_get_size() reads WIDTHxHEIGHT values such as
+    display sizes, for drivers (Driver.config_get_size) and clients
   - [fixed] configuration files: a comment straight after a value ("Port=13666;c")
     no longer drops the key, and a comment where the value would start
     ("User= # c") gives an empty value instead of an error

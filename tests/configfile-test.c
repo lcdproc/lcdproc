@@ -10,6 +10,8 @@
  *   string SECTION KEY SKIP   value of KEY (SKIP-th occurrence), or (none)
  *   count SECTION KEY         number of occurrences of KEY
  *   section SECTION           whether SECTION exists
+ *   size SECTION KEY SKIP DEFAULT MAXW MAXH
+ *                             config_get_size(), and the size it gives
  *
  * Blank lines and lines starting with '#' are copied to the output, so the
  * expected output can be read alongside the queries. Warnings from the
@@ -39,8 +41,8 @@ report(const int level, const char *format, ...)
 int
 main(int argc, char **argv)
 {
-	char line[512], cmd[32], section[128], key[128];
-	int skip;
+	char line[512], cmd[32], section[128], key[128], def[64];
+	int skip, maxw, maxh;
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: %s FILE < QUERIES\n", argv[0]);
@@ -63,6 +65,15 @@ main(int argc, char **argv)
 				printf("string %s %s %d = \"%s\"\n", section, key, skip, v);
 			else
 				printf("string %s %s %d = (none)\n", section, key, skip);
+		}
+		else if ((sscanf(line, "%31s %127s %127s %d %63s %d %d", cmd, section, key,
+				 &skip, def, &maxw, &maxh) == 7)
+			 && (strcmp(cmd, "size") == 0)) {
+			int w = -1, h = -1;
+			int r = config_get_size(section, key, skip, def, maxw, maxh, &w, &h);
+
+			printf("size %s %s %d %s %d %d = %d, %dx%d\n",
+			       section, key, skip, def, maxw, maxh, r, w, h);
 		}
 		else if ((sscanf(line, "%31s %127s %127s", cmd, section, key) == 3)
 			 && (strcmp(cmd, "count") == 0)) {

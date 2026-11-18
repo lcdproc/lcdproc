@@ -275,6 +275,7 @@ driver_bind_module(Driver *driver)
 	driver->config_get_string	= config_get_string;
 	driver->config_has_section	= config_has_section;
 	driver->config_has_key		= config_has_key;
+	driver->config_get_size		= config_get_size;
 
 	/* Driver private data */
 	driver->store_private_ptr	= driver_store_private_ptr;

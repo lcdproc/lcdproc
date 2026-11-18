@@ -29,3 +29,14 @@ string NoSuchSection Size 0
 string Shell Exec 0
 string Shell Exec2 0
 string Shell Exec3 0
+
+# sizes: valid, out of limits, malformed, missing, repeated, bad default
+size Sizes Size 0 16x2 40 4
+size Sizes Size 0 16x2 0 0
+size Sizes TooWide 0 16x2 40 4
+size Sizes Zero 0 16x2 40 4
+size Sizes Junk 0 16x2 40 4
+size Sizes Missing 0 16x2 40 4
+size Sizes Repeat 1 16x2 40 4
+size Sizes Junk 0 nonsense 40 4
+size Sizes Size 0 nonsense 10 4
