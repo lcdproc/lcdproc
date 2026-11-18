@@ -900,7 +900,7 @@ dnl $SO is the extension of shared libraries (including the dot!)
 dnl It is available in the program code as MODULE_EXTENSION
 AC_MSG_CHECKING(module extension)
 case $host in
-  hp*|HP*)
+  *-hpux*)
 	SO=.sl;;
   *cygwin*)
 	SO=.dll;;
@@ -926,7 +926,7 @@ case "$host" in
 		LDSHARED="-G";
 	fi
 	;;
-  hp*|HP*)
+  *-hpux*)
 	if test ! "$GCC" = "yes"; then
 		CCSHARED="+z";
   		LDSHARED="-b"
