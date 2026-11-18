@@ -1,4 +1,7 @@
 v0.5dev (ongoing development)
+  - [fixed] configuration files: a comment straight after a value ("Port=13666;c")
+    no longer drops the key, and a comment where the value would start
+    ("User= # c") gives an empty value instead of an error
   - [fixed] lcdproc client: build on OpenBSD platforms without apm(4)
   - [fixed] configure: only use HP-UX's .sl module extension and compiler
     flags on HP-UX, not on every host whose name starts with "hp" (hppa)

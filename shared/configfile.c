@@ -659,15 +659,6 @@ static int process_config(ConfigSection **current_section, const char *source_de
 		  case ST_VALUE:
 			/* value: {non-space char}+ | "\""{any potentially-quoted char}+"\"" */
 			switch (ch) {
-			  case '#':
-			  case ';':
-				/* allow comment if we already had a value */
-				/* WHY ONLY THEN ? 'xx=' can be seen as equivalent to 'xx=""' */
-				if (value_pos > 0) {
-					state = ST_COMMENT;
-					break;
-				}
-				/* fall through */
 			  case '[':
 			  case ']':
 			  case '=':
@@ -683,6 +674,14 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				if (value_pos == 0)
 					break;
 				/* fall through */
+			  case '#':
+			  case ';':
+				/*
+				 * A comment ends the value, as the end of the line
+				 * does: 'xx=val#c' is 'xx=val', and 'xx= #c' is
+				 * 'xx=', an empty value.
+				 */
+				/* fall through */
 			  case '\0':
 			  case '\n':
 			  case '\r':
@@ -697,7 +696,12 @@ static int process_config(ConfigSection **current_section, const char *source_de
 					(void) add_key(*current_section, keyname, value);
 				}
 				/* And be ready for next thing...*/
-				state = ((ch == ' ') || (ch == '\t')) ? ST_VALUE_DONE : ST_INITIAL;
+				if ((ch == '#') || (ch == ';'))
+					state = ST_COMMENT;
+				else if ((ch == ' ') || (ch == '\t'))
+					state = ST_VALUE_DONE;
+				else
+					state = ST_INITIAL;
 				break;
 			  case '"':
 				/* quoted string */
