@@ -66,6 +66,18 @@ long int config_get_int(const char *sectionname, const char *keyname,
 double config_get_float(const char *sectionname, const char *keyname,
 		int skip, double default_value);
 
+/*
+ * Reads a WIDTHxHEIGHT value, such as a display size ("20x4"), into *width
+ * and *height. Both must be at least 1, and at most max_width and
+ * max_height (0 for no maximum). If the key is missing, default_value is
+ * used; if its value is invalid, that is reported and default_value is used.
+ * Returns 0, or -1 (leaving *width and *height alone) if default_value is
+ * invalid too.
+ */
+int config_get_size(const char *sectionname, const char *keyname,
+		int skip, const char *default_value, int max_width, int max_height,
+		int *width, int *height);
+
 /* Returns a pointer to the string associated with the specified key.
  * The strings returned are always NUL-terminated.
  * The string should never be modified, and used only short-term.

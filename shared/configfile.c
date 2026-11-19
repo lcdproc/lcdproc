@@ -301,6 +301,45 @@ double config_get_float(const char *sectionname, const char *keyname,
 }
 
 
+/* Parse "WIDTHxHEIGHT" within limits; 0 if valid, -1 if not. */
+static int parse_size(const char *value, int max_width, int max_height,
+		int *width, int *height)
+{
+	int w, h;
+
+	if ((value == NULL) || (sscanf(value, "%dx%d", &w, &h) != 2))
+		return -1;
+	if ((w <= 0) || (h <= 0)
+	    || ((max_width > 0) && (w > max_width))
+	    || ((max_height > 0) && (h > max_height)))
+		return -1;
+	*width = w;
+	*height = h;
+	return 0;
+}
+
+
+int config_get_size(const char *sectionname, const char *keyname,
+		int skip, const char *default_value, int max_width, int max_height,
+		int *width, int *height)
+{
+	const char *value = config_get_string(sectionname, keyname, skip, NULL);
+
+	if (value != NULL) {
+		if (parse_size(value, max_width, max_height, width, height) == 0)
+			return 0;
+		report(RPT_WARNING, "%s: cannot read %s: %s; using default %s",
+		       sectionname, keyname, value,
+		       (default_value != NULL) ? default_value : "(none)");
+	}
+	if (parse_size(default_value, max_width, max_height, width, height) == 0)
+		return 0;
+	report(RPT_ERR, "%s: invalid default %s: %s", sectionname, keyname,
+	       (default_value != NULL) ? default_value : "(none)");
+	return -1;
+}
+
+
 /** Test whether the configuration contains a specific section.
  * \param sectionname  Name of the section to look for.
  * \retval 0           section not in config
@@ -659,15 +698,6 @@ static int process_config(ConfigSection **current_section, const char *source_de
 		  case ST_VALUE:
 			/* value: {non-space char}+ | "\""{any potentially-quoted char}+"\"" */
 			switch (ch) {
-			  case '#':
-			  case ';':
-				/* allow comment if we already had a value */
-				/* WHY ONLY THEN ? 'xx=' can be seen as equivalent to 'xx=""' */
-				if (value_pos > 0) {
-					state = ST_COMMENT;
-					break;
-				}
-				/* fall through */
 			  case '[':
 			  case ']':
 			  case '=':
@@ -683,6 +713,14 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				if (value_pos == 0)
 					break;
 				/* fall through */
+			  case '#':
+			  case ';':
+				/*
+				 * A comment ends the value, as the end of the line
+				 * does: 'xx=val#c' is 'xx=val', and 'xx= #c' is
+				 * 'xx=', an empty value.
+				 */
+				/* fall through */
 			  case '\0':
 			  case '\n':
 			  case '\r':
@@ -697,7 +735,12 @@ static int process_config(ConfigSection **current_section, const char *source_de
 					(void) add_key(*current_section, keyname, value);
 				}
 				/* And be ready for next thing...*/
-				state = ((ch == ' ') || (ch == '\t')) ? ST_VALUE_DONE : ST_INITIAL;
+				if ((ch == '#') || (ch == ';'))
+					state = ST_COMMENT;
+				else if ((ch == ' ') || (ch == '\t'))
+					state = ST_VALUE_DONE;
+				else
+					state = ST_INITIAL;
 				break;
 			  case '"':
 				/* quoted string */

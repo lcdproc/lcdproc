@@ -1,0 +1,49 @@
+# repeated keys
+count Server Driver = 2
+string Server Driver 0 = "curses"
+string Server Driver 1 = "text"
+string Server Driver 2 = (none)
+
+# quoting and escapes
+string Server Hello 0 = "  Welcome to"
+string Server Hello 1 = "   LCDproc!"
+string Server Escapes 0 = "tab	here, quote" and backslash\"
+string Server Spaced 0 = "spaces around the = sign"
+
+# comments after values
+string Server WaitTime 0 = "5"
+string Server Port 0 = "13666"
+string Server Bind 0 = "127.0.0.1"
+string Server User 0 = ""
+string Server Empty 0 = ""
+
+# case-insensitive names, repeated sections
+string server ReportLevel 0 = "3"
+string SERVER waittime 0 = "5"
+section mtxorb = 1
+string MtxOrb Size 0 = "20x4"
+section NoSuchSection = 0
+string NoSuchSection Size 0 = (none)
+
+# comment characters inside quotes
+string Shell Exec 0 = "echo one; echo two"
+string Shell Exec2 0 = "ls ;echo spaced"
+string Shell Exec3 0 = "grep -c x # not a comment"
+
+# sizes: valid, out of limits, malformed, missing, repeated, bad default
+size Sizes Size 0 16x2 40 4 = 0, 20x4
+size Sizes Size 0 16x2 0 0 = 0, 20x4
+report: Sizes: cannot read TooWide: 999x4; using default 16x2
+size Sizes TooWide 0 16x2 40 4 = 0, 16x2
+report: Sizes: cannot read Zero: 0x2; using default 16x2
+size Sizes Zero 0 16x2 40 4 = 0, 16x2
+report: Sizes: cannot read Junk: big; using default 16x2
+size Sizes Junk 0 16x2 40 4 = 0, 16x2
+size Sizes Missing 0 16x2 40 4 = 0, 16x2
+size Sizes Repeat 1 16x2 40 4 = 0, 40x4
+report: Sizes: cannot read Junk: big; using default nonsense
+report: Sizes: invalid default Junk: nonsense
+size Sizes Junk 0 nonsense 40 4 = -1, -1x-1
+report: Sizes: cannot read Size: 20x4; using default nonsense
+report: Sizes: invalid default Size: nonsense
+size Sizes Size 0 nonsense 10 4 = -1, -1x-1

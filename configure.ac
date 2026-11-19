@@ -254,7 +254,7 @@ AC_DEFINE_UNQUOTED(LCDPORT, $LCDPORT, [Set default port where LCDd should listen
 
 AC_DEFINE_UNQUOTED(PROTOCOL_VERSION, "0.4", [Define version of lcdproc client-server protocol])
 
-AC_DEFINE_UNQUOTED(API_VERSION, "0.5", [Define version of lcdproc API])
+AC_DEFINE_UNQUOTED(API_VERSION, "0.6", [Define version of lcdproc API])
 
 
 dnl Check compiler flags to dynamically load modules

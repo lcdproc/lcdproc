@@ -1,0 +1,42 @@
+# repeated keys
+count Server Driver
+string Server Driver 0
+string Server Driver 1
+string Server Driver 2
+
+# quoting and escapes
+string Server Hello 0
+string Server Hello 1
+string Server Escapes 0
+string Server Spaced 0
+
+# comments after values
+string Server WaitTime 0
+string Server Port 0
+string Server Bind 0
+string Server User 0
+string Server Empty 0
+
+# case-insensitive names, repeated sections
+string server ReportLevel 0
+string SERVER waittime 0
+section mtxorb
+string MtxOrb Size 0
+section NoSuchSection
+string NoSuchSection Size 0
+
+# comment characters inside quotes
+string Shell Exec 0
+string Shell Exec2 0
+string Shell Exec3 0
+
+# sizes: valid, out of limits, malformed, missing, repeated, bad default
+size Sizes Size 0 16x2 40 4
+size Sizes Size 0 16x2 0 0
+size Sizes TooWide 0 16x2 40 4
+size Sizes Zero 0 16x2 40 4
+size Sizes Junk 0 16x2 40 4
+size Sizes Missing 0 16x2 40 4
+size Sizes Repeat 1 16x2 40 4
+size Sizes Junk 0 nonsense 40 4
+size Sizes Size 0 nonsense 10 4
