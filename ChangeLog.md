@@ -1,4 +1,6 @@
 v0.5dev (ongoing development)
+  - [changed] driver API version is now 0.6: drivers built against 0.5 must
+    be rebuilt to load
   - [added] configfile: config_get_size() reads WIDTHxHEIGHT values such as
     display sizes, for drivers (Driver.config_get_size) and clients
   - [fixed] configuration files: a comment straight after a value ("Port=13666;c")

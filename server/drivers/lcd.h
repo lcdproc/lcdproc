@@ -212,7 +212,7 @@ typedef struct lcd_logical_driver {
 	int (*request_display_width) ();
 	int (*request_display_height) ();
 
-	/* Configfile function added after the others, so that the layout of
+	/* Added in driver API 0.6, after the others, so that the layout of
 	 * the members above is unchanged. See configfile.h. */
 	int (*config_get_size)		(const char *sectionname, const char *keyname, int skip,
 					 const char *default_value, int max_width, int max_height,
