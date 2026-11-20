@@ -1060,7 +1060,7 @@ MtxOrb_get_info (Driver *drvthis)
 			for (i = 0; modulelist[i].model != 0; i++) {
 				if (modulelist[i].model == tmp[0]) {
 					snprintf(buf, sizeof(buf), "Model: %s, ", modulelist[i].name);
-					strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+					snprintf(p->info + strlen(p->info), sizeof(p->info) - strlen(p->info), "%s", buf);
 					model = (int) tmp[0];
 					break;
 				}
@@ -1072,7 +1072,7 @@ MtxOrb_get_info (Driver *drvthis)
 
 	if (model == 0) {
 		snprintf(buf, sizeof(buf), "Unknown model (0x%02x), ", (int) tmp[0]);
-		strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+		snprintf(p->info + strlen(p->info), sizeof(p->info) - strlen(p->info), "%s", buf);
 	}
 
 	/*
@@ -1098,7 +1098,7 @@ MtxOrb_get_info (Driver *drvthis)
 		report(RPT_WARNING, "%s: unable to read device firmware revision", drvthis->name);
 
 	snprintf(buf, sizeof(buf), "Firmware Rev.: 0x%02x, ", tmp[0]);
-	strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+	snprintf(p->info + strlen(p->info), sizeof(p->info) - strlen(p->info), "%s", buf);
 
 	/*
 	 * Read serial number of display
@@ -1126,7 +1126,7 @@ MtxOrb_get_info (Driver *drvthis)
 		report(RPT_WARNING, "%s: unable to read device serial number", drvthis->name);
 
 	snprintf(buf, sizeof(buf), "Serial No: 0x%02x 0x%02x", tmp[0], tmp[1]);
-	strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+	snprintf(p->info + strlen(p->info), sizeof(p->info) - strlen(p->info), "%s", buf);
 
 	return p->info;
 }

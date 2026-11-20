@@ -8,8 +8,7 @@ BRANCH=$1
 cd ${NIGHTLYDIR}
 
 # Make bzip2 archive
-${GUNZIP} --stdout lcdproc-CVS-${BRANCH}.tar.gz > lcdproc-CVS-${BRANCH}.tar
-${BZIP2} --force --quiet lcdproc-CVS-${BRANCH}.tar
+${GUNZIP} --stdout lcdproc-GIT-${BRANCH}.tar.gz > lcdproc-GIT-${BRANCH}.tar
+${BZIP2} --force --quiet lcdproc-GIT-${BRANCH}.tar
 
 date > last-nightly.txt
-

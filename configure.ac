@@ -82,7 +82,7 @@ ifdef([PKG_PROG_PKG_CONFIG], [PKG_PROG_PKG_CONFIG])
 AC_PATH_PROG([XMLTO], [xmlto], [no])
 
 dnl Avoid unused static function warnings
-CFLAGS="-Wall $CFLAGS"
+CFLAGS="-std=c99 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -Wall -Wold-style-definition -Wstrict-prototypes $CFLAGS"
 AX_CFLAGS_GCC_OPTION(-Wno-unused-function)
 AX_CFLAGS_GCC_OPTION(-ftrampolines)
 export CFLAGS

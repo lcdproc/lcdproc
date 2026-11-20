@@ -26,6 +26,7 @@
 #include <string.h>
 #include <time.h>
 #include <hid.h>
+#include <stdbool.h>
 
 #include "lcd.h"
 #include "mdm166a.h"

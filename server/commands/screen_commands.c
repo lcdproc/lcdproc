@@ -325,7 +325,7 @@ screen_set_func(Client *c, int argc, char **argv)
 				else if (strcmp("toggle", argv[i]) == 0) {
 					if (s->backlight == BACKLIGHT_ON)
 						s->backlight = BACKLIGHT_OFF;
-					else if (s-backlight == BACKLIGHT_OFF)
+					else if (s->backlight == BACKLIGHT_OFF)
 						s->backlight = BACKLIGHT_ON;
 				}
 

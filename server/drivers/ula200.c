@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include <ftdi.h>
 
@@ -44,7 +45,6 @@ MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "ula200_";
-
 
 /* -------------------------- constants ---------------------------------- */
 #define DISPLAY_VENDOR_ID    0x0403
@@ -72,11 +72,8 @@ static char *default_key_map[MAX_KEY_MAP] = {"Up", "Down", "Left", "Right", "Ent
 #define RS_INSTR    0x01
 #define SETCHAR     0x40
 
-/* boolean data type */
 #ifndef bool
-# define bool short
-# define true 1
-# define false 0
+# include <stdbool.h>
 #endif
 
 /* ----------- Key ring implementation from CFontz633io ------------------ */

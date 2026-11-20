@@ -23,7 +23,7 @@
 # include "config.h"
 #endif
 
-#include "shared/report.h"
+#include "report.h"
 
 
 /** configuration key */

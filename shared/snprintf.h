@@ -4,6 +4,9 @@
 #define PORTABLE_SNPRINTF_VERSION_MAJOR 2
 #define PORTABLE_SNPRINTF_VERSION_MINOR 2
 
+#include <stddef.h>
+#include <stdarg.h>
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -14,6 +17,7 @@
 extern int snprintf(char *, size_t, const char *, /*args*/ ...);
 extern int vsnprintf(char *, size_t, const char *, va_list);
 #endif
+
 
 #if defined(HAVE_SNPRINTF) && defined(PREFER_PORTABLE_SNPRINTF)
 extern int portable_snprintf(char *str, size_t str_m, const char *fmt, /*args*/ ...);

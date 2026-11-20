@@ -17,6 +17,7 @@
 
 
 #include <glcdproclib/glcdprocdriver.h>
+#include <stdbool.h>
 
 
 #include <stdlib.h>

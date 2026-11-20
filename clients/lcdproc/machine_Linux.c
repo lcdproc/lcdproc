@@ -9,7 +9,7 @@
  * Refer to the COPYING file distributed with this package.
  */
 
-#ifdef linux
+#ifdef __linux__
 
 #include <sys/types.h>
 #include <stdlib.h>
@@ -434,7 +434,7 @@ machine_get_procs(LinkedList * procs)
 		if (!strchr("1234567890", procdir->d_name[0]))
 			continue;
 
-		sprintf(buf, "/proc/%s/status", procdir->d_name);
+		snprintf(buf, sizeof buf, "/proc/%.*s/status", (int)sizeof buf - 9, procdir->d_name);
 		if ((StatusFile = fopen(buf, "r")) == NULL) {
 			/*
 			 * Not a serious error; process has finished before

@@ -22,6 +22,7 @@
 # include <stdbool.h>
 #endif
 #include "shared/defines.h"
+#include <stdbool.h>
 
 #include "shared/LL.h"
 #include "menuitem.h"

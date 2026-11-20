@@ -484,10 +484,15 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
 
 /* declarations */
 
+/* credit string is referenced only by portable_vsnprintf (str_arg = credits),
+   which exists exactly when we provide our own vsnprintf implementation; define
+   the constant in that same condition so it never goes unused */
+#if (!defined(HAVE_SNPRINTF) || defined(PREFER_PORTABLE_SNPRINTF)) && !defined(NEED_SNPRINTF_ONLY)
 static const char credits[] = "\n\
 @(#)snprintf.c, v2.3: Mark Martinec, <mark.martinec@ijs.si>\n\
 @(#)snprintf.c, v2.3: Copyright 1999-2002 Mark Martinec. Dual licensed: Frontier Artistic License or GNU General Public License applies.\n\
 @(#)snprintf.c, v2.3: http://www.ijs.si/software/snprintf/\n";
+#endif
 
 #if defined(NEED_ASPRINTF)
 int asprintf(char **ptr, const char *fmt, /*args*/ ...) {

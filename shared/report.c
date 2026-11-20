@@ -19,6 +19,7 @@
 #include <string.h>
 #include <syslog.h>
 
+#include "defines.h"
 #include "report.h"
 
 static int report_level = RPT_INFO;
@@ -32,7 +33,7 @@ static int num_stored_msgs = 0;
 
 /* local functions */
 static void store_report_message(int level, const char *message);
-static void flush_messages();
+static void flush_messages(void);
 
 void
 report(const int level, const char *format,... /* args */ )
@@ -105,8 +106,8 @@ static void
 store_report_message(int level, const char *message)
 {
 	if (num_stored_msgs < MAX_STORED_MSGS) {
-		stored_msgs[num_stored_msgs] = malloc(strlen(message) + 1);
-		strcpy(stored_msgs[num_stored_msgs], message);
+		stored_msgs[num_stored_msgs] = malloc(max(strlen(message) + 1, 200));
+		strlcpy(stored_msgs[num_stored_msgs], message, max(strlen(message) + 1, 200));
 		stored_levels[num_stored_msgs] = level;
 		num_stored_msgs++;
 	}
@@ -118,7 +119,7 @@ store_report_message(int level, const char *message)
  * destination and release their memory.
  */
 static void
-flush_messages()
+flush_messages(void)
 {
 	int i;
 	for (i = 0; i < num_stored_msgs; i++) {

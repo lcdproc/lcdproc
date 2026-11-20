@@ -17,6 +17,7 @@
 
 #include "menu.h"
 #include "screen.h"
+#include <stdbool.h>
 
 extern Screen *menuscreen;
 extern Menu *main_menu;
