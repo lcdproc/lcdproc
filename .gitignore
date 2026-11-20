@@ -21,6 +21,7 @@ config.sub
 *.o
 *.a
 *.so
+*.Po
 LCDd
 clients/lcdproc/lcdproc
 clients/lcdexec/lcdexec
