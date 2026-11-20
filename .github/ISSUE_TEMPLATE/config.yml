@@ -1,0 +1,10 @@
+templates:
+  - name: Bug Report
+    path: bug_report.md
+    labels: ["type: bug"]
+  - name: Feature Request
+    path: feature_request.md
+    labels: ["type: enhancement"]
+  - name: Help Request
+    path: help_request.md
+    labels: ["type: question"]
