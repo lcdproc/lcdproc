@@ -10,7 +10,7 @@ MODULE_EXPORT int  LB216_cellheight (Driver *drvthis);
 MODULE_EXPORT void LB216_clear (Driver *drvthis);
 MODULE_EXPORT void LB216_flush(Driver *drvthis);
 MODULE_EXPORT void LB216_string (Driver *drvthis, int x, int y, const char string[]);
-MODULE_EXPORT void LB216_chr(Driver *drvthis, int x, int y, char c) ;
+MODULE_EXPORT void LB216_chr(Driver *drvthis, int x, int y, unsigned char c) ;
 
 MODULE_EXPORT void LB216_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void LB216_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);

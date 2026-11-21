@@ -51,8 +51,8 @@ typedef struct pyramid_private_data {
     int cellheight;
 
     /* output handling */
-    char framebuffer[SCREEN_SIZE];
-    char backingstore[SCREEN_SIZE];
+    unsigned char framebuffer[SCREEN_SIZE];
+    unsigned char backingstore[SCREEN_SIZE];
     CGmode ccmode;
     unsigned char cc_cache[CUSTOMCHARS][CELLHEIGHT];
 
@@ -79,7 +79,7 @@ MODULE_EXPORT int  pyramid_cellheight(Driver *drvthis);
 MODULE_EXPORT void pyramid_clear(Driver *drvthis);
 MODULE_EXPORT void pyramid_flush(Driver *drvthis);
 MODULE_EXPORT void pyramid_string(Driver *drvthis, int x, int y, const char string[]);
-MODULE_EXPORT void pyramid_chr(Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void pyramid_chr(Driver *drvthis, int x, int y, unsigned char c);
 MODULE_EXPORT void pyramid_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void pyramid_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT int  pyramid_icon(Driver *drvthis, int x, int y, int icon);

@@ -164,6 +164,7 @@ MODULE_EXPORT int irtrans_init(Driver *drvthis)
 MODULE_EXPORT void irtrans_close(Driver *drvthis)
 {
     PrivateData *p = drvthis->private_data;
+    int socket_fd = -1;
 
     irtrans_clear(drvthis);
     sleep(5);
@@ -171,12 +172,14 @@ MODULE_EXPORT void irtrans_close(Driver *drvthis)
     irtrans_flush(drvthis);
 
     if (p != NULL) {
+        socket_fd = p->socket;
         if (p->framebuf != NULL)
             free(p->framebuf);
         free(p);
     }
 
-    close(p->socket);
+    if (socket_fd >= 0)
+        close(socket_fd);
 
     drvthis->store_private_ptr(drvthis, NULL);
 }

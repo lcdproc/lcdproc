@@ -41,6 +41,7 @@
 #include "lcd.h"
 #include "ea65.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "lcd_lib.h"
 
 
@@ -246,8 +247,8 @@ EA65_flush (Driver *drvthis)
                 else p->framebuf[i] = 32;  // other characters replaced by a space
         }
         snprintf(out, sizeof(out), "%c%c%c%c%c", 0xa0, 0x00, 0x80, 0x8a, 0x8a);
-        write(p->fd, out, 5);
-        write(p->fd, p->framebuf, p->width * p->height);
+        shared_write_all("ea65", p->fd, (const unsigned char *)out, 5);
+        shared_write_all("ea65", p->fd, (const unsigned char *)p->framebuf, p->width * p->height);
 }
 
 /**
@@ -295,7 +296,7 @@ EA65_backlight (Driver *drvthis, int on)
         } else {
                 snprintf (out, sizeof(out), "%c%c%c%c%c", 0xa0, 0x00, 0x50, 0x81, p->offbrightness);
         }
-        write (p->fd, out, 5);
+        shared_write_all("ea65", p->fd, (const unsigned char *)out, 5);
 }
 
 /**
@@ -355,5 +356,5 @@ EA65_output (Driver *drvthis, int on)
         } else {
                 snprintf (out, sizeof(out), "%c%c%c%c%c", 0xa0,0x00,0x32,0x81,0x00);
         }
-        write (p->fd, out, 5);
+        shared_write_all("ea65", p->fd, (const unsigned char *)out, 5);
 }

@@ -44,6 +44,7 @@
 #include "EyeboxOne.h"
 
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #define INPUT_PAUSE_KEY         'A'
 #define INPUT_BACK_KEY          'B'
@@ -112,7 +113,7 @@ EyeboxOne_parse_keypad_setting (Driver *drvthis, char * keyname, char default_va
 
 	s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);
 	if (s != NULL) {
-		strncpy(buf, s, sizeof(buf));
+		strncpy(buf, s, sizeof(buf) - 1);
 		buf[sizeof(buf)-1] = '\0';
 		return_val = buf[0];
 	} else {
@@ -328,7 +329,7 @@ EyeboxOne_use_bar(int fd, int bar, int level)
 		return;
 
 	sprintf(buffer, "\E[%d;%dB",bar,level);
-	write(fd,buffer,strlen(buffer));
+	shared_write_all("EyeboxOne", fd, (const unsigned char *)buffer, strlen(buffer));
 
 }
 
@@ -365,9 +366,9 @@ EyeboxOne_use_led(int fd, int led, int color)
 	}
 
 	sprintf(buffer, "\E[%d;%dL",led+(led-1),a);
-	write(fd,buffer,strlen(buffer));
+	shared_write_all("EyeboxOne", fd, (const unsigned char *)buffer, strlen(buffer));
 	sprintf(buffer, "\E[%d;%dL",led+(led-1)+1,b);
-	write(fd,buffer,strlen(buffer));
+	shared_write_all("EyeboxOne", fd, (const unsigned char *)buffer, strlen(buffer));
 
 }
 
@@ -483,7 +484,7 @@ EyeboxOne_string (Driver *drvthis, int x, int y, const char string[])
 MODULE_EXPORT void
 EyeboxOne_flush (Driver *drvthis)
 {
-	char out[12];
+	char out[32];
 	int i,j,mv = 1;
 	char *xp, *xq;
 
@@ -492,9 +493,9 @@ EyeboxOne_flush (Driver *drvthis)
 	if (p->old == NULL) {
 		p->old = malloc(p->widthBYheight);
 
-		write(p->fd, "\E[H\E[2J", 7); // Clear Screen
+		shared_write_all("EyeboxOne", p->fd, (const unsigned char *)"\E[H\E[2J", 7); // Clear Screen
 		EyeboxOne_showcursor(drvthis, p->cursorenabled);
-		write(p->fd, p->framebuf, p->widthBYheight);
+		shared_write_all("EyeboxOne", p->fd, (const unsigned char *)p->framebuf, p->widthBYheight);
 
 		strncpy(p->old, p->framebuf, p->widthBYheight);
 
@@ -511,10 +512,10 @@ EyeboxOne_flush (Driver *drvthis)
 			else {
 				if (mv == 1) {
 					snprintf(out, sizeof(out), "\E[%d;%dH", j-1, i);
-					write(p->fd, out, strlen(out));
+					shared_write_all("EyeboxOne", p->fd, (const unsigned char *)out, strlen(out));
 					mv = 0;
 				}
-				write(p->fd, xp, 1);
+				shared_write_all("EyeboxOne", p->fd, (const unsigned char *)xp, 1);
 			}
 			xp++;
 			xq++;
@@ -570,12 +571,12 @@ EyeboxOne_backlight (Driver *drvthis, int on)
 
 	switch (on) {
 		case BACKLIGHT_ON:
-			write(p->fd, "\E[E", 3);
+			shared_write_all("EyeboxOne", p->fd, (const unsigned char *)"\E[E", 3);
 			debug(RPT_DEBUG, "EyeBO: backlight turned on");
 			break;
 		case BACKLIGHT_OFF:
 			debug(RPT_DEBUG, "EyeBO: backlight turned off");
-			write(p->fd, "\E[e", 3);
+			shared_write_all("EyeboxOne", p->fd, (const unsigned char *)"\E[e", 3);
 			break;
 		default: /* ignored... */
 			debug(RPT_DEBUG, "EyeBO: backlight - invalid setting");
@@ -592,10 +593,10 @@ EyeboxOne_showcursor (Driver *drvthis, int on)
 	PrivateData * p = drvthis->private_data;
 
 	if (on) {
-		write(p->fd, "\E[S", 3);
+		shared_write_all("EyeboxOne", p->fd, (const unsigned char *)"\E[S", 3);
 		debug(RPT_DEBUG, "EyeBO: cursor turned on");
 	} else {
-		write(p->fd, "\E[s", 3);
+		shared_write_all("EyeboxOne", p->fd, (const unsigned char *)"\E[s", 3);
 		debug(RPT_DEBUG, "EyeBO: cursor turned off");
 	}
 }
@@ -620,7 +621,8 @@ EyeboxOne_get_key (Driver *drvthis)
 	if (fds[0].revents == 0)
 		return NULL;
 
-	(void) read(p->fd, &in, 1);
+	if (read(p->fd, &in, 1) < 0)
+		return NULL;
 	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, in);
 	/* There is a lot of undesirable chars which appear
 	 * when a key is pressed

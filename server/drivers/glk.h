@@ -10,7 +10,7 @@ MODULE_EXPORT int  glk_cellheight(Driver *drvthis);
 MODULE_EXPORT void glk_clear(Driver *drvthis);
 MODULE_EXPORT void glk_flush(Driver *drvthis);
 MODULE_EXPORT void glk_string(Driver *drvthis, int x, int y, const char string[]);
-MODULE_EXPORT void glk_chr(Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void glk_chr(Driver *drvthis, int x, int y, unsigned char c);
 
 MODULE_EXPORT void glk_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT void glk_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);

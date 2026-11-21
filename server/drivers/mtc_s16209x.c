@@ -59,6 +59,7 @@
 #include "lcd_lib.h"
 #include "mtc_s16209x.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #define MTC_DEFAULT_DEVICE	"/dev/lcd"
 #define MTC_DEFAULT_BRIGHTNESS	255
@@ -195,7 +196,7 @@ MTC_S16209X_init (Driver *drvthis)
   tcflush(p->fd, TCIFLUSH);	// Clear the port buffer
   tcsetattr(p->fd, TCSANOW, &portset);	// Apply the new settings
 
-  result = write(p->fd, lcd_open, sizeof(lcd_open));	// Send the init string to the LCD
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_open, sizeof(lcd_open));	// Send the init string to the LCD
   if (result < 0)
     report(RPT_WARNING, "%s: write(lcd_open) failed (%s)",
 	   drvthis->name, strerror(errno));
@@ -207,7 +208,7 @@ MTC_S16209X_init (Driver *drvthis)
   }
 #endif // CAN_REBOOT_LCD
 
-  result = write(p->fd, lcd_clearscreen, sizeof(lcd_clearscreen));	// Clear the LCD, unbuffered
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_clearscreen, sizeof(lcd_clearscreen));	// Clear the LCD, unbuffered
   if (result < 0)
     report(RPT_WARNING, "%s: write(lcd_clearscreen) failed (%s)",
 	   drvthis->name, strerror(errno));
@@ -232,7 +233,7 @@ MTC_S16209X_close (Driver *drvthis)
       int result;
 
       flock(p->fd, LOCK_EX);
-      result = write(p->fd, lcd_close, sizeof(lcd_close));	// Send the close code to LCD
+      result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_close, sizeof(lcd_close));	// Send the close code to LCD
       flock(p->fd, LOCK_UN);
 
       if (result < 0)
@@ -319,8 +320,8 @@ MTC_S16209X_flush (Driver *drvthis)
 
   // 1st step: flush 1st line:
   flock(p->fd, LOCK_EX);
-  result = write(p->fd, lcd_gotoline1, sizeof(lcd_gotoline1));	// Go to the first row
-  result = write(p->fd, p->framebuf[0], sizeof(p->framebuf[0]));	// Send the first row data to LCD
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_gotoline1, sizeof(lcd_gotoline1));	// Go to the first row
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)p->framebuf[0], sizeof(p->framebuf[0]));	// Send the first row data to LCD
   flock(p->fd, LOCK_UN);
 
   if (result < 0)
@@ -329,8 +330,8 @@ MTC_S16209X_flush (Driver *drvthis)
 
   // 2nd step: flush 2nd line:
   flock(p->fd, LOCK_EX);
-  result = write(p->fd, lcd_gotoline2, sizeof(lcd_gotoline2));	// Go to the second row
-  result = write(p->fd, p->framebuf[1], sizeof(p->framebuf[1]));	// Send the second row data to LCD
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_gotoline2, sizeof(lcd_gotoline2));	// Go to the second row
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)p->framebuf[1], sizeof(p->framebuf[1]));	// Send the second row data to LCD
   flock(p->fd, LOCK_UN);
 
   if (result < 0)
@@ -385,7 +386,7 @@ MTC_S16209X_hidecursor (Driver *drvthis)
   int result;
 
   flock(p->fd, LOCK_EX);
-  result = write(p->fd, lcd_hidecursor, sizeof(lcd_hidecursor));
+  result = shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_hidecursor, sizeof(lcd_hidecursor));
   flock(p->fd, LOCK_UN);
 
   if (result < 0)
@@ -407,7 +408,7 @@ MTC_S16209X_reboot (Driver *drvthis)
   int result;
 
   flock(p->fd, LOCK_EX);
-  write(p->fd, lcd_open, sizeof(lcd_open));	// TODO: Will this acctually reboot the LCD? Don't know
+  shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)lcd_open, sizeof(lcd_open));	// TODO: Will this acctually reboot the LCD? Don't know
   flock(p->fd, LOCK_UN);
 }
 #endif // CAN_REBOOT_LCD
@@ -526,7 +527,7 @@ MTC_S16209X_set_char (Driver *drvthis, int n, unsigned char *dat)
 
   snprintf(out, sizeof(out), "%c%c", 0xFE, 64 + (8 * n));
   flock(p->fd, LOCK_EX);
-  write(p->fd, out, 2);
+  shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)out, 2);
   flock(p->fd, LOCK_UN);
 
   for (row = 0; row < p->cellheight; row++) {
@@ -541,7 +542,7 @@ MTC_S16209X_set_char (Driver *drvthis, int n, unsigned char *dat)
     snprintf(out, sizeof (out), "%c", letter);
 
     flock(p->fd, LOCK_EX);
-    write(p->fd, out, 1);
+    shared_write_all("mtc_s16209x", p->fd, (const unsigned char *)out, 1);
     flock(p->fd, LOCK_UN);
   }
 }

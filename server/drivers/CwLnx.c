@@ -150,7 +150,7 @@ static void CwLnx_hidecursor(int fd);
 
 #define MOVE_COST		5	/* # bytes for most move-to ops */
 
-static int Write_LCD(int fd, char *c, int size)
+static int Write_LCD(int fd, unsigned char *c, int size)
 {
     int rc, wrote = 0;
     int retries = 30;
@@ -181,7 +181,7 @@ static int Write_LCD(int fd, char *c, int size)
 /* Hardware function */
 static void Enable_Backlight(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_LIGHT_ON, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_LIGHT_ON, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -190,7 +190,7 @@ static void Enable_Backlight(int fd)
 /* Hardware function */
 static void Disable_Backlight(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_LIGHT_OFF, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_LIGHT_OFF, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -199,7 +199,7 @@ static void Disable_Backlight(int fd)
 /* Hardware function */
 static void Enable_Pixel(int fd, int x, int y)
 {
-    char cmd[] = { LCD_CMD, LCD_PUT_PIXEL, 0, 0, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_PUT_PIXEL, 0, 0, LCD_CMD_END };
 
     cmd[2] = (char) x;
     cmd[3] = (char) y;
@@ -211,7 +211,7 @@ static void Enable_Pixel(int fd, int x, int y)
 /* Hardware function */
 static void Disable_Pixel(int fd, int x, int y)
 {
-    char cmd[] = { LCD_CMD, LCD_CLEAR_PIXEL, 0, 0, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_CLEAR_PIXEL, 0, 0, LCD_CMD_END };
 
     cmd[2] = (char) x;
     cmd[3] = (char) y;
@@ -228,7 +228,7 @@ static void Backlight_Brightness(int fd, int brightness)
     } else if (brightness == 7) {
 	Enable_Backlight(fd);
     } else {
-	char cmd[] = { LCD_CMD, LCD_LIGHT_BRIGHTNESS, 0, LCD_CMD_END };
+	unsigned char cmd[] = { LCD_CMD, LCD_LIGHT_BRIGHTNESS, 0, LCD_CMD_END };
 
 	cmd[2] = (char) brightness;
 
@@ -240,7 +240,7 @@ static void Backlight_Brightness(int fd, int brightness)
 /* Hardware function */
 static void Enable_Scroll(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_ENABLE_SCROLL, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_ENABLE_SCROLL, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -249,7 +249,7 @@ static void Enable_Scroll(int fd)
 /* Hardware function */
 static void Disable_Scroll(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_DISABLE_SCROLL, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_DISABLE_SCROLL, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -258,7 +258,7 @@ static void Disable_Scroll(int fd)
 /* Hardware function */
 static void Clear_Screen(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_CLEAR, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_CLEAR, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
     usleep(UPDATE_DELAY);
@@ -268,7 +268,7 @@ static void Clear_Screen(int fd)
 /* Hardware function */
 static void Enable_Wrap(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_ENABLE_WRAP, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_ENABLE_WRAP, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -277,7 +277,7 @@ static void Enable_Wrap(int fd)
 /* Hardware function */
 static void Disable_Wrap(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_DISABLE_WRAP, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_DISABLE_WRAP, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -286,7 +286,7 @@ static void Disable_Wrap(int fd)
 /* Hardware function */
 static void Disable_Cursor(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_OFF_CURSOR, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_OFF_CURSOR, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
@@ -343,7 +343,7 @@ static void Setup_Port(int fd, speed_t speed)
 /* Hardware function */
 static void Set_9600(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_SET_BAUD, 0x20, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_SET_BAUD, 0x20, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 4);
 }
@@ -352,7 +352,7 @@ static void Set_9600(int fd)
 /* Hardware function */
 static void Set_19200(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_SET_BAUD, 0x0F, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_SET_BAUD, 0x0F, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 4);
 }
@@ -362,12 +362,12 @@ static void Set_19200(int fd)
 static void Set_Insert(int fd, int row, int col)
 {
     if (row == 0 && col == 0) {
-        char cmd[] = { LCD_CMD, LCD_INIT_INSERT, LCD_CMD_END };
+        unsigned char cmd[] = { LCD_CMD, LCD_INIT_INSERT, LCD_CMD_END };
 
     	Write_LCD(fd, cmd, 3);
     }
     else {
-	char cmd[] = { LCD_CMD, LCD_SET_INSERT, 0, 0, LCD_CMD_END };
+	unsigned char cmd[] = { LCD_CMD, LCD_SET_INSERT, 0, 0, LCD_CMD_END };
 
 	cmd[2] = (char) col;
 	cmd[3] = (char) row;
@@ -418,7 +418,7 @@ CwLnx_hidecursor(int fd)
  */
 static void CwLnx_reboot(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_SOFT_RESET, LCD_CMD_END };
+    unsigned char cmd[] = { LCD_CMD, LCD_SOFT_RESET, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
     usleep(SETUP_DELAY);
@@ -759,7 +759,7 @@ CwLnx_flush(Driver *drvthis)
 	    if ((*q == *r) && !((0 < *q) && (*q < 16))) {
 		if (firstUpdate && q - lastUpdate > MOVE_COST) {
 		    Set_Insert(p->fd, iUpdate, jUpdate);
-		    Write_LCD(p->fd, (char *) firstUpdate,
+		    Write_LCD(p->fd, (unsigned char *) firstUpdate,
 			  lastUpdate - firstUpdate + 1);
 		    firstUpdate = lastUpdate = NULL;
 		}
@@ -777,7 +777,7 @@ CwLnx_flush(Driver *drvthis)
     }
     if (firstUpdate) {
 	Set_Insert(p->fd, iUpdate, jUpdate);
-	Write_LCD(p->fd, (char *) firstUpdate,
+	Write_LCD(p->fd, (unsigned char *) firstUpdate,
 		lastUpdate - firstUpdate + 1);
     }
 
@@ -804,7 +804,7 @@ CwLnx_flush(Driver *drvthis)
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-CwLnx_chr(Driver *drvthis, int x, int y, char c)
+CwLnx_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
     PrivateData *p = drvthis->private_data;
 
@@ -1028,7 +1028,7 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
     PrivateData *p = drvthis->private_data;
 
-    char c;
+    unsigned char c;
 
     if ((n <= 0) || (n > CwLnx_get_free_chars(drvthis)))
 	return;
@@ -1331,8 +1331,14 @@ CwLnx_get_key(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	char key = '\0';
+	ssize_t rd = read(p->fd, &key, 1);
 
-	read(p->fd, &key, 1);
+	if (rd != 1) {
+		/* Nothing available or read failure; report and return
+		 * "nothing available" rather than a bogus key. */
+		debug(RPT_DEBUG, "%s: get_key: read returned %zd (errno=%d)", drvthis->name, rd, rd < 0 ? errno : 0);
+		return NULL;
+	}
 
 	if (key != '\0') {
 		if ((key >= 'A') && (key <= 'F')) {

@@ -21,6 +21,7 @@
 #include "hd44780-usblcd.h"
 #include "hd44780-low.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -133,12 +134,12 @@ usblcd_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		 * used as instruction byte
 		 */
 		if (ch == '\0')
-			write(p->fd, &ch, 1);
-		write(p->fd, &ch, 1);
+			shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&ch, 1);
+		shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&ch, 1);
 	} else {
 		/* Instructions are sent prepending 0x00 as escape sequence */
-		write(p->fd, &instr_byte, 1);
-		write(p->fd, &ch, 1);
+		shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&instr_byte, 1);
+		shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&ch, 1);
 	}
 }
 
@@ -154,12 +155,12 @@ usblcd_HD44780_backlight(PrivateData *p, unsigned char state)
 	static const char bl_on = 0x21;
 	static const char bl_off = 0x20;
 
-	write(p->fd, &instr_byte, 1);
+	shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&instr_byte, 1);
 
 	if (state == BACKLIGHT_OFF)
-		write(p->fd, &bl_off, 1);
+		shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&bl_off, 1);
 	else
-		write(p->fd, &bl_on, 1);
+		shared_write_all("hd44780-usblcd", p->fd, (const unsigned char *)&bl_on, 1);
 }
 
 /**

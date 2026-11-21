@@ -461,10 +461,10 @@ glk_string(Driver *drvthis, int x, int y, const char string[])
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-glk_chr(Driver *drvthis, int x, int y, char c)
+glk_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
-	int myc = (unsigned char) c;
+	int myc = c;
 
 	x--;			/* Convert 1-based coords to 0-based... */
 	y--;

@@ -62,6 +62,7 @@
 #include "lcd.h"
 #include "NoritakeVFD.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "adv_bignum.h"
 
 
@@ -362,7 +363,7 @@ NoritakeVFD_flush (Driver *drvthis)
 			memcpy(p->backingstore+offset, p->framebuf+offset, p->width);
 
 			NoritakeVFD_cursor_goto(drvthis, 1, i+1);
-			write(p->fd, p->framebuf+offset, p->width);
+			shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)p->framebuf+offset, p->width);
 		}
 	}
 }
@@ -656,7 +657,7 @@ NoritakeVFD_cursor (Driver *drvthis, int x, int y, int state)
 			out[0] = 0x15;
 			break;
 	}
-	write(p->fd, out, 1);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)out, 1);
 
 	NoritakeVFD_cursor_goto(drvthis, x, y);
 }
@@ -704,7 +705,7 @@ NoritakeVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
 		out[3 + i/8] |= ((dat[i/5] >> (4 - i%5)) & 1) << i%8;
 	}
 
-	write(p->fd, out, 8);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)out, 8);
 }
 
 
@@ -767,7 +768,7 @@ NoritakeVFD_backlight (Driver *drvthis, int on)
 	/* not sure if the formula is correct:
 	 * What is the allowed range for the brightness value ? */
 	out[2] = (int) (hardware_value * 255 / 1000);
-	write(p->fd, out, 3);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)out, 3);
 }
 
 
@@ -783,7 +784,7 @@ NoritakeVFD_autoscroll (Driver *drvthis, int on)
 	char out[2];
 
 	out[0] = (on) ? 0x12 : 0x11;
-	write(p->fd, out, 1);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)out, 1);
 }
 
 
@@ -797,7 +798,7 @@ NoritakeVFD_hidecursor (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	char out[2] = { 0x16 };
 
-	write(p->fd, out, 1);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)out, 1);
 }
 
 
@@ -813,10 +814,10 @@ NoritakeVFD_reboot (Driver *drvthis)
 	char flickerless_out[3] = { 0x1B, 0x53 };
 
 	/* reset display */
-	write(p->fd, reset_out, 2);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)reset_out, 2);
 
 	/* switch on flickerless write */
-	write(p->fd, flickerless_out, 2);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)flickerless_out, 2);
 }
 
 
@@ -835,7 +836,7 @@ NoritakeVFD_cursor_goto(Driver *drvthis, int x, int y)
 	/* set cursor position */
 	if ((x > 0) && (x <= p->width) && (y > 0) && (y <= p->height))
 		out[2] = (y-1) * p->width + (x-1);
-	write(p->fd, out, 3);
+	shared_write_all("NoritakeVFD", p->fd, (const unsigned char *)out, 3);
 }
 
 

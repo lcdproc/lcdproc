@@ -46,7 +46,7 @@ typedef unsigned short word;
 
 
 #ifndef AVR
-#pragma pack(1)
+#pragma pack(push, 1)
 #define CODE_LEN	176     // 2 Byte mehr für String-Ende 0
 #else
 #define CODE_LEN	174
@@ -193,3 +193,6 @@ typedef struct {
     STATUS_LINE stat[16];
 } STATUS_BUFFER;
 
+#ifndef AVR
+#pragma pack(pop)
+#endif

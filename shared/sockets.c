@@ -323,11 +323,12 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 	char buf[MAXMSG];
 	va_list ap;
 	int size = 0;
+	size_t huh_len = strlen(huh);
 
-	strncpy(buf, huh, sizeof(huh)); // note: sizeof(huh) < MAXMSG
+	strcpy(buf, huh); // note: sizeof(buf) == MAXMSG > strlen(huh)
 
 	va_start(ap, format);
-	size = vsnprintf(buf + (sizeof(huh)-1), sizeof(buf) - (sizeof(huh)-1), format, ap);
+	size = vsnprintf(buf + huh_len, sizeof(buf) - huh_len, format, ap);
 	buf[sizeof(buf)-1] = '\0';
 	va_end(ap);
 
@@ -335,7 +336,7 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 		report(RPT_ERR, "sock_printf_error: vsnprintf failed");
 		return -1;
 	}
-	if (size >= sizeof(buf) - (sizeof(huh)-1))
+	if (size >= (int)(sizeof(buf) - huh_len))
 		report(RPT_WARNING, "sock_printf_error: vsnprintf truncated message");
 
 	report(RPT_INFO, "client error: %s", buf);

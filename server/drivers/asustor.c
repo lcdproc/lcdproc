@@ -56,6 +56,7 @@
 #include "lcd.h"
 #include "asustor.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #define ASUSTOR_COMMAND 0xf0
 #define ASUSTOR_REPLY 0xf1
@@ -492,7 +493,7 @@ asustor_send_packet(Driver *drvthis, const unsigned char *packet, size_t len)
 		ssize_t written;
 
 		p->reply_head = p->reply_tail;	/* drop stale ACKs */
-		written = write(p->fd, buf, len + 1);
+		written = shared_write_all("asustor", p->fd, (const unsigned char *)buf, len + 1);
 		if (written == (ssize_t)(len + 1)
 		    && asustor_wait_reply(p, packet[2], ASUSTOR_REPLY_TIMEOUT_MS) == 0) {
 			usleep(ASUSTOR_WRITE_DELAY_US);
@@ -773,8 +774,8 @@ asustor_force_flush(PrivateData *p)
 	unsigned char flush[] = { ASUSTOR_COMMAND, 0x01, ASUSTOR_FFLUSH, 0x00, 0x00 };
 
 	flush[4] = asustor_checksum(flush, 4);
-	(void) write(p->fd, flush, sizeof(flush));
-	(void) write(p->fd, flush, sizeof(flush));
+	shared_write_all("asustor", p->fd, (const unsigned char *)flush, sizeof(flush));
+	shared_write_all("asustor", p->fd, (const unsigned char *)flush, sizeof(flush));
 	usleep(ASUSTOR_WRITE_DELAY_US);
 }
 

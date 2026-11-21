@@ -52,6 +52,7 @@
 #include "lcd.h"
 #include "icp_a106.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 
 /** private data for the \c icp_a106 driver */
@@ -174,7 +175,7 @@ icp_a106_init(Driver *drvthis)
 	tcflush(p->fd, TCIOFLUSH);
 
 	// stop auto clock display, clear display
-	write(p->fd, "\x4D\x28\x4D\x0D", 4);
+	shared_write_all("icp_a106", p->fd, (const unsigned char *)"\x4D\x28\x4D\x0D", 4);
 
 	// Turn on the backlight
 	icp_a106_backlight(drvthis, true);
@@ -201,7 +202,7 @@ icp_a106_close(Driver *drvthis)
 
 		// clear display, start auto display
 		if (p->fd >= 0) {
-			write(p->fd, "\x4D\x0D\x4D\x29", 4);
+			shared_write_all("icp_a106", p->fd, (const unsigned char *)"\x4D\x0D\x4D\x29", 4);
 			close(p->fd);
 		}
 		free(p);
@@ -283,8 +284,8 @@ icp_a106_flush(Driver *drvthis)
 		if (memcmp(p->framebuf + line * p->width,
 			   p->last_framebuf + line * p->width, p->width) != 0) {
 			cmd[2] = line;
-			write(p->fd, cmd, 4);
-			write(p->fd, p->framebuf + line * p->width, p->width);
+			shared_write_all("icp_a106", p->fd, (const unsigned char *)cmd, 4);
+			shared_write_all("icp_a106", p->fd, (const unsigned char *)p->framebuf + line * p->width, p->width);
 		}
 	}
 	memcpy(p->last_framebuf, p->framebuf, p->width * p->height);
@@ -458,7 +459,7 @@ icp_a106_backlight(Driver *drvthis, int on)
 	static char cmd[] = "\x4D\x5E\x00";
 	if (on != p->backlight) {
 		p->backlight = cmd[2] = on ? A106_BL_ON : A106_BL_OFF;
-		write(p->fd, cmd, 3);
+		shared_write_all("icp_a106", p->fd, (const unsigned char *)cmd, 3);
 	}
 }
 

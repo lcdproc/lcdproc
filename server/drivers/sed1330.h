@@ -14,7 +14,7 @@ MODULE_EXPORT int sed1330_cellwidth(Driver *drvthis);
 MODULE_EXPORT void sed1330_clear(Driver *drvthis);
 MODULE_EXPORT void sed1330_flush(Driver *drvthis);
 MODULE_EXPORT void sed1330_string(Driver *drvthis, int x, int y, char lcd[]);
-MODULE_EXPORT void sed1330_chr(Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void sed1330_chr(Driver *drvthis, int x, int y, unsigned char c);
 
 MODULE_EXPORT void sed1330_vbar(Driver *drvthis, int x, int y, int len, int promille, int pattern);
 MODULE_EXPORT void sed1330_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern);

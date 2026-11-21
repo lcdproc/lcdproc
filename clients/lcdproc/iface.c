@@ -50,10 +50,14 @@ iface_process_configfile(void)
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Read config settings */
-	for (iface_count = 0; iface_count < MAX_INTERFACES; iface_count++) {
+	int count;
+
+	for (count = 0; count < MAX_INTERFACES; count++) {
 		char iface_label[12];
 
-		sprintf(iface_label, "Interface%i", iface_count);
+		iface_count = count;	/* for error paths; normal completion sets it below */
+
+		snprintf(iface_label, sizeof(iface_label), "Interface%i", count);
 		debug(RPT_DEBUG, "Label %s count %i", iface_label, iface_count);
 		iface[iface_count].name = strdup(config_get_string("Iface", iface_label, 0, ""));
 		if (iface[iface_count].name == NULL) {
@@ -62,7 +66,7 @@ iface_process_configfile(void)
 		}
 		if (*iface[iface_count].name == '\0')
 			break;
-		sprintf(iface_label, "Alias%i", iface_count);
+		snprintf(iface_label, sizeof(iface_label), "Alias%i", count);
 		iface[iface_count].alias = strdup(config_get_string("Iface", iface_label, 0, iface[iface_count].name));
 		if (iface[iface_count].alias == NULL)
 			/*
@@ -73,6 +77,8 @@ iface_process_configfile(void)
 		debug(RPT_DEBUG, "Interface %i: %s alias %s",
 		      iface_count, iface[iface_count].name, iface[iface_count].alias);
 	}
+
+	iface_count = count;	/* normal completion: MAX_INTERFACES configured */
 
 	unit = config_get_string("Iface", "Unit", 0, "byte");
 	if ((strcasecmp(unit, "byte") == 0) ||

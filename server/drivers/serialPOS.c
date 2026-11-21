@@ -84,6 +84,7 @@
 #include "adv_bignum.h"
 
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 /*
  * The serialPOS driver does not use a lot of hardware features,
@@ -382,7 +383,7 @@ serialPOS_init(Driver* drvthis)
 		       drvthis->name, buf);
 		return -1;
 	}
-	write(p->fd, buffer, rtn);
+	shared_write_all("serialPOS", p->fd, (const unsigned char *)buffer, rtn);
 
 	report(RPT_INFO,
 	       "%s: initialized with display size of %dx%d, "
@@ -598,7 +599,7 @@ serialPOS_flush(Driver* drvthis)
 	int rtn;
 
 	if ((rtn = p->protocol_ops->flush(p, buffer)) > 0) {
-		write(p->fd, buffer, rtn);
+		shared_write_all("serialPOS", p->fd, (const unsigned char *)buffer, rtn);
 	}
 	debug(RPT_DEBUG, "serialPOS: frame buffer flushed");
 }

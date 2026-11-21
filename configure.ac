@@ -425,6 +425,27 @@ AC_MSG_RESULT($enable_ethlcd)
 # check for doxygen
 BB_ENABLE_DOXYGEN
 
+dnl #######################################################################
+dnl Enable generation of compile_commands.json when clang is in use
+dnl #######################################################################
+AC_PROG_CC
+
+# Detect Clang's -MJ support (optional compilation database fragments)
+AC_MSG_CHECKING([whether $CC supports -MJ])
+echo 'int main(void){return 0;}' > conftest.c
+if $CC -MJ conftest.o.json -c conftest.c -o conftest.o >/dev/null 2>&1; then
+  AC_MSG_RESULT([yes])
+  AM_CONDITIONAL([HAVE_CLANG_MJ], [true])
+else
+  AC_MSG_RESULT([no])
+  AM_CONDITIONAL([HAVE_CLANG_MJ], [false])
+fi
+rm -f conftest.c conftest.o conftest.o.json
+
+# Optional: record whether bear is available (informational only)
+AC_PATH_PROG([BEAR], [bear], [no])
+AM_CONDITIONAL([HAVE_BEAR], [test "$BEAR" != "no"])
+
 
 # Select drivers to build
 LCD_DRIVERS_SELECT

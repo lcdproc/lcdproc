@@ -69,6 +69,8 @@
 #endif
 
 #include "CFontz633io.h"
+#include "shared/report.h"
+#include "shared/helpers.h"
 
 /* Return values for the check_for_packet() */
 #define TRY_AGAIN 0
@@ -225,16 +227,16 @@ send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 {
 	unsigned char CRC[2];
 
-	write(fd, &out->command, 1);
-	write(fd, &out->data_length, 1);
+	shared_write_all("CFontz633io", fd, (const unsigned char *)&out->command, 1);
+	shared_write_all("CFontz633io", fd, (const unsigned char *)&out->data_length, 1);
 	if (out->data_length > 0)
-		write(fd, out->data, out->data_length);
+		shared_write_all("CFontz633io", fd, (const unsigned char *)out->data, out->data_length);
 
 	/* calculate & send the CRC: convert to bytes manually to avoid endianess issues */
 	out->crc = get_crc((unsigned char *) out, out->data_length + 2, 0xFFFF);
 	CRC[0] = out->crc & 0xFF;
 	CRC[1] = (out->crc >> 8) & 0xFF;
-	write(fd, CRC, 2);
+	shared_write_all("CFontz633io", fd, (const unsigned char *)CRC, 2);
 
 	/**** TEST STUFF ****/
 	//print_packet(out);

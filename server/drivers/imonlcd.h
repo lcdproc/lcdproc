@@ -26,7 +26,7 @@ MODULE_EXPORT int  imonlcd_height (Driver *drvthis);
 MODULE_EXPORT void imonlcd_clear (Driver *drvthis);
 MODULE_EXPORT void imonlcd_flush (Driver *drvthis);
 MODULE_EXPORT void imonlcd_string (Driver *drvthis, int x, int y, const char string[]);
-MODULE_EXPORT void imonlcd_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void imonlcd_chr (Driver *drvthis, int x, int y, unsigned char c);
 
 /* essential input functions (necessary for all input drivers) */
 /* char *imonlcd_get_key NOT IMPLEMENTED */

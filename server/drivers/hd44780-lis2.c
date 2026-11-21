@@ -24,6 +24,7 @@
 #include "hd44780-low.h"
 
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -206,7 +207,7 @@ static unsigned char rowNum = 0;
 			}
 
 			// simply write data/character byte
-			write(p->fd, &ch, 1);
+			shared_write_all("hd44780-lis2", p->fd, (const unsigned char *)&ch, 1);
 		}
 	}
 	else {	// RS_INSTR: we have an instruction
@@ -243,7 +244,7 @@ static unsigned char rowNum = 0;
 		}
 	 	else
 			// simply write instruction byte
-			write(p->fd, &ch, 1);
+			shared_write_all("hd44780-lis2", p->fd, (const unsigned char *)&ch, 1);
 	}
 }
 
@@ -406,7 +407,7 @@ static void setLIS2Fans(int fd, int fan1, int fan2, int fan3, int fan4)
  */
 static void writeChar(int fd, unsigned char code)
 {
-	write(fd, &code, 1);
+	shared_write_all("hd44780-lis2", fd, (const unsigned char *)&code, 1);
 }
 
 /* EOF */
