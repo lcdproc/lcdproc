@@ -1,4 +1,5 @@
 # Autoconf/Automake generated files
+Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache/
@@ -29,9 +30,9 @@ clients/lcdvc/lcdvc
 
 # Generated docs
 Doxyfile
-docs/lcdproc-user/*.8
-docs/lcdproc-user/*.1
-docs/lcdproc-user/*.5
+docs/*.8
+docs/*.1
+docs/*.5
 
 # Install scripts
 *.deb
