@@ -8,3 +8,5 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
+SortIncludes: false
+IncludeBlocks: Preserve
