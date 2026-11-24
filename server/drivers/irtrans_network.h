@@ -73,7 +73,7 @@
 #define STATUS_FUNCTION		9
 #define	STATUS_DEVICEMODEEX	10
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct {
     uint8_t mode;
     uint8_t time_cnt;
@@ -312,3 +312,4 @@ NETWORKCLIENT;
 #define WEB_PORT	80
 #define ALTERNATE_WEB	8080
 #define CLIENT_COUNT	64
+#pragma pack(pop)

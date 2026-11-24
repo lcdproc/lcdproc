@@ -434,7 +434,11 @@ machine_get_procs(LinkedList * procs)
 		if (!strchr("1234567890", procdir->d_name[0]))
 			continue;
 
-		snprintf(buf, sizeof buf, "/proc/%.*s/status", (int)sizeof buf - 9, procdir->d_name);
+		/* size the %.*s slice so "/proc/<name>/status" always fits with NUL */
+		int capacity = (int)sizeof(buf) - (int)(strlen("/proc/") + strlen("/status") + 1);
+
+		if (snprintf(buf, sizeof buf, "/proc/%.*s/status", capacity, procdir->d_name) >= (int)sizeof buf)
+			continue;	/* cannot build a usable path for this entry */
 		if ((StatusFile = fopen(buf, "r")) == NULL) {
 			/*
 			 * Not a serious error; process has finished before
@@ -588,8 +592,12 @@ machine_get_iface_stats(IfaceInfo * interface)
 	/* Open the file in read-only mode and parse */
 	if ((file = fopen("/proc/net/dev", "r")) != NULL) {
 		/* Skip first 2 header lines of file */
-		fgets(buffer, sizeof(buffer), file);
-		fgets(buffer, sizeof(buffer), file);
+		if ((fgets(buffer, sizeof(buffer), file) == NULL) ||
+		    (fgets(buffer, sizeof(buffer), file) == NULL)) {
+			fclose(file);
+			perror("Error: Could not read DEVFILE headers");
+			return (FALSE);
+		}
 
 		/* By default, treat interface as down */
 		interface->status = down;

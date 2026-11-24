@@ -212,8 +212,8 @@ serialVFD_init (Driver *drvthis)
 	memset(p->backingstore, 0, p->width * p->height);
 
 	/* setup displayspecific data */
-	memset(p->usr_chr_mapping, 0, 31);	/* no character mapping by default */
-	memset(p->usr_chr_load_mapping, 0, 31);
+	memset(p->usr_chr_mapping, 0, 31 * sizeof(p->usr_chr_mapping[0]));	/* no character mapping by default */
+	memset(p->usr_chr_load_mapping, 0, 31 * sizeof(p->usr_chr_load_mapping[0]));
 	if (serialVFD_load_display_data(drvthis) != 0) {
 		report(RPT_WARNING, "%s: Type %d not defined; using default %d",
 			drvthis->name, p->display_type, DEFAULT_DISPLAYTYPE);

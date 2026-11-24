@@ -553,8 +553,10 @@ exit_program(int val)
 }
 
 #ifdef LCDPROC_MENUS
+static int menus_init(void);
+
 int
-menus_init()
+menus_init(void)
 {
 	int k;
 

@@ -56,6 +56,7 @@
 #include "pylcd.h"
 #include "lcd_lib.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "adv_bignum.h"
 
 #define True 1
@@ -205,7 +206,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
 
     buffer2[len++] = cc;
 
-    write(p->FD, buffer2, len);
+    shared_write_all("pylcd", p->FD, (const unsigned char *)buffer2, (size_t)len);
 
     /* Take a little nap. This works as a pacemaker */
     usleep(50);
@@ -538,7 +539,7 @@ pyramid_string(Driver *drvthis, int x, int y, const char string[])
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-pyramid_chr(Driver *drvthis, int x, int y, char c)
+pyramid_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
 

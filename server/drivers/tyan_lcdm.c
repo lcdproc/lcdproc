@@ -49,6 +49,7 @@
 #include "lcd.h"
 #include "tyan_lcdm.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "lcd_lib.h"
 #include "adv_bignum.h"
 
@@ -339,7 +340,7 @@ tyan_lcdm_get_key (Driver *drvthis)
  * The upper-left is (1,1), and the lower right should be (16,2).
  */
 MODULE_EXPORT void
-tyan_lcdm_chr (Driver *drvthis, int x, int y, char c)
+tyan_lcdm_chr (Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -743,11 +744,11 @@ tyan_lcdm_switch_mode(int fd)
 	char lcdcmd2[3] = { TYAN_LCDM_CMD_BEGIN, 0x6c, TYAN_LCDM_CMD_END };
 
 	//set os selection
-	write(fd, lcdcmd1, 4);
+	shared_write_all("tyan_lcdm", fd, (const unsigned char *)lcdcmd1, 4);
 	sleep(1);
 
 	//send "LCD Ready" cmd
-	write(fd, lcdcmd2, 3);
+	shared_write_all("tyan_lcdm", fd, (const unsigned char *)lcdcmd2, 3);
 	sleep(1);
 }
 
@@ -761,7 +762,7 @@ tyan_lcdm_hardware_clear(int fd)
 	char lcdcmd[5] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x00, 0x01, TYAN_LCDM_CMD_END};
 
 	//set os selection
-	write(fd, lcdcmd, 5);
+	shared_write_all("tyan_lcdm", fd, (const unsigned char *)lcdcmd, 5);
 }
 
 
@@ -771,7 +772,7 @@ void tyan_lcdm_set_rampos(int fd, unsigned char pos)
 	char cmd_str[5] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x00, 0x00, TYAN_LCDM_CMD_END };
 
 	cmd_str[3] = pos;
-	write(fd, cmd_str, 5);
+	shared_write_all("tyan_lcdm", fd, (const unsigned char *)cmd_str, 5);
 }
 
 
@@ -791,7 +792,7 @@ void tyan_lcdm_write_str(int fd, unsigned char *str,unsigned char start_addr, in
 	cmd_str[2] = 0x02;
 	cmd_str[19] = TYAN_LCDM_CMD_END;
 	memcpy(cmd_str+3, str, (length < 16) ? length : 16);
-        write(fd, cmd_str, 20);
+        shared_write_all("tyan_lcdm", fd, (const unsigned char *)cmd_str, 20);
 }
 
 
@@ -802,7 +803,7 @@ void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos)
 	char cmd_str[5] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x00, 0x0e, TYAN_LCDM_CMD_END };
 
 	tyan_lcdm_set_rampos(pos+start_addr);
-	write(fd,cmd_str,5);
+	shared_write_all("tyan_lcdm", fd, (const unsigned char *)cmd_str, 5);
 }
 #endif
 

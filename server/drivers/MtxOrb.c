@@ -61,6 +61,7 @@
 #include "adv_bignum.h"
 
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 
 /* MO displays allow 25 keys that map by default to 'A' - 'Y' */
@@ -703,7 +704,7 @@ MtxOrb_flush (Driver *drvthis)
 			      __FUNCTION__, i, j, length, length, sp);
 
 			MtxOrb_cursor_goto(drvthis, j+1, i+1);
-			write(p->fd, out, length);
+			shared_write_all(drvthis->name, p->fd, out, (size_t)length);
 			modified++;
 		}
 	}
@@ -724,7 +725,7 @@ MtxOrb_flush (Driver *drvthis)
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-MtxOrb_chr (Driver *drvthis, int x, int y, char c)
+MtxOrb_chr (Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -782,7 +783,7 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 		unsigned char out[4] = { '\xFE', 'P', 0 };
 
 		out[2] = (unsigned char) real_contrast;
-		write(p->fd, out, 3);
+		shared_write_all(drvthis->name, p->fd, out, 3);
 
 		report(RPT_DEBUG, "%s: contrast set to %d",
 				drvthis->name, real_contrast);
@@ -856,7 +857,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 			/* map range [0, 1000] -> [0, 3] that the hardware understands */
 			out[2] = (unsigned char) ((long) promille * 3 / 1000);
 
-			write(p->fd, out, 3);
+			shared_write_all(drvthis->name, p->fd, out, 3);
 		}
 		else {
 			unsigned char out[5] = { '\xFE', '\x99', 0 };
@@ -864,7 +865,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 			/* map range [0, 1000] -> [0, 255] that the hardware understands */
 			out[2] = (unsigned char) ((long) promille * 255 / 1000);
 
-			write(p->fd, out, 3);
+			shared_write_all(drvthis->name, p->fd, out, 3);
 		}
 
 		debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", promille);
@@ -872,11 +873,11 @@ MtxOrb_backlight (Driver *drvthis, int on)
 	else {
 		if (on == BACKLIGHT_ON) {
 			unsigned char out[4] = { '\xFE', 'B', '\0', 0};
-			write(p->fd, out, 3);
+			shared_write_all(drvthis->name, p->fd, out, 3);
 		}
 		else {
 			unsigned char out[4] = { '\xFE', 'F', 0};
-			write(p->fd, out, 2);
+			shared_write_all(drvthis->name, p->fd, out, 2);
 		}
 	}
 }
@@ -903,7 +904,7 @@ MtxOrb_output (Driver *drvthis, int state)
 	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
 		/* LCD and VFD displays only have one output port */
 		out[1] = (state) ? 'W' : 'V';
-		write(p->fd, out, 2);
+		shared_write_all(drvthis->name, p->fd, out, 2);
 	}
 	else {
 		int i;
@@ -915,7 +916,7 @@ MtxOrb_output (Driver *drvthis, int state)
 		for (i = 0; i < 6; i++) {
 			out[1] = (state & (1 << i)) ? 'W' : 'V';
 			out[2] = i+1;
-			write(p->fd, out, 3);
+			shared_write_all(drvthis->name, p->fd, out, 3);
 		}
 	}
 }
@@ -930,7 +931,7 @@ MtxOrb_hardware_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	write(p->fd, "\xFE" "X", 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\xFE" "X", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: cleared LCD");
 }
@@ -948,7 +949,7 @@ MtxOrb_linewrap (Driver *drvthis, int on)
 	unsigned char out[3] = { '\xFE', 0 };
 
 	out[1] = (on) ? 'C' : 'D';
-	write(p->fd, out, 2);
+	shared_write_all(drvthis->name, p->fd, out, 2);
 
 	debug(RPT_DEBUG, "MtxOrb: linewrap turned %s", (on) ? "on" : "off");
 }
@@ -966,7 +967,7 @@ MtxOrb_autoscroll (Driver *drvthis, int on)
 	unsigned char out[3] = { '\xFE', 0 };
 
 	out[1] = (on) ? 'Q' : 'R';
-	write(p->fd, out, 2);
+	shared_write_all(drvthis->name, p->fd, out, 2);
 
 	debug(RPT_DEBUG, "MtxOrb: autoscroll turned %s", (on) ? "on" : "off");
 }
@@ -986,7 +987,7 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
 	unsigned char out[3] = { '\xFE', 0 };
 
 	out[1] = (on) ? 'S' : 'T';
-	write(p->fd, out, 2);
+	shared_write_all(drvthis->name, p->fd, out, 2);
 
 	debug(RPT_DEBUG, "MtxOrb: cursorblink turned %s", (on) ? "on" : "off");
 }
@@ -1009,7 +1010,7 @@ MtxOrb_cursor_goto(Driver *drvthis, int x, int y)
 		out[2] = (unsigned char) x;
 	if ((y > 0) && (y <= p->height))
 		out[3] = (unsigned char) y;
-	write(p->fd, out, 4);
+	shared_write_all(drvthis->name, p->fd, out, 4);
 }
 
 
@@ -1045,7 +1046,7 @@ MtxOrb_get_info (Driver *drvthis)
 	 * In query for its type, the display return a single byte value.
 	 */
 	memset(tmp, '\0', sizeof(tmp));
-	write(p->fd, "\x0FE" "7", 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x0FE" "7", 2);
 
 	/* Wait the specified amount of time for the module to return display type */
 	tv.tv_sec = 0;		/* seconds */
@@ -1081,7 +1082,7 @@ MtxOrb_get_info (Driver *drvthis)
 	 * NOTE: The manual doesn't describe the format of the returned byte
 	 */
 	memset(tmp, '\0', sizeof(tmp));
-	write(p->fd, "\x0FE" "6", 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x0FE" "6", 2);
 
 	/* Wait the specified amount of time for the module return firmware revision number */
 	tv.tv_sec = 0;		/* seconds */
@@ -1110,7 +1111,7 @@ MtxOrb_get_info (Driver *drvthis)
 	 * have to be supplied, so it is likely the display will return those.
 	 */
 	memset(tmp, '\0', sizeof(tmp));
-	write(p->fd, "\x0FE" "5", 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x0FE" "5", 2);
 
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
@@ -1282,7 +1283,7 @@ MtxOrb_set_char (Driver *drvthis, int n, unsigned char *dat)
 	for (row = 0; row < p->cellheight; row++) {
 		out[row+3] = dat[row] & mask;
 	}
-	write(p->fd, out, 11);
+	shared_write_all(drvthis->name, p->fd, out, 11);
 }
 
 
@@ -1481,13 +1482,13 @@ MtxOrb_cursor (Driver *drvthis, int x, int y, int state)
 	/* set cursor state */
 	switch (state) {
 		case CURSOR_OFF:	/* no cursor */
-			write(p->fd, "\xFE" "K", 2);
+			shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\xFE" "K", 2);
 			break;
 		case CURSOR_UNDER:	/* underline cursor */
 		case CURSOR_BLOCK:	/* inverting blinking block */
 		case CURSOR_DEFAULT_ON:	/* blinking block */
 		default:
-			write(p->fd, "\xFE" "J", 2);
+			shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\xFE" "J", 2);
 			break;
 	}
 
@@ -1521,7 +1522,12 @@ MtxOrb_get_key (Driver *drvthis)
 	if (fds[0].revents == 0)
 		return NULL;
 
-	(void) read(p->fd, &key, 1);
+	ssize_t rd = read(p->fd, &key, 1);
+
+	if (rd != 1) {
+		debug(RPT_DEBUG, "%s: get_key: read returned %zd (errno=%d)", drvthis->name, rd, rd < 0 ? errno : 0);
+		return NULL;
+	}
 	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, key);
 
 	if (key == '\0')

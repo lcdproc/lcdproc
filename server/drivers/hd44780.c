@@ -315,11 +315,9 @@ MODULE_EXPORT int
 HD44780_init(Driver *drvthis)
 {
 	/* TODO: single point of return */
-	char buf[40];
 	const char *s;
 	int i = 0;
 	int (*init_fn) (Driver *drvthis) = NULL;
-	int if_type = IF_TYPE_UNKNOWN;
 	int tmp, ext_mode;
 	PrivateData *p;
 	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
@@ -409,7 +407,6 @@ HD44780_init(Driver *drvthis)
 
 		report(RPT_INFO, "HD44780: using ConnectionType: %s", connectionMapping[i].name);
 
-		if_type = connectionMapping[i].if_type;
 		init_fn = connectionMapping[i].init_fn;
 	}
 	report(RPT_INFO, "HD44780: selecting Model: %s", model_name(p->model));
@@ -1351,7 +1348,7 @@ HD44780_set_char(Driver *drvthis, int n, unsigned char *dat)
 	if (!dat)
 		return;
 
-	for (row = 0; row < p->cellheight; row++) {
+	for (row = 0; row < p->cellheight && row < LCD_DEFAULT_CELLHEIGHT; row++) {
 		int letter = 0;
 
 		if (p->lastline || (row < p->cellheight - 1))

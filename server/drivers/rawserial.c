@@ -48,6 +48,7 @@
 #include "lcd.h"
 #include "rawserial.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 
 /** private data for the \c rawserial driver */
@@ -325,8 +326,8 @@ rawserial_flush(Driver *drvthis)
 		 * There is no processing and no control chars are emitted,
 		 * just a plain-old newline at the end of the record. */
 		memcpy(out, p->framebuf, dataEnd);
-		write(p->fd, out, dataEnd);
-		write(p->fd, "\n", 1);
+		shared_write_all("rawserial", p->fd, (const unsigned char *)out, dataEnd);
+		shared_write_all("rawserial", p->fd, (const unsigned char *)"\n", 1);
 
 		report(RPT_DEBUG,
 		       "%s: flush exec time: %u, refresh delta: %u, current clock: %u, rendering loop overshoot: %d ms",

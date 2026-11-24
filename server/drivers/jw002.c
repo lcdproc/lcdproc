@@ -58,6 +58,7 @@
 #include "adv_bignum.h"
 
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 
 /* PJRC firmware supports an optional 3x4 keypad matrix */
@@ -609,7 +610,7 @@ jw002_flush (Driver *drvthis)
 			jw002_cursor_goto(drvthis, j+1, i+1);
 
 			length = safep - safeout;  // new length is however many chars we wrote to our OOB buffer
-			write(p->fd, safeout, length);
+			shared_write_all("jw002", p->fd, (const unsigned char *)safeout, length);
 			modified++;
 		}      
 	}	// i < p->height
@@ -630,7 +631,7 @@ jw002_flush (Driver *drvthis)
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-jw002_chr (Driver *drvthis, int x, int y, char c)
+jw002_chr (Driver *drvthis, int x, int y, unsigned char c)
 {
         PrivateData *p = drvthis->private_data;
 
@@ -673,8 +674,8 @@ jw002_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 jw002_output (Driver *drvthis, int state)
 {
-        PrivateData *p = drvthis->private_data;
-        unsigned char out[5] = { '\\', 'J', '0', '0' };  // pre-load with LED "off" msg
+	PrivateData *p = drvthis->private_data;
+	unsigned char out[5] = { '\\', 'J', '0', '0' };  // pre-load with LED "off" msg
 
 	/* only deal with main LED (bit 1) */
 	if (state < 2) {
@@ -685,8 +686,8 @@ jw002_output (Driver *drvthis, int state)
 		out[3] = (state & 1) ? '1' : '0';
 
 		// send command to jw002 and log that we did it
-        	debug(RPT_DEBUG, "jw002: setting LED to %d", state & 1);
-		// //write(p->fd, out, 4);
+		debug(RPT_DEBUG, "jw002: setting LED to %d", state & 1);
+		shared_write_all("jw002", p->fd, (const unsigned char *)out, 4);
 
 
 	} else {
@@ -709,7 +710,7 @@ jw002_hardware_clear (Driver *drvthis)
 
 	out[2] = p->font + 32;  // font numbers must be shifted to printable chars
 
-	write(p->fd, out, 4); // clear and select font 0
+	shared_write_all("jw002", p->fd, (const unsigned char *)out, 4); // clear and select font 0
 
 	debug(RPT_DEBUG, "jw002: cleared LCD and switched to font %d", p->font);
 }
@@ -727,7 +728,7 @@ jw002_linewrap (Driver *drvthis, int on)
 	unsigned char out[4] = { '\\', 'A', 0, 0 };
 
 	out[2] = (on) ? '3' : '0';  // wrap _and_ scroll on or off
-	write(p->fd, out, 3);
+	shared_write_all("jw002", p->fd, (const unsigned char *)out, 3);
 
 	debug(RPT_DEBUG, "jw002: linewrap turned %s", (on) ? "on" : "off");
 }
@@ -745,7 +746,7 @@ jw002_autoscroll (Driver *drvthis, int on)
 	unsigned char out[4] = { '\\', 'A', 0, 0 };
 
 	out[2] = (on) ? '3' : '0';  // wrap _and_ scroll on or off
-	write(p->fd, out, 3);
+	shared_write_all("jw002", p->fd, (const unsigned char *)out, 3);
 
 	debug(RPT_DEBUG, "jw002: autoscroll turned %s", (on) ? "on" : "off");
 }
@@ -770,7 +771,7 @@ jw002_cursor_goto(Driver *drvthis, int x, int y)
 		out[2] = (unsigned char) x + p->xoff + 0x20;  // shift values above cntrl chars
 	if ((y >= 0) && (y < p->height))
 		out[3] = (unsigned char) y + p->yoff + 0x20;  // shift values above cntrl chars
-	write(p->fd, out, 4);
+	shared_write_all("jw002", p->fd, (const unsigned char *)out, 4);
 }
 
 
@@ -1045,7 +1046,7 @@ jw002_set_char (Driver *drvthis, int n, unsigned char *dat)
 #ifdef DEBUG_CHARS
 	debug(RPT_DEBUG, "Chardef: '%.*s'", 13, out);
 #endif
-	write(p->fd, out, 13);
+	shared_write_all("jw002", p->fd, (const unsigned char *)out, 13);
 
 }
 
@@ -1301,17 +1302,17 @@ jw002_init_keys (Driver *drvthis)
 		// 'down' first
 		out[2] = key + KEYDOWN_STR;
 		out[3] = key + 'A'; // return 'A' through 'L'
-		write(p->fd, out, 15);
+		shared_write_all("jw002", p->fd, (const unsigned char *)out, 15);
 
 		// 'repeat' next
 		out[2] = key + KEYRPT_STR;
 		out[3] = key + 'A'; // return 'A' through 'L'
-		write(p->fd, out, 15);
+		shared_write_all("jw002", p->fd, (const unsigned char *)out, 15);
 
 		// 'up' last
 		out[2] = key + KEYUP_STR;
 		out[3] = ' ' ; // return nothing
-		write(p->fd, out, 15);
+		shared_write_all("jw002", p->fd, (const unsigned char *)out, 15);
 	}
 
         debug(RPT_DEBUG, "jw002: initialized keypad return strings");
@@ -1342,7 +1343,8 @@ jw002_get_key (Driver *drvthis)
 	if (fds[0].revents == 0)
 		return NULL;
 
-	(void) read(p->fd, &key, 1);
+	if (read(p->fd, &key, 1) < 0)
+		return NULL;
 	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, key);
 
 	if (key == '\0')

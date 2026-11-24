@@ -56,6 +56,7 @@
 #include "hd44780-low.h"
 #include "hd44780-serial.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 /** Shortcut to select an entry from serial_interfaces table */
 #define SERIAL_IF serial_interfaces[p->serial_type]
@@ -292,14 +293,14 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		      (ch <= SERIAL_IF.data_escape_max)) ||
 		     (SERIAL_IF.multiple_displays && displayID != lastdisplayID))) {
 			unsigned char esc_ch = SERIAL_IF.data_escape + (SERIAL_IF.multiple_displays) ? displayID : 0;
-			write(p->fd, &esc_ch, 1);
+			shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&esc_ch, 1);
 		}
-		write(p->fd, &ch, 1);
+		shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&ch, 1);
 	}
 	else {
-		write(p->fd, &SERIAL_IF.instruction_escape, 1);
+		shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&SERIAL_IF.instruction_escape, 1);
 		p->hd44780_functions->uPause(p, SERIAL_IF.instruction_pause*1000);
-		write(p->fd, &ch, 1);
+		shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&ch, 1);
 		p->hd44780_functions->uPause(p, SERIAL_IF.instruction_pause*1000);
 	}
 	lastdisplayID = displayID;
@@ -319,7 +320,7 @@ serial_HD44780_backlight(PrivateData *p, unsigned char state)
 	/* If backlight available and escape sequence defined send it */
 	if (SERIAL_IF.backlight && SERIAL_IF.backlight_escape) {
 		send = SERIAL_IF.backlight_escape;
-		write(p->fd, &send, 1);
+		shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&send, 1);
 	}
 
 	if (SERIAL_IF.backlight == 1) {	/* Backlight is just switchable */
@@ -327,14 +328,14 @@ serial_HD44780_backlight(PrivateData *p, unsigned char state)
 			send = SERIAL_IF.backlight_on;
 		else
 			send = SERIAL_IF.backlight_off;
-		write(p->fd, &send, 1);
+		shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&send, 1);
 	}
 	else if (SERIAL_IF.backlight == 2) {	/* Backlight is adjustable */
 		int val = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
 		/* Map the value to output range (rounding up) */
 		send = (val * (SERIAL_IF.backlight_on - SERIAL_IF.backlight_off) + 999) / 1000 + SERIAL_IF.backlight_off;
-		write(p->fd, &send, 1);
+		shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&send, 1);
 	}
 }
 
@@ -420,7 +421,7 @@ serial_HD44780_close(PrivateData *p)
 {
 	if (p->fd >= 0) {
 		if (SERIAL_IF.end_code)
-			write(p->fd, &SERIAL_IF.end_code, 1);
+			shared_write_all("hd44780-serial", p->fd, (const unsigned char *)&SERIAL_IF.end_code, 1);
 		close(p->fd);
 	}
 }

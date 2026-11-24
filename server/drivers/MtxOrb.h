@@ -29,7 +29,7 @@ MODULE_EXPORT int  MtxOrb_cellheight (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_clear (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_flush (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_string (Driver *drvthis, int x, int y, const char string[]);
-MODULE_EXPORT void MtxOrb_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void MtxOrb_chr (Driver *drvthis, int x, int y, unsigned char c);
 MODULE_EXPORT const char * MtxOrb_get_key (Driver *drvthis);
 
 MODULE_EXPORT void MtxOrb_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);

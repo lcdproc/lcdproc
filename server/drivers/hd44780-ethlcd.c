@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "lcd.h"
 #include "hd44780-ethlcd.h"

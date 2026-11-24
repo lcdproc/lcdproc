@@ -35,6 +35,7 @@
 #include "lcd.h"
 #include "bayrad.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "lcd_lib.h"
 
 #define NUM_CCs 8 /* number of characters */
@@ -163,7 +164,7 @@ bayrad_init(Driver *drvthis)
   /*** Open the port write-only, then fork off a process that reads chars ?!!? ***/
 
   /* Reset and clear the BayRAD */
-  write(p->fd, "\x80\x86\x00\x1a\x1e", 5);  // sync,reset to type 0, clear screen, home
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x80\x86\x00\x1a\x1e", 5);  // sync,reset to type 0, clear screen, home
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -183,7 +184,7 @@ bayrad_close(Driver *drvthis)
   //debug(RPT_DEBUG, "Closing BayRAD");
   if (p != NULL) {
     if (p->fd >= 0) {
-      write(p->fd, "\x8e\x00", 2);  // Backlight OFF
+      shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x8e\x00", 2);  // Backlight OFF
       close(p->fd);
     }
 
@@ -276,10 +277,10 @@ bayrad_flush(Driver *drvthis)
   PrivateData *p = drvthis->private_data;
 
   //debug(RPT_DEBUG, "BayRAD flush");
-  write(p->fd, "\x80\x1e", 2);  //sync, home
-  write(p->fd, p->framebuf, 20);
-  write(p->fd, "\x1e\x0a", 2);  //home, LF
-  write(p->fd, p->framebuf+20, 20);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x80\x1e", 2);  //sync, home
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)p->framebuf, 20);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x1e\x0a", 2);  //home, LF
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)p->framebuf+20, 20);
 }
 
 
@@ -366,10 +367,10 @@ bayrad_backlight(Driver *drvthis, int on)
   debug(RPT_DEBUG, "Backlight %s", (on) ? "ON" : "OFF");
 
   if (on) {
-    write(p->fd, "\x8e\x0f", 2);
+    shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x8e\x0f", 2);
   }
   else {
-    write(p->fd, "\x8e\x00", 2);
+    shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x8e\x00", 2);
   }
 }
 
@@ -399,15 +400,15 @@ bayrad_set_char(Driver *drvthis, int n, unsigned char *dat)
 
   /* Set the LCD to accept data for rewrite-able char n */
   snprintf(out, sizeof(out), "\x88%c", 0x40 + (n * 8));
-  write(p->fd, out, 2);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 
   for (row = 0; row < p->cellheight; row++) {
     char letter = dat[row] & mask;
-    write(p->fd, &letter, 1);
+    shared_write_all(drvthis->name, p->fd, (const unsigned char *)&letter, 1);
   }
 
   /* return the LCD to normal operation */
-  write(p->fd, "\x80", 1);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)"\x80", 1);
 }
 
 

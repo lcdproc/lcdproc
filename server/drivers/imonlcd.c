@@ -595,7 +595,7 @@ imonlcd_string(Driver *drvthis, int x, int y, const char string[])
  * \param ch       Character that gets written.  (ISO 8859-1 + special characters)
  */
 MODULE_EXPORT void
-imonlcd_chr(Driver *drvthis, int x, int y, char ch)
+imonlcd_chr(Driver *drvthis, int x, int y, unsigned char ch)
 {
 	PrivateData *p = drvthis->private_data;
 	imon_font *defn;
@@ -609,7 +609,7 @@ imonlcd_chr(Driver *drvthis, int x, int y, char ch)
 	x *= p->cellwidth;
 	y *= p->bytesperline;
 
-	defn = &font[(unsigned char) ch];
+	defn = &font[ch];
 
 	/* Copy character from font into frame buffer */
 	for (col = 0; col < p->cellwidth; col++) {
@@ -672,8 +672,8 @@ imonlcd_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 imonlcd_icon(Driver *drvthis, int x, int y, int icon)
 {
-	char ch1 = '?';
-	char ch2 = '\0';
+	unsigned char ch1 = '?';
+	unsigned char ch2 = '\0';
 
 	switch (icon) {
 	case ICON_BLOCK_FILLED:

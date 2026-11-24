@@ -42,6 +42,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "imon.h"
 #include "hd44780-charmap.h"
 #include "adv_bignum.h"
@@ -274,7 +275,7 @@ imon_flush(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	write(p->imon_fd, p->framebuf, p->width * p->height);
+	shared_write_all("imon", p->imon_fd, (const unsigned char *)p->framebuf, p->width * p->height);
 }
 
 

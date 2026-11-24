@@ -33,6 +33,13 @@ and [Selene Scriven](mailto:lcdproc@toykeeper.net).
 Refer to [INSTALL](INSTALL.md) (included with this archive) for installation
 instructions (including how to connect an LCD to your system).
 
+# Editor Features
+
+For better editor support (via clangd, etc.), if you're using Clang to build the software (or have Clang's _bear_ tool installed, which can do this even if you're building with the GCC toolchain):
+
+    ./configure   # or ./configure CC=clang
+    make compile_commands
+
 # Changes
 
 Refer to [ChangeLog.md](ChangeLog.md) file for details.

@@ -670,7 +670,7 @@ sed1330_string(Driver * drvthis, int x, int y, char *str)
  * API: Place a single character in the text framebuffer
  */
 MODULE_EXPORT void
-sed1330_chr(Driver * drvthis, int x, int y, char c)
+sed1330_chr(Driver * drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
 

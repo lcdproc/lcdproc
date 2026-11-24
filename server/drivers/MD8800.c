@@ -187,6 +187,7 @@
 #include "MD8800.h"
 
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 /* Constants for userdefchar_mode */
 #define NUM_CCs		0 /* max. number of custom characters */
@@ -355,15 +356,15 @@ MD8800_init (Driver *drvthis)
 	MD8800_backlight(drvthis, 1);
 
 	//init
-	write(p->fd, "\x1F", 1);
-	write(p->fd, "\x1B", 1);
-	write(p->fd, "\x20", 1);
+	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1F", 1);
+	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B", 1);
+	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x20", 1);
 
 	//boot screen
-	write(p->fd, "\x1B\x51", 2);// medion \33\121 oct
-	write(p->fd, "MD8800driver forlcdproc  (C) by:", 32);
+	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x51", 2);// medion \33\121 oct
+	shared_write_all("MD8800", p->fd, (const unsigned char *)"MD8800driver forlcdproc  (C) by:", 32);
 	sleep(1);
-	write(p->fd, " Stefan Herdler & Martin M\xF6ller ", 32);
+	shared_write_all("MD8800", p->fd, (const unsigned char *)" Stefan Herdler & Martin M\xF6ller ", 32);
 	sleep(1);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
@@ -492,8 +493,8 @@ MD8800_backlight (Driver *drvthis, int on)
 	hardware_value /= 167;
 	if (hardware_value != p->hw_brightness) {
 		p->hw_brightness = hardware_value;
-		write(p->fd, "\x1B\x40", 2);
-		write(p->fd, &p->hw_brightness, 1);
+		shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x40", 2);
+		shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 	}
 }
 
@@ -540,13 +541,13 @@ MD8800_flush (Driver *drvthis)
        	/* else, write out the entire row */
 	memcpy(p->backingstore, p->framebuf, p->width*p->height);
 
-	write(p->fd, "\x1B\x51", 2);// medion \33\121 oct
+	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x51", 2);// medion \33\121 oct
 //	usleep(300);
-//	write(p->fd, "\x51", 1);// medion \33\121 oct
+//	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x51", 1);// medion \33\121 oct
 //	usleep(300);
 
-//	write(p->fd, "\x0D", 1); // nec
-	write(p->fd, p->framebuf, p->width*p->height);
+//	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x0D", 1); // nec
+	shared_write_all("MD8800", p->fd, (const unsigned char *)p->framebuf, p->width*p->height);
 
 
 }
@@ -608,19 +609,19 @@ MD8800_output (Driver *drvthis, int on)
 	if (on == 144) {
 		switch (p->wifi_scan){
 			case 1:
-				write(p->fd, "\x1B\x30\x15\x01", 4);
-			//	write(p->fd, "\x1B\x30\x16\x00", 4);
-				write(p->fd, "\x1B\x30\x17\x00", 4);
+				shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x01", 4);
+			//	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x00", 4);
+				shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x00", 4);
 			break;
 			case 4:
-				write(p->fd, "\x1B\x30\x15\x00", 4);
-				write(p->fd, "\x1B\x30\x16\x01", 4);
-			//	write(p->fd, "\x1B\x30\x17\x00", 4);
+				shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x00", 4);
+				shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x01", 4);
+			//	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x00", 4);
 			break;
 			case 7:
-			//	write(p->fd, "\x1B\x30\x15\x00", 4);
-				write(p->fd, "\x1B\x30\x16\x00", 4);
-				write(p->fd, "\x1B\x30\x17\x01", 4);
+			//	shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x00", 4);
+				shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x00", 4);
+				shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x01", 4);
 			break;
 			case 10:
 				p->wifi_scan=0;
@@ -637,279 +638,279 @@ MD8800_output (Driver *drvthis, int on)
 	switch (on) {
 	// +0 -> off
 		case 1: // 'hdd'
-			write(p->fd, "\x1B\x30\x00\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x00\x00", 4);
 		break;
 		case 2: // '1394'
-			write(p->fd, "\x1B\x30\x01\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x01\x00", 4);
 		break;
 		case 3: // 'cdrom'
-			write(p->fd, "\x1B\x30\x02\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x02\x00", 4);
 		break;
 		case 4: // 'usb'
-			write(p->fd, "\x1B\x30\x03\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x03\x00", 4);
 		break;
 		case 5: // 'movie'
-			write(p->fd, "\x1B\x30\x04\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x04\x00", 4);
 		break;
 		case 6: // 'tv'
-			write(p->fd, "\x1B\x30\x05\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x05\x00", 4);
 		break;
 		case 7: // 'music'
-			write(p->fd, "\x1B\x30\x06\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x06\x00", 4);
 		break;
 		case 8: // 'photo'
-			write(p->fd, "\x1B\x30\x07\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x07\x00", 4);
 		break;
 		case 9: // 'recording light'
-			write(p->fd, "\x1B\x30\x08\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x08\x00", 4);
 		break;
 		case 10: // bounding box (hdd,1394,cd,usb)
-			write(p->fd, "\x1B\x30\x18\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x18\x00", 4);
 		break;
 		case 11: // bounding box (movie,tv,music,photos)
-			write(p->fd, "\x1B\x30\x19\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x19\x00", 4);
 		break;
 		case 12: // bounding box (play/pause/whatever)
-			write(p->fd, "\x1B\x30\x1A\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1A\x00", 4);
 		break;
 		case 13: // bounding box (email)
-			write(p->fd, "\x1B\x30\x1B\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1B\x00", 4);
 		break;
 		case 14: // bounding box (volume)
-			write(p->fd, "\x1B\x30\x1C\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1C\x00", 4);
 		break;
 		case 15: // all bounding boxes
-			write(p->fd, "\x1B\x30\x18\x00", 4);
-			write(p->fd, "\x1B\x30\x19\x00", 4);
-			write(p->fd, "\x1B\x30\x1A\x00", 4);
-			write(p->fd, "\x1B\x30\x1B\x00", 4);
-			write(p->fd, "\x1B\x30\x1C\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x18\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x19\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1A\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1B\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1C\x00", 4);
 		break;
 
 	// +50 -> on
 		case 51: // 'hdd'
-			write(p->fd, "\x1B\x30\x00", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x00", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 52: // '1394'
-			write(p->fd, "\x1B\x30\x01", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x01", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 53: // 'cdrom'
-			write(p->fd, "\x1B\x30\x02", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x02", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 54: // 'usb'
-			write(p->fd, "\x1B\x30\x03", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x03", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 55: // 'movie'
-			write(p->fd, "\x1B\x30\x04", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x04", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 56: // 'tv'
-			write(p->fd, "\x1B\x30\x05", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x05", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 57: // 'music'
-			write(p->fd, "\x1B\x30\x06", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x06", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 58: // 'photo'
-			write(p->fd, "\x1B\x30\x07", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x07", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 59: // 'recording light'
-			write(p->fd, "\x1B\x30\x08", 3);
-			write(p->fd, &p->hw_brightness, 1);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x08", 3);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)&p->hw_brightness, 1);
 		break;
 		case 60: // bounding box (hdd,1394,cd,usb)
-			write(p->fd, "\x1B\x30\x18\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x18\x01", 4);
 		break;
 		case 61: // bounding box (movie,tv,music,photos)
-			write(p->fd, "\x1B\x30\x19\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x19\x01", 4);
 		break;
 		case 62: // bounding box (play/pause/whatever)
-			write(p->fd, "\x1B\x30\x1A\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1A\x01", 4);
 		break;
 		case 63: // bounding box (email)
-			write(p->fd, "\x1B\x30\x1B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1B\x01", 4);
 		break;
 		case 64: // bounding box (volume)
-			write(p->fd, "\x1B\x30\x1C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1C\x01", 4);
 		break;
 		case 65: // all bounding boxes
-			write(p->fd, "\x1B\x30\x18\x01", 4);
-			write(p->fd, "\x1B\x30\x19\x01", 4);
-			write(p->fd, "\x1B\x30\x1A\x01", 4);
-			write(p->fd, "\x1B\x30\x1B\x01", 4);
-			write(p->fd, "\x1B\x30\x1C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x18\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x19\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1A\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x1C\x01", 4);
 		break;
 			//email icons
 		case 100:
-			write(p->fd, "\x1B\x30\x09\x00", 4);
-			write(p->fd, "\x1B\x30\x0A\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x09\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0A\x00", 4);
 		break;
 		case 101:
 
-			write(p->fd, "\x1B\x30\x09\x01", 4);
-			write(p->fd, "\x1B\x30\x0A\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x09\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0A\x00", 4);
 		break;
 		case 102:
 
-			write(p->fd, "\x1B\x30\x09\x01", 4);
-			write(p->fd, "\x1B\x30\x0A\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x09\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0A\x01", 4);
 		break;
 			// volume bar
 		case 120:
-			write(p->fd, "\x1B\x30\x0B\x00", 4);
-			write(p->fd, "\x1B\x30\x0C\x00", 4);
-			write(p->fd, "\x1B\x30\x0D\x00", 4);
-			write(p->fd, "\x1B\x30\x0E\x00", 4);
-			write(p->fd, "\x1B\x30\x0F\x00", 4);
-			write(p->fd, "\x1B\x30\x10\x00", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 121:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x00", 4);
-			write(p->fd, "\x1B\x30\x0D\x00", 4);
-			write(p->fd, "\x1B\x30\x0E\x00", 4);
-			write(p->fd, "\x1B\x30\x0F\x00", 4);
-			write(p->fd, "\x1B\x30\x10\x00", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 122:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x00", 4);
-			write(p->fd, "\x1B\x30\x0E\x00", 4);
-			write(p->fd, "\x1B\x30\x0F\x00", 4);
-			write(p->fd, "\x1B\x30\x10\x00", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 123:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x01", 4);
-			write(p->fd, "\x1B\x30\x0E\x00", 4);
-			write(p->fd, "\x1B\x30\x0F\x00", 4);
-			write(p->fd, "\x1B\x30\x10\x00", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 124:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x01", 4);
-			write(p->fd, "\x1B\x30\x0E\x01", 4);
-			write(p->fd, "\x1B\x30\x0F\x00", 4);
-			write(p->fd, "\x1B\x30\x10\x00", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 125:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x01", 4);
-			write(p->fd, "\x1B\x30\x0E\x01", 4);
-			write(p->fd, "\x1B\x30\x0F\x01", 4);
-			write(p->fd, "\x1B\x30\x10\x00", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 126:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x01", 4);
-			write(p->fd, "\x1B\x30\x0E\x01", 4);
-			write(p->fd, "\x1B\x30\x0F\x01", 4);
-			write(p->fd, "\x1B\x30\x10\x01", 4);
-			write(p->fd, "\x1B\x30\x11\x00", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 127:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x01", 4);
-			write(p->fd, "\x1B\x30\x0E\x01", 4);
-			write(p->fd, "\x1B\x30\x0F\x01", 4);
-			write(p->fd, "\x1B\x30\x10\x01", 4);
-			write(p->fd, "\x1B\x30\x11\x01", 4);
-			write(p->fd, "\x1B\x30\x12\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x00", 4);
 		break;
 		case 128:
-			write(p->fd, "\x1B\x30\x0B\x01", 4);
-			write(p->fd, "\x1B\x30\x0C\x01", 4);
-			write(p->fd, "\x1B\x30\x0D\x01", 4);
-			write(p->fd, "\x1B\x30\x0E\x01", 4);
-			write(p->fd, "\x1B\x30\x0F\x01", 4);
-			write(p->fd, "\x1B\x30\x10\x01", 4);
-			write(p->fd, "\x1B\x30\x11\x01", 4);
-			write(p->fd, "\x1B\x30\x12\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0B\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0C\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0D\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0E\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x0F\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x10\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x11\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x12\x01", 4);
 		break;
 		case 130:
-			write(p->fd, "\x1B\x30\x13\x00", 4);
-			write(p->fd, "\x1B\x30\x14\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x13\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x14\x00", 4);
 		break;
 		case 131:
-			write(p->fd, "\x1B\x30\x13\x00", 4);
-			write(p->fd, "\x1B\x30\x14\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x13\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x14\x01", 4);
 		break;
 		case 132:
-			write(p->fd, "\x1B\x30\x13\x01", 4);
-			write(p->fd, "\x1B\x30\x14\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x13\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x14\x00", 4);
 		break;
 
 
 			// red wifi/sound bar
 		case 140:
-			write(p->fd, "\x1B\x30\x15\x00", 4);
-			write(p->fd, "\x1B\x30\x16\x00", 4);
-			write(p->fd, "\x1B\x30\x17\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x00", 4);
 		break;
 		case 141:
-			write(p->fd, "\x1B\x30\x15\x01", 4);
-			write(p->fd, "\x1B\x30\x16\x00", 4);
-			write(p->fd, "\x1B\x30\x17\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x00", 4);
 		break;
 		case 142:
-			write(p->fd, "\x1B\x30\x15\x01", 4);
-			write(p->fd, "\x1B\x30\x16\x01", 4);
-			write(p->fd, "\x1B\x30\x17\x00", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x00", 4);
 		break;
 		case 143:
-			write(p->fd, "\x1B\x30\x15\x01", 4);
-			write(p->fd, "\x1B\x30\x16\x01", 4);
-			write(p->fd, "\x1B\x30\x17\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x15\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x16\x01", 4);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x30\x17\x01", 4);
 		break;
 			// multimedia icon
 		case 150: // clear
-			write(p->fd, "\x1B\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00", 11);
 		break;
 		case 151: // play
-			write(p->fd, "\x1B\x31\x00\x00\x08\x1C\x3E\x7F\x00\x00\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x00\x08\x1C\x3E\x7F\x00\x00\x00", 11);
 		break;
 		case 152: // stop
-			write(p->fd, "\x1B\x31\x00\x3E\x3E\x3E\x3E\x3E\x00\x00\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x3E\x3E\x3E\x3E\x3E\x00\x00\x00", 11);
 		break;
 		case 153: // pause
-			write(p->fd, "\x1B\x31\x00\x3E\x3E\x00\x3E\x3E\x00\x00\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x3E\x3E\x00\x3E\x3E\x00\x00\x00", 11);
 		break;
 		case 154: // ffwd
-			write(p->fd, "\x1B\x31\x00\x08\x1C\x3E\x08\x1C\x3E\x00\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x08\x1C\x3E\x08\x1C\x3E\x00\x00", 11);
 		break;
 		case 155: // rwnd
-			write(p->fd, "\x1B\x31\x00\x3E\x1C\x08\x3E\x1C\x08\x00\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x3E\x1C\x08\x3E\x1C\x08\x00\x00", 11);
 		break;
 		case 156: // heart
-			write(p->fd, "\x1B\x31\x00\x0C\x1E\x3E\x7C\x3E\x1E\x0C\x00", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x00\x0C\x1E\x3E\x7C\x3E\x1E\x0C\x00", 11);
 		break;
 		case 157: // heart outline
-			write(p->fd, "\x1B\x31\x0C\x12\x21\x41\x02\x41\x21\x12\x0C", 11);
+			shared_write_all("MD8800", p->fd, (const unsigned char *)"\x1B\x31\x0C\x12\x21\x41\x02\x41\x21\x12\x0C", 11);
 		break;
 
 		default:

@@ -149,32 +149,42 @@ fill_labeled_value(char *string, int len, const char *text, const char *value, i
 				string, len, text, ((value != NULL) ? value : "(null)"), mode);
 
 		if ((value != NULL) &&
-		    (textlen + strlen(value) < len - 1)) {
+		    (textlen + (int)strlen(value) < len - 1)) {
 			memset(string, ' ', len);
 			memcpy(string, text, (size_t)textlen);
-			strcpy(string + len - strlen(value), value);
+			strcpy(string + len - (int)strlen(value), value);
 		}
 		else {
-			// safeguard against missing value or too long labels
+			/* safeguard against missing value or too long labels */
 			if ((value == NULL) || (textlen >= len-3))
 				mode = LV_LABEL_ONLY;
 
 			switch (mode) {
-			  case LV_LABEL_VALU:	// show fist chars in value
+			  case LV_LABEL_VALU:	/* show first chars in value */
+				/* textlen < len-3 here, so room for >= 2 chars of value */
 				memset(string, ' ', len);
-			  	strncpy(string, text, textlen);
-				strncpy(string + textlen + 2, value, len - textlen - 2);
+				memcpy(string, text, (size_t)textlen);
+				strncpy(string + textlen + 2, value, (size_t)(len - textlen - 2));
 				strcpy(string + len - 2, "..");
 				string[len] = '\0';
 				break;
-			  case LV_LABEL_ALUE:	// show last chars in value
+			  case LV_LABEL_ALUE:	/* show last chars in value */
+				{
+				/* textlen < len-3 here, so room for >= 1 char of value */
+				int tailroom = len - textlen - 4;
+
 				memset(string, ' ', len);
-			  	strncpy(string, text, textlen);
-				strcpy(string + textlen + 2, "..");
-				strcpy(string + textlen + 4,
-				       value + strlen(value) - len + textlen + 4);
+				memcpy(string, text, (size_t)textlen);
+				snprintf(string + textlen + 2, (size_t)(len - textlen - 2), "..");
+				if (tailroom > 0) {
+					int valuelen = (int)strlen(value);
+					int tail = (valuelen < tailroom) ? valuelen : tailroom;
+
+					memcpy(string + textlen + 4, value + valuelen - tail, (size_t)tail);
+				}
 				string[len] = '\0';
 				break;
+				}
 			  case LV_VALUE_ONLY:
 				/* indent by one to indicate it's a value */
 				strcpy(string, " ");

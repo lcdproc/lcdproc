@@ -178,3 +178,9 @@ pip-log.txt
 ar-lib
 compile
 config.h.in
+
+# Clang compilation database (generated)
+compile_commands.json
+*.o.json
+.cache
+.deps

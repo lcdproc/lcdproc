@@ -305,7 +305,6 @@ uptime_screen(int rep, int display, int *flags_ptr)
 	int xoffs;
 	int days, hour, min, sec;
 	double uptime, idle;
-	static int heartbeat = 0;
 	char tmp[257];	/* should be large enough for host name */
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
@@ -336,9 +335,6 @@ uptime_screen(int rep, int display, int *flags_ptr)
 					get_sysname(), get_sysrelease(), get_hostname());
 		}
 	}
-
-	/* toggle colon display */
-	heartbeat ^= 1;
 
 	machine_get_uptime(&uptime, &idle);
 	days = (int) uptime / 86400;

@@ -33,6 +33,7 @@
 #include "lb216.h"
 #include "lcd_lib.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #define LB216_DEFAULT_DEVICE		"/dev/lcd"
 #define LB216_DEFAULT_SPEED		9600
@@ -43,7 +44,7 @@ typedef struct LB216_private_data {
 	char device[256];
 	int speed;
 	int fd;
-	char *framebuf;
+	unsigned char *framebuf;
 	int width;
 	int height;
 	int cellwidth;
@@ -270,17 +271,17 @@ LB216_flush(Driver *drvthis)
   int i, j;
 
   snprintf(out, sizeof(out), "%c%c", 254, 80);
-  write(p->fd, out, 2);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 
   for (j = 0; j < p->height; j++) {
     if (j >= 2)
       snprintf(out, sizeof(out), "%c%c", 254, 148 + (64 * (j - 2)));
     else
       snprintf(out, sizeof(out), "%c%c", 254, 128 + (64 * j));
-    write(p->fd, out, 2);
+    shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 
     for (i = 0; i < p->width; i++)
-      write(p->fd, &p->framebuf[i + (j * p->width)], 1);
+      shared_write_all(drvthis->name, p->fd, (const unsigned char *)&p->framebuf[i + (j * p->width)], 1);
   }
 }
 
@@ -290,14 +291,14 @@ LB216_flush(Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (16,2).
 //
 MODULE_EXPORT void
-LB216_chr(Driver *drvthis, int x, int y, char c)
+LB216_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
   PrivateData *p = drvthis->private_data;
 
   y--;
   x--;
 
-  if ((unsigned char) c == 254) 	/* protect command starting char */
+  if (c == 254) 	/* protect command starting char */
     c= '#';
 
   if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
@@ -317,7 +318,7 @@ LB216_backlight(Driver *drvthis, int on)
   char out[4];
 
   snprintf(out, sizeof(out), "%c%c", 254, (on) ? 253 : 252);
-  write(p->fd, out, 2);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 }
 
 
@@ -330,7 +331,7 @@ static void LB216_hidecursor(Driver *drvthis)
   char out[4];
 
   snprintf(out, sizeof(out), "%c%c", 254, 12);
-  write(p->fd, out, 2);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -342,7 +343,7 @@ static void LB216_reboot(Driver *drvthis)
   char out[4];
 
   snprintf(out, sizeof(out), "%c%c", 254, 1);
-  write(p->fd, out, 2);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 }
 
 
@@ -442,7 +443,7 @@ LB216_set_char(Driver *drvthis, int n, unsigned char *dat)
     return;
 
   snprintf(out, sizeof(out), "%c%c", 254, 64 + (8 * n));
-  write(p->fd, out, 2);
+  shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 
   for (row = 0; row < p->cellheight; row++) {
     int letter = dat[row] & mask;
@@ -451,7 +452,7 @@ LB216_set_char(Driver *drvthis, int n, unsigned char *dat)
     letter |= 0x20;
 
     snprintf(out, sizeof(out), "%c", letter);
-    write(p->fd, out, 1);
+    shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 1);
   }
 }
 

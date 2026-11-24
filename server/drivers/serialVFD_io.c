@@ -41,6 +41,7 @@
 
 #include "lcd.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
 
@@ -75,7 +76,7 @@ serialVFD_write_serial (Driver *drvthis, unsigned char *dat, size_t length)
 	if (length <= 0)
 		return;
 
-	write(p->fd,dat,length);
+	shared_write_all("serialVFD", p->fd, (const unsigned char *)dat, length);
 }
 
 /**

@@ -23,6 +23,7 @@
 #include "lcd.h"
 #include "wirz-sli.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "lcd_lib.h"
 
 #define SLI_DEFAULT_DEVICE	"/dev/lcd"
@@ -142,14 +143,14 @@ sli_init (Driver *drvthis)
 	   and clear screen */
 	usleep(150000);			  /* 150ms delay to allow SLI to power on */
 	out[0] = 13;			  /* CR for SLI autobaud */
-	write(p->fd, out, 1);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)out, 1);
 	usleep(3000);			  /* 3ms delay.. wait for it to autobaud */
 	out[0] = 0x0FE;
 	out[1] = 0x00C;			  /* No cursor */
-	write(p->fd, out, 2);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)out, 2);
 	out[0] = 0x0FE;
 	out[1] = 0x001;			  /* Clear LCD, not sure if this belongs here */
-	write(p->fd, out, 2);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)out, 2);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -232,10 +233,10 @@ sli_flush (Driver *drvthis)
 	/* Do the actual refresh */
 	out[0] = 0x0FE;
 	out[1] = 0x080;
-	write(p->fd, out, 2);
-	write(p->fd, &p->framebuf[0], p->width);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)out, 2);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)&p->framebuf[0], p->width);
 	usleep(10);
-	write(p->fd, p->framebuf + p->width -1, p->width);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)p->framebuf + p->width -1, p->width);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -276,7 +277,7 @@ sli_string (Driver *drvthis, int x, int y, const char string[])
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-sli_chr (Driver *drvthis, int x, int y, char c)
+sli_chr (Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -398,19 +399,19 @@ sli_set_char (Driver *drvthis, int n, unsigned char *dat)
 	/* Move cursor to CGRAM */
 	out[0] = 0x0FE;
 	out[1] = 0x040 + 8 * n;
-	write(p->fd, out, 2);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)out, 2);
 
 	for (row = 0; row < p->cellheight; row++) {
 		int letter = dat[row] & mask;
 
 		letter |= 0x020;	  /* SLI can't accept CR, LF, etc in this character! */
-		write(p->fd, &letter, 1);
+		shared_write_all("wirz-sli", p->fd, (const unsigned char *)&letter, 1);
 	}
 
 	/* Move cursor back to DDRAM */
 	out[0] = 0x0FE;
 	out[1] = 0x080;
-	write(p->fd, out, 2);
+	shared_write_all("wirz-sli", p->fd, (const unsigned char *)out, 2);
 }
 
 MODULE_EXPORT int

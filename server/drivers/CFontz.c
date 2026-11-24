@@ -41,6 +41,7 @@
 #include "lcd.h"
 #include "CFontz.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "lcd_lib.h"
 #include "CFontz-charmap.h"
 #include "adv_bignum.h"
@@ -374,7 +375,7 @@ CFontz_flush(Driver *drvthis)
 				}
 				*ptr++ = c;
 			}
-			write(p->fd, out, (ptr - out));
+			shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, (size_t)(ptr - out));
 		}
 	}
 	else {
@@ -388,7 +389,7 @@ CFontz_flush(Driver *drvthis)
 			/* move cursor to start of (i+1)'th line */
 			CFontz_cursor_goto(drvthis, 1, i+1);
 
-			write(p->fd, p->framebuf + (p->width * i), p->width);
+			shared_write_all(drvthis->name, p->fd, (const unsigned char *)p->framebuf + (p->width * i), p->width);
 		}
 	}
 }
@@ -474,7 +475,7 @@ CFontz_set_contrast(Driver *drvthis, int promille)
 
 	// And do it (converted from [0,1000] - > [0,100])
 	out[1] = (unsigned char) (promille / 10);
-	write(p->fd, out, 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 }
 
 
@@ -533,7 +534,7 @@ CFontz_backlight(Driver *drvthis, int on)
 
 	/* map range [0, 1000] -> [0, 100] that the hardware understands */
 	out[1] = (unsigned char) (promille / 10);
-	write(p->fd, out, 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 }
 
 
@@ -549,7 +550,7 @@ CFontz_linewrap(Driver *drvthis, int on)
 	char out[4];
 
 	out[0] = (on) ? CFONTZ_Wrap_On : CFONTZ_Wrap_Off;
-	write(p->fd, out, 1);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 1);
 }
 
 
@@ -565,7 +566,7 @@ CFontz_autoscroll(Driver *drvthis, int on)
 	char out[4];
 
 	out[0] = (on) ? CFONTZ_Scroll_On : CFONTZ_Scroll_Off;
-	write(p->fd, out, 1);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 1);
 }
 
 
@@ -579,7 +580,7 @@ CFontz_hidecursor(Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	char out[4] = { CFONTZ_Hide_Cursor };
 
-	write(p->fd, out, 1);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 1);
 }
 
 
@@ -593,7 +594,7 @@ CFontz_reboot(Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	char out[4] = { CFONTZ_Reboot, CFONTZ_Reboot };
 
-	write(p->fd, out, 2);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2);
 	sleep(4);
 }
 
@@ -615,7 +616,7 @@ CFontz_cursor_goto(Driver *drvthis, int x, int y)
 		out[1] = (unsigned char) (x - 1);
 	if ((y > 0) && (y <= p->height))
 		out[2] = (unsigned char) (y - 1);
-	write(p->fd, out, 3);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 3);
 }
 
 
@@ -774,7 +775,7 @@ CFontz_set_char(Driver *drvthis, int n, unsigned char *dat)
 	for (row = 0; row < p->cellheight; row++) {
 		out[2+row] = dat[row] & mask;
 	}
-	write(p->fd, out, 2 + p->cellheight);
+	shared_write_all(drvthis->name, p->fd, (const unsigned char *)out, 2 + p->cellheight);
 }
 
 
@@ -942,7 +943,7 @@ CFontz_cursor(Driver *drvthis, int x, int y, int state)
 			stylecmd[0] = CFONTZ_Show_Block_Cursor;
 			break;
 	}
-	write(p->fd, stylecmd, 1);
+	shared_write_all(drvthis->name, p->fd, stylecmd, 1);
 
 	/* set cursor position */
 	CFontz_cursor_goto(drvthis, x, y);

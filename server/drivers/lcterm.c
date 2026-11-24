@@ -43,6 +43,7 @@
 #include "lcd_lib.h"
 #include "lcterm.h"
 #include "shared/report.h"
+#include "shared/helpers.h"
 #include "adv_bignum.h"
 
 
@@ -159,7 +160,7 @@ lcterm_init (Driver *drvthis)
   tcflush(p->fd, TCIOFLUSH);
 
   // clear the display, disable cursor, disable key scanning
-  write(p->fd, "\x1a\x16\x1bK", 4);
+  shared_write_all("lcterm", p->fd, (const unsigned char *)"\x1a\x16\x1bK", 4);
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -184,7 +185,7 @@ lcterm_close (Driver *drvthis)
 
     // clear the display, disable key scanning
     if (p->fd >= 0) {
-      write(p->fd, "\x1a\x1bK", 3);
+      shared_write_all("lcterm", p->fd, (const unsigned char *)"\x1a\x1bK", 3);
       close(p->fd);
     }
 
@@ -269,7 +270,7 @@ lcterm_flush (Driver *drvthis)
     *dp++ = 0x0a;
     *dp++ = 0x0d;
   }
-  write(p->fd, buf, dp-buf);
+  shared_write_all("lcterm", p->fd, (const unsigned char *)buf, dp-buf);
   memcpy(p->last_framebuf, p->framebuf, p->width * p->height);
 }
 
@@ -283,7 +284,7 @@ lcterm_flush (Driver *drvthis)
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-lcterm_chr (Driver *drvthis, int x, int y, char c)
+lcterm_chr (Driver *drvthis, int x, int y, unsigned char c)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
   y--;
@@ -351,7 +352,7 @@ lcterm_set_char (Driver *drvthis, int n, unsigned char *dat)
     buf[2+row] = data | 0x80;
   }
   buf[10] = 0x1E; // Cursor Home - exit CG-RAM mode
-  write(p->fd, buf, 11);
+  shared_write_all("lcterm", p->fd, (const unsigned char *)buf, 11);
 }
 
 
