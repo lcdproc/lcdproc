@@ -12,7 +12,7 @@
  */
 
 #ifndef PICOLCD_H
-#define PCIOLCD_H
+#define PICOLCD_H
 
 #ifdef HAVE_LIBUSB_1_0
 # include <libusb.h>
