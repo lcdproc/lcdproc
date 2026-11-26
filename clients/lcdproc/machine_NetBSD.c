@@ -54,7 +54,10 @@
 #include <sys/dkstat.h>
 #include <sched.h>
 #include <uvm/uvm_extern.h>
-#include <machine/apmvar.h>
+
+#include <i386/apmvar.h>
+#include <dev/apm/apmio.h>
+//#include <machine/apmvar.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <net/if.h>
