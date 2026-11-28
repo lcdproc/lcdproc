@@ -278,6 +278,7 @@ hd_init_usb4all(Driver *drvthis)
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	struct usb_bus *bus;
+	struct usb_interface_descriptor *iface;
 
 	p->hd44780_functions->senddata = usb4all_HD44780_senddata;
 	p->hd44780_functions->close = usb4all_HD44780_close;
@@ -313,7 +314,8 @@ hd_init_usb4all(Driver *drvthis)
 				}
 				else {
 					report(RPT_INFO, "hd_init_usb4all: USB-4-all device found");
-					usb4all_determine_usb_params(p, &dev->config[0].interface[0].altsetting[0]);
+					iface = &dev->config[0].interface[0].altsetting[0];
+					usb4all_determine_usb_params(p, iface);
 				}
 			}
 		}
@@ -339,6 +341,12 @@ hd_init_usb4all(Driver *drvthis)
 
 	if ((p->rx_buf.buffer = malloc(USB4ALL_RX_MAX)) == NULL) {
 		report(RPT_ERR, "hd_init_usb4all: could not allocate receive buffer");
+		usb4all_HD44780_close(p);
+		return -1;
+	}
+
+	if (usb_claim_interface(p->usbHandle, iface->bInterfaceNumber)) {
+		report(RPT_ERR, "hd_init_usb4all: could not claim interface");
 		usb4all_HD44780_close(p);
 		return -1;
 	}
