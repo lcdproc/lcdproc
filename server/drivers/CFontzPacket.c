@@ -96,7 +96,7 @@ static CFA_Model CFA_ModelList[] = {
 	{631, "20x2", 5, 115200, CFontz_charmap , CFA_HAS_FAN | CFA_HAS_TEMP |
 						CFA_HAS_KS0073 | CFA_HAS_4_TEMP_SLOTS},
 	{633, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_FAN | CFA_HAS_TEMP},
-	{635, "20x4", 5, 115200, CFontz_charmap , CFA_HAS_KS0073},
+	{635, "20x4", 6, 115200, CFontz_charmap , CFA_HAS_KS0073 | CFA_IS_SEAMLESS},
 	{0, NULL, 0, 0, NULL, 0}
 };
 
@@ -861,7 +861,9 @@ CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int opt
 			CFontzPacket_set_char(drvthis, i, hBar);
 		}
 	}
-
+	if (p->model_desc->flags & CFA_IS_SEAMLESS) {
+		options |= BAR_SEAMLESS;
+	}
 	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 

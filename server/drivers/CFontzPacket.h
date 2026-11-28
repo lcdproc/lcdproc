@@ -11,6 +11,7 @@
 #define CFA_HAS_TEMP		0x0002
 #define CFA_HAS_4_TEMP_SLOTS	0x0004
 #define CFA_HAS_KS0073		0x0008
+#define CFA_IS_SEAMLESS		0x0010
 
 /** Structure describing features of a known display model */
 typedef struct CFA_Model {
